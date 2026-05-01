@@ -9,8 +9,24 @@ import Link from 'next/link';
 
 export default function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const product = products.find(p => p.id === id) || products[0];
+  const product = products.find(p => p.id === id);
   const { addToCart } = useCart();
+
+  if (!product) {
+    return (
+      <div className={styles.detailPage}>
+        <div className="container">
+          <div style={{ padding: '100px 0', textAlign: 'center' }}>
+            <h1>Product Not Found</h1>
+            <p>The product you are looking for does not exist or has been removed.</p>
+            <Link href="/products" className="gradient-primary" style={{ display: 'inline-block', marginTop: '20px', padding: '10px 25px', borderRadius: '8px', color: 'white' }}>
+              Back to Products
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.detailPage}>

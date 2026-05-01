@@ -945,3 +945,46 @@
   text-decoration: underline;
   font-weight: 700;
 }
+
+.kycAlertBanner {
+  background: #fff9e6;
+  border: 1px solid #ffeeba;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 25px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  animation: slideDown 0.4s ease-out;
+}
+
+.kycInfo {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.kycInfo h4 {
+  margin: 0 0 4px 0;
+  color: #856404;
+}
+
+.kycInfo p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #856404;
+  opacity: 0.8;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 768px) {
+  .kycAlertBanner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

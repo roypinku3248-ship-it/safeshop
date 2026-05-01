@@ -47,9 +47,17 @@ export default function ProductsPage() {
         </div>
 
         <div className="grid-products">
-          {filteredProducts.map(product => (
-            <ProductCard key={product.id} product={product} />
-          ))}
+          {filteredProducts.length > 0 ? (
+            filteredProducts.map(product => (
+              <ProductCard key={product.id} product={product} />
+            ))
+          ) : (
+            <div className={styles.noProducts}>
+              <Search size={48} />
+              <h3>No products found</h3>
+              <p>Try adjusting your search or filters to find what you're looking for.</p>
+            </div>
+          )}
         </div>
       </div>
     </div>

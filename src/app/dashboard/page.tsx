@@ -15,18 +15,14 @@ export default function UserDashboard() {
   const [orders, setOrders] = React.useState<any[]>([]);
   
   // New State for MLM Logic
-  const [referrals, setReferrals] = React.useState([
-    { id: 'REF-001', name: 'User C', avatar: 'C', sales: 2000, indirectSales: 4000 },
-    { id: 'REF-002', name: 'User D', avatar: 'D', sales: 2000, indirectSales: 0 },
-    { id: 'REF-003', name: 'User E', avatar: 'E', sales: 2000, indirectSales: 10000 },
-  ]);
+  const [referrals, setReferrals] = React.useState<any[]>([]);
 
   const [stats, setStats] = React.useState({
     totalBv: 0,
     directCommission: 0,
     indirectCommission: 0,
     totalCommission: 0,
-    referralsCount: 3
+    referralsCount: 0
   });
 
   const [isAddingMember, setIsAddingMember] = React.useState(false);
@@ -49,27 +45,32 @@ export default function UserDashboard() {
     const savedOrders = JSON.parse(localStorage.getItem('safeshop-orders') || '[]');
     setOrders(savedOrders);
 
+    // Load dynamic referrals from global list
+    const globalUsers = JSON.parse(localStorage.getItem('safeshop-global-users') || '[]');
+    const myReferrals = globalUsers.filter((u: any) => u.referredBy === user?.id);
+    setReferrals(myReferrals);
+
     // Calculate BV stats based on orders (Personal Shopping)
     const personalBv = savedOrders.reduce((acc: number, order: any) => {
       return acc + order.items.reduce((sum: number, item: any) => sum + (item.bv * item.quantity), 0);
     }, 0);
     
     // Calculate Commissions based on the new Business Model
-    // 1. Direct Commission: 10% of Direct Referrals Sales (e.g., 200 for 2000)
-    const directComm = referrals.reduce((acc, ref) => acc + (ref.sales * 0.10), 0);
+    // 1. Direct Commission: 10% of Direct Referrals Sales
+    const directComm = myReferrals.reduce((acc: number, ref: any) => acc + (ref.sales * 0.10), 0);
     
-    // 2. Indirect Commission: 2% of Indirect Sales (Sales made by C, D, E's referrals)
-    const indirectComm = referrals.reduce((acc, ref) => acc + (ref.indirectSales * 0.02), 0);
+    // 2. Indirect Commission: 2% of Indirect Sales
+    const indirectComm = myReferrals.reduce((acc: number, ref: any) => acc + (ref.indirectSales * 0.02), 0);
 
     setStats({
       totalBv: personalBv,
       directCommission: directComm,
       indirectCommission: indirectComm,
       totalCommission: directComm + indirectComm,
-      referralsCount: referrals.length
+      referralsCount: myReferrals.length
     });
 
-  }, [isAuthenticated, loading, router, referrals]);
+  }, [isAuthenticated, loading, router, user?.id]);
 
   if (loading || !user) {
     return null;
@@ -128,6 +129,22 @@ export default function UserDashboard() {
 
           {/* Main Content */}
           <div className={styles.main}>
+            {/* ID Verification Alert Banner */}
+            {user.role !== 'seller' && user.role !== 'admin' && (
+              <div className={styles.kycAlertBanner}>
+                <div className={styles.kycInfo}>
+                  <ShieldAlert size={24} color="var(--warning)" />
+                  <div>
+                    <h4>Action Required: Verify Your Identity</h4>
+                    <p>To start earning commissions and listing products, you must verify your ID documents.</p>
+                  </div>
+                </div>
+                <button onClick={() => router.push('/kyc')} className="gradient-primary">
+                  Start Verification
+                </button>
+              </div>
+            )}
+
             {activeTab === 'orders' && (
               <>
                 <div className={styles.header}>

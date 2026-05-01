@@ -23,7 +23,23 @@ export default function RegisterPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Save for the login page to pick up
     localStorage.setItem('safeshop-pending-registration', JSON.stringify(formData));
+    
+    // Also save to global list so Admin can see the new user
+    const newUser = {
+      id: `SS-USR-${Math.floor(Math.random() * 10000)}`,
+      ...formData,
+      status: 'pending',
+      role: 'user',
+      totalSales: 0,
+      joinedAt: new Date().toLocaleDateString()
+    };
+    
+    const globalUsers = JSON.parse(localStorage.getItem('safeshop-global-users') || '[]');
+    localStorage.setItem('safeshop-global-users', JSON.stringify([...globalUsers, newUser]));
+    
     router.push('/login?registered=true');
   };
 

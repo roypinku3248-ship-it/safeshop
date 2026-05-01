@@ -1,0 +1,269 @@
+.listPage {
+  padding: 40px 0;
+  background: #f8fafc;
+  min-height: calc(100vh - 80px);
+}
+
+.header {
+  margin-bottom: 30px;
+}
+
+.header h1 {
+  font-size: 2.5rem;
+  color: var(--dark);
+  margin-bottom: 8px;
+}
+
+.header p {
+  color: var(--muted);
+  font-size: 1.1rem;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 350px;
+  gap: 30px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.card {
+  background: white;
+  padding: 30px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid #e2e8f0;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 25px;
+  color: var(--primary);
+}
+
+.cardHeader h2 {
+  font-size: 1.25rem;
+  color: var(--dark);
+  margin: 0;
+}
+
+.inputGroup {
+  margin-bottom: 20px;
+}
+
+.inputGroup label {
+  display: block;
+  font-weight: 600;
+  color: var(--dark);
+  margin-bottom: 8px;
+  font-size: 0.95rem;
+}
+
+.inputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.inputIcon {
+  position: absolute;
+  left: 12px;
+  color: var(--muted);
+}
+
+.inputWrapper input,
+.inputWrapper select,
+.textarea {
+  width: 100%;
+  padding: 12px 12px 12px 40px;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  transition: all 0.2s;
+  background: #fcfcfc;
+}
+
+.textarea {
+  padding: 12px;
+}
+
+.inputWrapper input:focus,
+.inputWrapper select:focus,
+.textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
+  background: white;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.featureInput {
+  margin-bottom: 10px;
+  padding: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-md);
+  width: 100%;
+}
+
+.addBtn {
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  padding: 8px 0;
+  font-size: 0.9rem;
+}
+
+.uploadArea {
+  margin-top: 20px;
+  border: 2px dashed #cbd5e1;
+  padding: 40px;
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+  position: relative;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.uploadArea:hover {
+  border-color: var(--primary);
+  background: rgba(46, 125, 50, 0.02);
+}
+
+.fileInput {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.submitBtn {
+  padding: 18px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  border-radius: var(--radius-md);
+  margin-top: 10px;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.safetyCheck, .escrowHint {
+  background: white;
+  padding: 25px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.safetyCheck h3 {
+  font-size: 1.1rem;
+  margin-bottom: 20px;
+}
+
+.policyItem {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 15px;
+}
+
+.policyItem p {
+  font-size: 0.9rem;
+  color: var(--muted);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.escrowHint h4 {
+  color: var(--secondary);
+  margin-bottom: 10px;
+}
+
+.escrowHint p {
+  font-size: 0.9rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+/* Success State */
+.successPage {
+  padding: 80px 0;
+  text-align: center;
+}
+
+.successCard {
+  background: white;
+  padding: 60px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.successIcon {
+  margin-bottom: 30px;
+  animation: scaleIn 0.5s ease-out;
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.successCard h1 {
+  font-size: 2rem;
+  margin-bottom: 15px;
+}
+
+.successCard p {
+  color: var(--muted);
+  margin-bottom: 40px;
+}
+
+.successActions {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+}
+
+.successActions button {
+  padding: 12px 30px;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+}
+
+.secondaryBtn {
+  background: #f1f5f9;
+  border: none;
+  color: var(--dark);
+}
+
+@media (max-width: 992px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}

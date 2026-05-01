@@ -1,0 +1,162 @@
+.registerPage {
+  padding: 60px 15px;
+  background: var(--background);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card {
+  width: 100%;
+  max-width: 800px;
+  background: white;
+  padding: 40px 30px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  box-sizing: border-box;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 35px;
+}
+
+.iconBox {
+  width: 56px;
+  height: 56px;
+  background: rgba(0, 82, 204, 0.08);
+  color: var(--primary);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 15px;
+}
+
+.header h1 {
+  font-size: 2rem;
+  margin-bottom: 8px;
+  color: var(--foreground);
+}
+
+.header p {
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.form {
+  width: 100%;
+}
+
+.grid {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  width: 100%;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 100%;
+}
+
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--primary);
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 10px;
+  margin-bottom: 5px;
+}
+
+.sectionTitle h3 {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.inputRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  width: 100%;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.inputGroup label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+.inputGroup input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  transition: all 0.2s;
+  box-sizing: border-box;
+  background: #fcfcfc;
+}
+
+.inputGroup input:focus {
+  border-color: var(--primary);
+  background: white;
+  box-shadow: 0 0 0 3px rgba(0, 82, 204, 0.1);
+  outline: none;
+}
+
+.agreement {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 10px;
+  margin-bottom: 25px;
+  font-size: 0.85rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.agreement input {
+  margin-top: 3px;
+}
+
+.submitBtn {
+  width: 100%;
+  padding: 15px;
+  border-radius: 10px;
+  color: white;
+  font-weight: 700;
+  font-size: 1rem;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.submitBtn:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 640px) {
+  .card {
+    padding: 30px 20px;
+  }
+  
+  .inputRow {
+    grid-template-columns: 1fr;
+  }
+  
+  .header h1 {
+    font-size: 1.75rem;
+  }
+}

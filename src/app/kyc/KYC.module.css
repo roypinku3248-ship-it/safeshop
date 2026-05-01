@@ -1,0 +1,263 @@
+.kycPage {
+  padding: 80px 0;
+  background: #f8fafc;
+  min-height: 100vh;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 50px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 82, 204, 0.1);
+  color: var(--primary);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  margin-bottom: 15px;
+}
+
+.header h1 {
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 40px;
+  align-items: start;
+}
+
+.formCard {
+  background: white;
+  padding: 40px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+.section {
+  position: relative;
+  margin-bottom: 40px;
+  padding-left: 50px;
+}
+
+.stepNum {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 32px;
+  height: 32px;
+  background: var(--primary);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.9rem;
+}
+
+.section h3 {
+  font-size: 1.25rem;
+  margin-bottom: 20px;
+}
+
+.docTypeGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+}
+
+.docTypeGrid button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 20px;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  transition: all 0.2s;
+}
+
+.activeDoc {
+  border-color: var(--primary) !important;
+  background: rgba(0, 82, 204, 0.05);
+  color: var(--primary);
+}
+
+.uploadGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.uploadBox {
+  position: relative;
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  height: 140px;
+  transition: all 0.2s;
+}
+
+.uploadBox:hover {
+  border-color: var(--primary);
+  background: #f8fafc;
+}
+
+.fileInput {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.uploadBox label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--muted);
+}
+
+.faceVerification {
+  background: #f8fafc;
+  padding: 25px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
+.faceInstruction {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.faceIcon {
+  color: var(--primary);
+}
+
+.faceInstruction p {
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.faceInstruction small {
+  color: var(--muted);
+}
+
+.uploadBoxFull {
+  position: relative;
+  border: 2px dashed var(--primary);
+  border-radius: 12px;
+  height: 100px;
+}
+
+.uploadBoxFull label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 40px 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.submitBtn {
+  width: 100%;
+  padding: 18px;
+  border-radius: 12px;
+  color: white;
+  font-weight: 800;
+  font-size: 1.1rem;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.infoCard {
+  background: var(--foreground);
+  color: white;
+  padding: 30px;
+  border-radius: var(--radius-lg);
+  text-align: center;
+}
+
+.infoCard h3 {
+  color: white;
+  margin-bottom: 15px;
+}
+
+.infoCard p {
+  font-size: 0.9rem;
+  opacity: 0.8;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.shield {
+  color: var(--primary);
+  display: flex;
+  justify-content: center;
+}
+
+.successCard {
+  max-width: 600px;
+  margin: 0 auto;
+  text-align: center;
+  background: white;
+  padding: 60px 40px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+}
+
+.successCard h1 {
+  margin: 20px 0 10px;
+}
+
+.statusBox {
+  margin: 30px 0;
+  padding: 15px;
+  background: #f8fafc;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.pendingText {
+  color: var(--warning);
+}
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+  .docTypeGrid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -6,6 +6,7 @@ import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
 import { Package, ShieldCheck, MapPin, Settings, Heart, LogOut, Clock, Truck, Loader2, IndianRupee, TrendingUp, Users as UsersIcon, Award, Plus, ShieldAlert } from 'lucide-react';
 import { NetworkTree } from '@/components/NetworkTree';
+import { supabase } from '@/lib/supabase';
 import styles from './Dashboard.module.css';
 
 export default function UserDashboard() {
@@ -50,30 +51,48 @@ export default function UserDashboard() {
     const savedOrders = JSON.parse(localStorage.getItem('safeshop-orders') || '[]');
     setOrders(savedOrders);
 
-    // Load dynamic referrals from global list
-    const globalUsers = JSON.parse(localStorage.getItem('safeshop-global-users') || '[]');
-    const myReferrals = globalUsers.filter((u: any) => u.referredBy === user?.id);
-    setReferrals(myReferrals);
+    // Load dynamic referrals from Supabase
+    const loadReferrals = async () => {
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('referred_by', user?.id);
+      
+      if (!error && data) {
+        const formatted = data.map(u => ({
+          id: u.id,
+          name: u.name,
+          avatar: u.name[0],
+          sales: u.total_sales || 0,
+          indirectSales: 0, // In a real app, calculate recursively
+          status: u.status
+        }));
+        setReferrals(formatted);
 
-    // Calculate BV stats based on orders (Personal Shopping)
+        // Calculate Commissions
+        const directComm = formatted.reduce((acc: number, ref: any) => acc + (ref.sales * 0.10), 0);
+        const indirectComm = formatted.reduce((acc: number, ref: any) => acc + (ref.indirectSales * 0.02), 0);
+
+        setStats(prev => ({
+          ...prev,
+          directCommission: directComm,
+          indirectCommission: indirectComm,
+          totalCommission: directComm + indirectComm,
+          referralsCount: formatted.length
+        }));
+      }
+    };
+
+    if (user?.id) {
+      loadReferrals();
+    }
+
+    // Calculate Personal BV stats based on local orders (for now)
     const personalBv = savedOrders.reduce((acc: number, order: any) => {
       return acc + order.items.reduce((sum: number, item: any) => sum + (item.bv * item.quantity), 0);
     }, 0);
-    
-    // Calculate Commissions based on the new Business Model
-    // 1. Direct Commission: 10% of Direct Referrals Sales
-    const directComm = myReferrals.reduce((acc: number, ref: any) => acc + (ref.sales * 0.10), 0);
-    
-    // 2. Indirect Commission: 2% of Indirect Sales
-    const indirectComm = myReferrals.reduce((acc: number, ref: any) => acc + (ref.indirectSales * 0.02), 0);
 
-    setStats({
-      totalBv: personalBv,
-      directCommission: directComm,
-      indirectCommission: indirectComm,
-      totalCommission: directComm + indirectComm,
-      referralsCount: myReferrals.length
-    });
+    setStats(prev => ({ ...prev, totalBv: personalBv }));
 
   }, [isAuthenticated, loading, router, user?.id]);
 
@@ -291,36 +310,40 @@ export default function UserDashboard() {
                           <button 
                             className="gradient-primary" 
                             style={{ marginTop: '15px', padding: '10px 20px', borderRadius: '8px', color: 'white', fontWeight: 'bold' }}
-                            onClick={() => {
+                            onClick={async () => {
                               const newUserId = `SS-USR-${Math.floor(Math.random() * 10000)}`;
                               const newRef = {
                                 id: newUserId,
                                 name: newMemberData.name,
                                 email: newMemberData.email,
-                                avatar: newMemberData.name[0],
-                                sales: 0,
-                                indirectSales: 0,
-                                status: 'pending',
-                                referredBy: user.id,
+                                password: 'password123', // Default for now
                                 role: 'associate',
+                                status: 'pending',
+                                referred_by: user.id,
+                                total_sales: 0,
+                                phone: newMemberData.phone,
+                                city: newMemberData.city,
                                 ps: newMemberData.ps,
                                 po: newMemberData.po,
-                                phone: newMemberData.phone,
-                                hasDocs: true,
-                                joinedAt: new Date().toLocaleDateString()
+                                joined_at: new Date().toISOString()
                               };
                               
-                              // Update local state
-                              setReferrals([...referrals, newRef]);
-                              
-                              // Save to global users list for Admin to see
-                              const globalUsers = JSON.parse(localStorage.getItem('safeshop-global-users') || '[]');
-                              globalUsers.push(newRef);
-                              localStorage.setItem('safeshop-global-users', JSON.stringify(globalUsers));
+                              try {
+                                const { error } = await supabase
+                                  .from('users')
+                                  .insert([newRef]);
 
-                              alert(`Member ${newMemberData.name} registered successfully with ID Documents! Admin will verify everything soon.`);
-                              setIsAddingMember(false);
-                              setNewMemberData({ name: '', email: '', phone: '', city: '', state: '', ps: '', po: '' });
+                                if (error) throw error;
+
+                                alert(`Member ${newMemberData.name} registered successfully! Admin will verify their documents soon.`);
+                                setIsAddingMember(false);
+                                setNewMemberData({ name: '', email: '', phone: '', city: '', state: '', ps: '', po: '' });
+                                
+                                // Refresh referrals list
+                                window.location.reload(); 
+                              } catch (err: any) {
+                                alert('Error: ' + err.message);
+                              }
                             }}
                           >
                             Confirm Registration

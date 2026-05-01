@@ -4,13 +4,29 @@ import React, { useState } from 'react';
 import { products } from '@/data/mockData';
 import ProductCard from '@/components/ProductCard';
 import { Filter, Search, ChevronDown } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 import styles from './Products.module.css';
 
 export default function ProductsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [category, setCategory] = useState('All');
+  const [liveProducts, setLiveProducts] = useState<any[]>([]);
 
-  const filteredProducts = products.filter(p => {
+  React.useEffect(() => {
+    const fetchProducts = async () => {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('status', 'live');
+      
+      if (!error && data) {
+        setLiveProducts(data);
+      }
+    };
+    fetchProducts();
+  }, []);
+
+  const filteredProducts = liveProducts.filter(p => {
     const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = category === 'All' || p.category === category;
     return matchesSearch && matchesCategory;

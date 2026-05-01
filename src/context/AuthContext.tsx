@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
 
 interface User {
   id: string;
@@ -77,18 +78,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem('safeshop-user');
   };
 
-  const refreshUser = () => {
+  const refreshUser = async () => {
     if (!user) return;
-    const globalUsers = JSON.parse(localStorage.getItem('safeshop-global-users') || '[]');
-    const updated = globalUsers.find((u: any) => u.email === user.email);
-    if (updated) {
-      const refreshedUser: User = {
-        ...user,
-        role: updated.role || user.role,
-        name: updated.name || user.name
-      };
-      setUser(refreshedUser);
-      localStorage.setItem('safeshop-user', JSON.stringify(refreshedUser));
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('email', user.email)
+        .single();
+      
+      if (error) throw error;
+      
+      if (data) {
+        const refreshedUser: User = {
+          ...user,
+          role: data.role as any || user.role,
+          name: data.name || user.name
+        };
+        setUser(refreshedUser);
+        localStorage.setItem('safeshop-user', JSON.stringify(refreshedUser));
+      }
+    } catch (e) {
+      console.error('Refresh error', e);
     }
   };
 

@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { ShieldCheck, Package, IndianRupee, Tag, Image as ImageIcon, Plus, Info, AlertTriangle, CheckCircle } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 import styles from './ListProduct.module.css';
 
 export default function ListProductPage() {
@@ -42,28 +43,39 @@ export default function ListProductPage() {
     setFormData({ ...formData, features: [...formData.features, ''] });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Save to pending products
-    const pendingProducts = JSON.parse(localStorage.getItem('safeshop-pending-products') || '[]');
     const newProduct = {
-      id: Date.now().toString(),
       name: formData.name,
       price: Number(formData.price),
       category: formData.category,
       description: formData.description,
-      image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=600", // Default mock image
+      features: formData.features,
+      image_url: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=600", // Default mock image
       bv: Math.floor(Number(formData.price) / 25),
-      seller: { name: user?.name || "Verified Seller" },
-      status: 'Pending Approval'
+      seller_id: user?.id,
+      status: 'pending'
     };
-    
-    localStorage.setItem('safeshop-pending-products', JSON.stringify([newProduct, ...pendingProducts]));
-    
-    setIsSubmitting(false);
-    setIsSuccess(true);
+
+    try {
+      const { error } = await supabase
+        .from('products')
+        .insert([newProduct]);
+
+      if (error) throw error;
+
+      // Also keep a local backup for UI feedback
+      const pendingProducts = JSON.parse(localStorage.getItem('safeshop-pending-products') || '[]');
+      localStorage.setItem('safeshop-pending-products', JSON.stringify([newProduct, ...pendingProducts]));
+      
+      setIsSuccess(true);
+    } catch (err: any) {
+      alert('Error listing product: ' + err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (isSuccess) {

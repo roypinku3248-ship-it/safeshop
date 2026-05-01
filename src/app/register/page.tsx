@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { UserPlus, MapPin, User, ShieldCheck } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 import styles from './Register.module.css';
 
 export default function RegisterPage() {
@@ -21,26 +22,46 @@ export default function RegisterPage() {
     pin: ''
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Save for the login page to pick up
-    localStorage.setItem('safeshop-pending-registration', JSON.stringify(formData));
-    
-    // Also save to global list so Admin can see the new user
+    const newUserId = `SS-USR-${Math.floor(Math.random() * 10000)}`;
     const newUser = {
-      id: `SS-USR-${Math.floor(Math.random() * 10000)}`,
-      ...formData,
-      status: 'pending',
+      id: newUserId,
+      name: formData.name,
+      email: formData.email,
+      password: formData.password, // In a real app, hash this!
+      phone: formData.phone,
+      state: formData.state,
+      city: formData.city,
+      ps: formData.ps,
+      po: formData.po,
+      pin: formData.pin,
       role: 'user',
-      totalSales: 0,
-      joinedAt: new Date().toLocaleDateString()
+      status: 'pending',
+      total_sales: 0,
+      joined_at: new Date().toISOString()
     };
-    
-    const globalUsers = JSON.parse(localStorage.getItem('safeshop-global-users') || '[]');
-    localStorage.setItem('safeshop-global-users', JSON.stringify([...globalUsers, newUser]));
-    
-    router.push('/login?registered=true');
+
+    try {
+      // 1. Save to Supabase (The Real Database)
+      const { error } = await supabase
+        .from('users')
+        .insert([newUser]);
+
+      if (error) throw error;
+
+      // 2. Backup to LocalStorage (For immediate login flow)
+      localStorage.setItem('safeshop-pending-registration', JSON.stringify(formData));
+      
+      const globalUsers = JSON.parse(localStorage.getItem('safeshop-global-users') || '[]');
+      localStorage.setItem('safeshop-global-users', JSON.stringify([...globalUsers, newUser]));
+      
+      router.push('/login?registered=true');
+    } catch (error: any) {
+      console.error('Registration error:', error.message);
+      alert('Error during registration: ' + error.message);
+    }
   };
 
   return (

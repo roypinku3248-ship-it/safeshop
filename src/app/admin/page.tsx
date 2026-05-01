@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { sellers, products } from '@/data/mockData';
 import { NetworkTree } from '@/components/NetworkTree';
 import { useAuth } from '@/context/AuthContext';
+import { supabase } from '@/lib/supabase';
 import { Users as UsersIcon, Package, AlertTriangle, BarChart3, CheckCircle, XCircle, Search, ChevronDown, ChevronRight, UserCheck, Loader2 } from 'lucide-react';
 import styles from './Admin.module.css';
 
@@ -29,31 +30,54 @@ export default function AdminPage() {
   const [newRegistrations, setNewRegistrations] = React.useState<any[]>([]);
 
   const [globalUsers, setGlobalUsers] = React.useState<any[]>([]);
+  const [dataLoading, setDataLoading] = React.useState(true);
 
-  const loadData = () => {
-    const savedKyc = localStorage.getItem('safeshop-kyc-queue');
-    if (savedKyc) setKycQueue(JSON.parse(savedKyc));
-    
-    const savedProducts = localStorage.getItem('safeshop-pending-products');
-    if (savedProducts) setPendingProducts(JSON.parse(savedProducts));
+  const loadData = async () => {
+    setDataLoading(true);
+    try {
+      const { data: usersData, error: usersError } = await supabase
+        .from('users')
+        .select('*')
+        .order('joined_at', { ascending: false });
+      
+      if (usersError) throw usersError;
+      setGlobalUsers(usersData || []);
 
-    const savedOrders = localStorage.getItem('safeshop-orders');
-    if (savedOrders) setAllOrders(JSON.parse(savedOrders));
+      const { data: prodData, error: prodError } = await supabase
+        .from('products')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-    const savedGlobalUsers = localStorage.getItem('safeshop-global-users');
-    if (savedGlobalUsers) setGlobalUsers(JSON.parse(savedGlobalUsers));
+      if (prodError) throw prodError;
+      setPendingProducts(prodData || []);
+
+      // Keep LocalStorage backups for now
+      const savedKyc = localStorage.getItem('safeshop-kyc-queue');
+      if (savedKyc) setKycQueue(JSON.parse(savedKyc));
+      
+      const savedOrders = localStorage.getItem('safeshop-orders');
+      if (savedOrders) setAllOrders(JSON.parse(savedOrders));
+
+    } catch (error: any) {
+      console.error('Data load error:', error.message);
+    } finally {
+      setDataLoading(false);
+    }
   };
 
-  const handleApproveUser = (id: string) => {
-    const updatedUsers = globalUsers.map(u => {
-      if (u.id === id) {
-        return { ...u, status: 'verified', role: 'seller', isVerified: true };
-      }
-      return u;
-    });
-    setGlobalUsers(updatedUsers);
-    localStorage.setItem('safeshop-global-users', JSON.stringify(updatedUsers));
-    alert('User ID Verified successfully! They can now start selling.');
+  const handleApproveUser = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update({ status: 'verified', role: 'seller' })
+        .eq('id', id);
+
+      if (error) throw error;
+      setGlobalUsers(globalUsers.map(u => u.id === id ? { ...u, status: 'verified', role: 'seller' } : u));
+      alert('User ID Verified successfully!');
+    } catch (error: any) {
+      alert('Error: ' + error.message);
+    }
   };
 
   const handleKycAction = (id: string, action: 'approve' | 'reject') => {

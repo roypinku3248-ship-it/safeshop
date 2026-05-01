@@ -4,11 +4,24 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import { sellers, products } from '@/data/mockData';
 import { NetworkTree } from '@/components/NetworkTree';
-import { Users, Package, AlertTriangle, BarChart3, CheckCircle, XCircle, Search, ChevronDown, ChevronRight, UserCheck } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import { Users, Package, AlertTriangle, BarChart3, CheckCircle, XCircle, Search, ChevronDown, ChevronRight, UserCheck, Loader2 } from 'lucide-react';
 import styles from './Admin.module.css';
 
 export default function AdminPage() {
+  const { user, loading, isAuthenticated } = useAuth();
   const router = useRouter();
+  
+  React.useEffect(() => {
+    if (!loading && (!isAuthenticated || user?.role !== 'admin')) {
+      router.push('/login?callbackUrl=/admin');
+    }
+  }, [isAuthenticated, loading, user, router]);
+
+  if (loading || !isAuthenticated || user?.role !== 'admin') {
+    return <div className={styles.adminPage}><div className="container">Verifying admin credentials...</div></div>;
+  }
+
   const [activeTab, setActiveTab] = React.useState('stats');
   const [kycQueue, setKycQueue] = React.useState<any[]>([]);
   const [pendingProducts, setPendingProducts] = React.useState<any[]>([]);

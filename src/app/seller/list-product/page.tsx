@@ -7,9 +7,16 @@ import { ShieldCheck, Package, IndianRupee, Tag, Image as ImageIcon, Plus, Info,
 import styles from './ListProduct.module.css';
 
 export default function ListProductPage() {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, loading } = useAuth();
   const router = useRouter();
   const [step, setStep] = useState(1);
+  
+  React.useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      router.push('/login?callbackUrl=/seller/list-product');
+    }
+  }, [isAuthenticated, loading, router]);
+
   const [formData, setFormData] = useState({
     name: '',
     price: '',
@@ -21,9 +28,8 @@ export default function ListProductPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  if (!isAuthenticated) {
-    router.push('/login?callbackUrl=/seller/list-product');
-    return null;
+  if (loading || !isAuthenticated) {
+    return <div className={styles.listPage}><div className="container">Verifying seller access...</div></div>;
   }
 
   const handleFeatureChange = (index: number, value: string) => {

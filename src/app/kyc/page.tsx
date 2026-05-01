@@ -7,14 +7,19 @@ import { ShieldCheck, Upload, FileText, CheckCircle, AlertCircle, Camera, UserCi
 import styles from './KYC.module.css';
 
 export default function KYCPage() {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, loading } = useAuth();
   const router = useRouter();
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [docType, setDocType] = useState('aadhaar');
 
-  if (!isAuthenticated) {
-    router.push('/login?callbackUrl=/kyc');
-    return null;
+  React.useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      router.push('/login?callbackUrl=/kyc');
+    }
+  }, [isAuthenticated, loading, router]);
+
+  if (loading || !isAuthenticated) {
+    return <div className={styles.kycPage}><div className="container">Checking verification status...</div></div>;
   }
 
   const handleSubmit = (e: React.FormEvent) => {

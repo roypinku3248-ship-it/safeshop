@@ -15,6 +15,7 @@ interface AuthContextType {
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
+  refreshUser: () => void;
   isAuthenticated: boolean;
 }
 
@@ -76,6 +77,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem('safeshop-user');
   };
 
+  const refreshUser = () => {
+    if (!user) return;
+    const globalUsers = JSON.parse(localStorage.getItem('safeshop-global-users') || '[]');
+    const updated = globalUsers.find((u: any) => u.email === user.email);
+    if (updated) {
+      const refreshedUser: User = {
+        ...user,
+        role: updated.role || user.role,
+        name: updated.name || user.name
+      };
+      setUser(refreshedUser);
+      localStorage.setItem('safeshop-user', JSON.stringify(refreshedUser));
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -83,6 +99,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         loading,
         login,
         logout,
+        refreshUser,
         isAuthenticated: !!user,
       }}
     >

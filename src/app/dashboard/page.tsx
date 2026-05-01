@@ -9,7 +9,7 @@ import { NetworkTree } from '@/components/NetworkTree';
 import styles from './Dashboard.module.css';
 
 export default function UserDashboard() {
-  const { user, isAuthenticated, loading, logout } = useAuth();
+  const { user, isAuthenticated, loading, logout, refreshUser } = useAuth();
   const router = useRouter();
   const [activeTab, setActiveTab] = React.useState<'orders' | 'earnings'>('orders');
   const [orders, setOrders] = React.useState<any[]>([]);
@@ -39,6 +39,11 @@ export default function UserDashboard() {
   useEffect(() => {
     if (!loading && !isAuthenticated) {
       router.push('/login?callbackUrl=/dashboard');
+    }
+    
+    // Auto-refresh user role if Admin approved verification
+    if (isAuthenticated) {
+      refreshUser();
     }
     
     // Load dynamic orders

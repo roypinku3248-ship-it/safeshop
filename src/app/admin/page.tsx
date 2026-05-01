@@ -233,13 +233,13 @@ export default function AdminPage() {
                         <div className={styles.avatarMini}>{selectedNetworkUser?.name[0]}</div>
                         <div>
                           <h3>{selectedNetworkUser?.name}</h3>
-                          <p>Total Sales: ₹{(selectedNetworkUser?.totalSales * 1000 || 0).toLocaleString()}</p>
+                          <p>Total Sales: ₹{(selectedNetworkUser?.total_sales || 0).toLocaleString()}</p>
                         </div>
                       </div>
                       <div className={styles.userStatsMini}>
                         <div className={styles.miniStat}>
                           <span>Direct</span>
-                          <strong>{globalUsers.filter(u => u.referredBy === selectedNetworkUser?.id).length}</strong>
+                          <strong>{globalUsers.filter(u => u.referred_by === selectedNetworkUser?.id).length}</strong>
                         </div>
                         <div className={styles.miniStat}>
                           <span>Indirect</span>
@@ -256,7 +256,7 @@ export default function AdminPage() {
                   <div className={styles.pyramidArea}>
                     <NetworkTree 
                       rootUser={{ name: selectedNetworkUser?.name || 'User', id: selectedNetworkUser?.id || 'ID' }} 
-                      referrals={globalUsers.filter(u => u.referredBy === selectedNetworkUser?.id)}
+                      referrals={globalUsers.filter(u => u.referred_by === selectedNetworkUser?.id)}
                       isAdminView={true}
                     />
                   </div>

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { sellers, products } from '@/data/mockData';
 import { NetworkTree } from '@/components/NetworkTree';
 import { useAuth } from '@/context/AuthContext';
-import { Users, Package, AlertTriangle, BarChart3, CheckCircle, XCircle, Search, ChevronDown, ChevronRight, UserCheck, Loader2 } from 'lucide-react';
+import { Users as UsersIcon, Package, AlertTriangle, BarChart3, CheckCircle, XCircle, Search, ChevronDown, ChevronRight, UserCheck, Loader2 } from 'lucide-react';
 import styles from './Admin.module.css';
 
 export default function AdminPage() {
@@ -91,7 +91,7 @@ export default function AdminPage() {
     localStorage.setItem('safeshop-pending-products', JSON.stringify(updated));
   };
 
-  const [selectedNetworkUser, setSelectedNetworkUser] = React.useState<any>(sellers[0]);
+  const [selectedNetworkUser, setSelectedNetworkUser] = React.useState<any>(null);
 
   return (
     <div className={styles.adminPage}>
@@ -100,7 +100,7 @@ export default function AdminPage() {
           <h1>Admin Dashboard</h1>
           <div className={styles.stats}>
             <div className={styles.statCard}>
-              <Users size={24} />
+              <UsersIcon size={24} />
               <div><span>{sellers.length + globalUsers.filter(u => u.status === 'verified').length}</span><p>Verified Sellers</p></div>
             </div>
             <div className={styles.statCard}>
@@ -187,52 +187,62 @@ export default function AdminPage() {
                 <div className={styles.userSelector}>
                   <span>Select User:</span>
                   <select 
-                    value={selectedNetworkUser?.id} 
+                    value={selectedNetworkUser?.id || ''} 
                     onChange={(e) => {
                       const all = [...sellers, ...globalUsers];
                       setSelectedNetworkUser(all.find(s => s.id === e.target.value));
                     }}
                     className={styles.selectInput}
                   >
+                    <option value="">Select a User</option>
                     {sellers.map(s => <option key={s.id} value={s.id}>{s.name} (Root)</option>)}
                     {globalUsers.map(s => <option key={s.id} value={s.id}>{s.name} ({s.status})</option>)}
                   </select>
                 </div>
               </div>
               
-              <div className={styles.pyramidHeaderInfo}>
-                <div className={styles.userInfoMini}>
-                  <div className={styles.userBadge}>
-                    <div className={styles.avatarMini}>{selectedNetworkUser?.name[0]}</div>
-                    <div>
-                      <h3>{selectedNetworkUser?.name}</h3>
-                      <p>Total Sales: ₹{(selectedNetworkUser?.totalSales * 1000 || 0).toLocaleString()}</p>
+              {selectedNetworkUser ? (
+                <>
+                  <div className={styles.pyramidHeaderInfo}>
+                    <div className={styles.userInfoMini}>
+                      <div className={styles.userBadge}>
+                        <div className={styles.avatarMini}>{selectedNetworkUser?.name[0]}</div>
+                        <div>
+                          <h3>{selectedNetworkUser?.name}</h3>
+                          <p>Total Sales: ₹{(selectedNetworkUser?.totalSales * 1000 || 0).toLocaleString()}</p>
+                        </div>
+                      </div>
+                      <div className={styles.userStatsMini}>
+                        <div className={styles.miniStat}>
+                          <span>Direct</span>
+                          <strong>{globalUsers.filter(u => u.referredBy === selectedNetworkUser?.id).length}</strong>
+                        </div>
+                        <div className={styles.miniStat}>
+                          <span>Indirect</span>
+                          <strong>0</strong>
+                        </div>
+                        <div className={styles.miniStat}>
+                          <span>Role</span>
+                          <strong>{selectedNetworkUser?.role || 'User'}</strong>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  <div className={styles.userStatsMini}>
-                    <div className={styles.miniStat}>
-                      <span>Direct</span>
-                      <strong>{globalUsers.filter(u => u.referredBy === selectedNetworkUser?.id).length}</strong>
-                    </div>
-                    <div className={styles.miniStat}>
-                      <span>Indirect</span>
-                      <strong>0</strong>
-                    </div>
-                    <div className={styles.miniStat}>
-                      <span>Role</span>
-                      <strong>{selectedNetworkUser?.role || 'User'}</strong>
-                    </div>
-                  </div>
-                </div>
-              </div>
 
-              <div className={styles.pyramidArea}>
-                <NetworkTree 
-                  rootUser={{ name: selectedNetworkUser?.name || 'User', id: selectedNetworkUser?.id || 'ID' }} 
-                  referrals={globalUsers.filter(u => u.referredBy === selectedNetworkUser?.id)}
-                  isAdminView={true}
-                />
-              </div>
+                  <div className={styles.pyramidArea}>
+                    <NetworkTree 
+                      rootUser={{ name: selectedNetworkUser?.name || 'User', id: selectedNetworkUser?.id || 'ID' }} 
+                      referrals={globalUsers.filter(u => u.referredBy === selectedNetworkUser?.id)}
+                      isAdminView={true}
+                    />
+                  </div>
+                </>
+              ) : (
+                <div style={{ padding: '60px', textAlign: 'center', color: 'var(--muted)' }}>
+                  <UsersIcon size={48} style={{ marginBottom: '15px', opacity: 0.5 }} />
+                  <p>Please select a user from the dropdown to explore their recruitment network.</p>
+                </div>
+              )}
             </div>
           </div>
         )}

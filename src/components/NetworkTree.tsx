@@ -98,12 +98,18 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
             </div>
           </div>
         ) : (
-          <div className={styles.emptyNodeSlot}>
-             <div className={`${styles.emptyNode} ${styles.activeJoinNode}`} onClick={() => onAddMember?.(parentId, legIdx)}>
-                <PlusCircle size={20} />
-                <span>Join</span>
-             </div>
-          </div>
+          depth <= 1 ? (
+            <div className={styles.emptyNodeSlot}>
+               <div className={`${styles.emptyNode} ${styles.activeJoinNode}`} onClick={() => onAddMember?.(parentId, legIdx)}>
+                  <PlusCircle size={20} />
+                  <span>Join</span>
+               </div>
+            </div>
+          ) : (
+            <div className={styles.miniSlotPlaceholder}>
+               <div className={styles.slotDot} />
+            </div>
+          )
         )}
       </div>
     );

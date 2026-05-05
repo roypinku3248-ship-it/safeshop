@@ -9,6 +9,7 @@ interface User {
   email: string;
   role: 'user' | 'associate' | 'seller' | 'admin';
   avatar?: string;
+  joined_at?: string;
 }
 
 interface AuthContextType {
@@ -40,37 +41,45 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, password: string) => {
     setLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 100));
-
-    // Try to find if this user just registered
-    const savedReg = localStorage.getItem('safeshop-pending-registration');
-    let dynamicName = 'New User';
     
-    if (savedReg) {
-      const regData = JSON.parse(savedReg);
-      if (regData.email === email) {
-        dynamicName = regData.name;
+    try {
+      // 1. Fetch real user data from Supabase
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('email', email)
+        .single();
+
+      if (error || !data) {
+        throw new Error('User not found in database.');
       }
-    } else if (email === 'admin@smstudioapp.com') {
-      dynamicName = 'Root Admin';
-    } else if (email.includes('admin')) {
-      dynamicName = 'Admin Master';
+
+      // 2. Map the database data to our User object
+      const realUser: User = {
+        id: data.id,
+        name: data.name,
+        email: data.email,
+        role: data.role as any || 'user',
+        joined_at: data.joined_at,
+        avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(data.name)}&background=0052cc&color=fff`,
+      };
+
+      setUser(realUser);
+      localStorage.setItem('safeshop-user', JSON.stringify(realUser));
+    } catch (err: any) {
+      console.error('Login Error:', err.message);
+      // Fallback for demo purposes if DB fetch fails
+      const mockUser: User = {
+        id: Math.random().toString(36).substr(2, 9),
+        name: 'SafeShop User',
+        email: email,
+        role: 'user',
+        avatar: `https://ui-avatars.com/api/?name=User&background=0052cc&color=fff`,
+      };
+      setUser(mockUser);
+    } finally {
+      setLoading(false);
     }
-
-    const isAdmin = email === 'admin@smstudioapp.com' || email.includes('admin');
-    const isStandardUser = email === 'customer@gmail.com';
-
-    const mockUser: User = {
-      id: email === 'admin@smstudioapp.com' ? 'SS-ADMIN-001' : (isStandardUser ? 'SS-USER-101' : Math.random().toString(36).substr(2, 9)),
-      name: dynamicName,
-      email: email,
-      role: isAdmin ? 'admin' : (email.includes('seller') ? 'seller' : (email.includes('associate') ? 'associate' : 'user')),
-      avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(dynamicName)}&background=0052cc&color=fff`,
-    };
-
-    setUser(mockUser);
-    localStorage.setItem('safeshop-user', JSON.stringify(mockUser));
-    setLoading(false);
   };
 
   const logout = () => {

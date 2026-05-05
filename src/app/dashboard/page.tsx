@@ -114,7 +114,7 @@ export default function UserDashboard() {
               )}
               <div>
                 <h3>{user.name}</h3>
-                <p>Member since 2023</p>
+                <p>Member since {new Date(user.joined_at || Date.now()).getFullYear()}</p>
               </div>
             </div>
             

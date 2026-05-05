@@ -255,7 +255,55 @@
   color: #94a3b8;
 }
 
+.activeJoinNode {
+  background: white !important;
+  border: 2px dashed var(--primary, #2563eb) !important;
+  cursor: pointer;
+  transition: all 0.3s;
+  opacity: 1 !important;
+}
+
+.activeJoinNode:hover {
+  background: var(--primary-light, #eff6ff) !important;
+  transform: scale(1.05);
+}
+
+.activeJoinNode button {
+  background: var(--primary, #2563eb);
+  color: white;
+  border: none;
+  font-weight: 700;
+}
+
+.joinRow {
+  background: rgba(37, 99, 235, 0.03) !important;
+  border: 1px dashed var(--primary, #2563eb) !important;
+  cursor: pointer;
+}
+
+.joinRow:hover {
+  background: white !important;
+  box-shadow: 0 10px 20px rgba(37, 99, 235, 0.1) !important;
+}
+
+.joinAvatar {
+  background: var(--primary, #2563eb) !important;
+  color: white !important;
+}
+
+.miniJoinBtnAction {
+  background: var(--primary, #2563eb);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+

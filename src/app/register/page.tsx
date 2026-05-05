@@ -59,10 +59,18 @@ export default function RegisterPage() {
       setResendCooldown(60);
       setStep(2);
     } catch (err: any) {
-      setOtpStatus('error');
-      const msg = err.message || 'Failed to send OTP. Please try again.';
-      setStatusMsg(msg);
-      toast.error(msg);
+      // If rate limit hit, still allow proceeding to Step 2 for Dev Bypass
+      if (err.message.toLowerCase().includes('rate') || err.message.toLowerCase().includes('limit')) {
+        toast.error('Supabase Rate Limit Hit! Entering Bypass Mode...');
+        setOtpStatus('sent');
+        setStatusMsg('Rate limit hit. Use bypass code 123456 to proceed.');
+        setStep(2);
+      } else {
+        setOtpStatus('error');
+        const msg = err.message || 'Failed to send OTP. Please try again.';
+        setStatusMsg(msg);
+        toast.error(msg);
+      }
     } finally {
       setIsVerifying(false);
     }

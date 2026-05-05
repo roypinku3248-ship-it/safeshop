@@ -22,6 +22,8 @@ interface NetworkTreeProps {
   fullTeam: any[];
   onAddMember?: (parentId?: string, legIndex?: number) => void;
   isAdminView?: boolean;
+  isFullScreen?: boolean;
+  setIsFullScreen?: (val: boolean) => void;
 }
 
 export const NetworkTree: React.FC<NetworkTreeProps> = ({ 
@@ -29,7 +31,9 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
   directReferrals = [], 
   fullTeam = [],
   onAddMember,
-  isAdminView = false 
+  isAdminView = false,
+  isFullScreen: externalIsFullScreen,
+  setIsFullScreen: externalSetIsFullScreen
 }) => {
   const [viewType, setViewType] = React.useState<'pyramid' | 'list'>('pyramid');
   
@@ -37,7 +41,11 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
   const [currentRootId, setCurrentRootId] = React.useState(rootUser.id);
   const [navigationStack, setNavigationStack] = React.useState<string[]>([]);
   const [zoom, setZoom] = React.useState(0.8);
-  const [isFullScreen, setIsFullScreen] = React.useState(false);
+  
+  // Local state if props not provided
+  const [localIsFullScreen, setLocalIsFullScreen] = React.useState(false);
+  const isFullScreen = externalIsFullScreen !== undefined ? externalIsFullScreen : localIsFullScreen;
+  const setIsFullScreen = externalSetIsFullScreen || setLocalIsFullScreen;
   
   // Find the current user being viewed
   const currentRoot = fullTeam.find(u => u.id === currentRootId) || rootUser;
@@ -185,14 +193,18 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
           </div>
         </div>
 
-        <button 
-          className={styles.focusBtn} 
-          onClick={() => setIsFullScreen(!isFullScreen)}
-          title={isFullScreen ? "Exit Focus Mode" : "Focus on Pyramid"}
-        >
-          {isFullScreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
-          <span>{isFullScreen ? "Close Focus" : "Focus Mode"}</span>
-        </button>
+        <div className={styles.headerRight}>
+          {isFullScreen && (
+            <button 
+              className={styles.focusBtn} 
+              onClick={() => setIsFullScreen(false)}
+              title="Exit Focus Mode"
+            >
+              <Minimize2 size={18} />
+              <span>Close Focus</span>
+            </button>
+          )}
+        </div>
         
         {viewType === 'pyramid' && (
           <div className={styles.floatingZoom}>

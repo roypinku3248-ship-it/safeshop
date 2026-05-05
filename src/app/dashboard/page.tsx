@@ -4,7 +4,7 @@ import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
-import { Package, ShieldCheck, MapPin, Settings, Heart, LogOut, Clock, Truck, Loader2, IndianRupee, TrendingUp, Users as UsersIcon, Award, Plus, ShieldAlert, PlusCircle } from 'lucide-react';
+import { Package, ShieldCheck, MapPin, Settings, Heart, LogOut, Clock, Truck, Loader2, IndianRupee, TrendingUp, Users as UsersIcon, Award, Plus, ShieldAlert, PlusCircle, Maximize2, Minimize2 } from 'lucide-react';
 import { NetworkTree } from '@/components/NetworkTree';
 import { supabase } from '@/lib/supabase';
 import styles from './Dashboard.module.css';
@@ -29,6 +29,7 @@ export default function UserDashboard() {
   });
 
   const [isAddingMember, setIsAddingMember] = React.useState(false);
+  const [isFullScreen, setIsFullScreen] = React.useState(false);
   const [registering, setRegistering] = React.useState(false);
   const [newMemberData, setNewMemberData] = React.useState({
     name: '',
@@ -302,18 +303,29 @@ export default function UserDashboard() {
                           directReferrals={referrals}
                           fullTeam={fullTeam}
                           onAddMember={() => setIsAddingMember(true)}
+                          isFullScreen={isFullScreen}
+                          setIsFullScreen={setIsFullScreen}
                         />
                       </div>
 
                       {/* Move Button and Form here to the bottom */}
-                      <div style={{ marginTop: '40px', textAlign: 'center' }}>
+                      <div className={styles.treeActions}>
                         {!isAddingMember ? (
-                          <button 
-                            className={styles.addMemberBtn}
-                            onClick={() => setIsAddingMember(true)}
-                          >
-                            <PlusCircle size={20} /> Add New Direct Member
-                          </button>
+                          <div className={styles.actionRow}>
+                            <button 
+                              className={styles.addMemberBtn}
+                              onClick={() => setIsAddingMember(true)}
+                            >
+                              <PlusCircle size={20} /> Add New Direct Member
+                            </button>
+                            <button 
+                              className={styles.focusActionBtn}
+                              onClick={() => setIsFullScreen(!isFullScreen)}
+                            >
+                              {isFullScreen ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
+                              {isFullScreen ? "Close Focus Mode" : "View Full Pyramid"}
+                            </button>
+                          </div>
                         ) : (
                           <button 
                             className={styles.cancelBtn}

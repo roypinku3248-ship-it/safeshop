@@ -719,6 +719,39 @@
   font-size: 0.9rem;
 }
 
+.treeActions {
+  margin-top: 40px;
+  display: flex;
+  justify-content: center;
+}
+
+.actionRow {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.focusActionBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: white;
+  color: #1e293b;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  border: 2px solid #e2e8f0;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.focusActionBtn:hover {
+  background: #f8fafc;
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
 .treeContainer {
   width: 100%;
   margin-top: 20px;

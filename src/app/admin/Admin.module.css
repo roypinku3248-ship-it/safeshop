@@ -336,6 +336,10 @@
 .approveBtn {
   background: var(--primary) !important;
   color: white !important;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
 }
 
 .rejectBtn {
@@ -629,16 +633,6 @@
   gap: 8px;
 }
 
-.approveBtn {
-  background: var(--primary);
-  color: white;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 0.8rem;
-  cursor: pointer;
-}
-
 .deleteBtn {
   background: rgba(255, 71, 87, 0.1);
   color: #ff4757;
@@ -668,6 +662,10 @@
   cursor: pointer;
 }
 
+.viewBtn:hover {
+  background: #f1f5f9;
+}
+
 /* Modal Styles */
 .modalOverlay {
   position: fixed;
@@ -684,12 +682,12 @@
 }
 
 .deleteModal {
-  background: var(--card-bg);
+  background: white;
   padding: 30px;
   border-radius: 16px;
   width: 100%;
   max-width: 400px;
-  border: 1px solid var(--border);
+  border: 1px solid #e2e8f0;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
   text-align: center;
 }
@@ -700,17 +698,17 @@
 }
 
 .deleteModal p {
-  color: var(--muted);
+  color: #64748b;
   margin-bottom: 20px;
 }
 
 .modalInput {
   width: 100%;
   padding: 12px;
-  background: var(--bg);
-  border: 1px solid var(--border);
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
   border-radius: 8px;
-  color: var(--text);
+  color: #1e293b;
   margin-bottom: 20px;
   text-align: center;
   font-size: 1.1rem;
@@ -724,41 +722,21 @@
 
 .modalActions button {
   flex: 1;
-  padding: 10px;
+  padding: 12px;
   border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
+  border: none;
 }
 
 .cancelBtn {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  color: var(--text);
+  background: #f1f5f9;
+  color: #475569;
 }
 
 .confirmDeleteBtn {
   background: #ff4757;
-  border: none;
   color: white;
-}
-
-.profileBtn {
-  background: white;
-  border: 1px solid var(--border);
-  color: var(--muted);
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 0.8rem;
-  font-weight: 700;
-}
-
-.viewBtn:hover {
-  background: var(--primary-hover);
-}
-
-.profileBtn:hover {
-  border-color: var(--primary);
-  color: var(--primary);
 }
 
 .referrerBadge {

@@ -451,10 +451,6 @@ export default function UserDashboard() {
                               <span>PAN Card</span>
                               <input type="file" accept="image/*" />
                             </div>
-                            <div className={styles.fileBox}>
-                              <span>Passbook/Cheque</span>
-                              <input type="file" accept="image/*" />
-                            </div>
                           </div>
                           
                           <button 

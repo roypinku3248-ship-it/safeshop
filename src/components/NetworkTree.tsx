@@ -29,7 +29,7 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
   onAddMember,
   isAdminView = false 
 }) => {
-  const [viewType, setViewType] = React.useState<'pyramid' | 'list'>('pyramid');
+  const [viewType, setViewType] = React.useState<'pyramid' | 'list'>('list');
 
   const displayedUsers = referrals.slice(0, 50);
 

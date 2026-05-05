@@ -331,6 +331,26 @@ export default function UserDashboard() {
                               throw new Error('Please sync your account first.');
                             }
 
+                            // 1. Smart Spillover: Find the first available slot in your network
+                            const findSpilloverSlot = (rootId: string, team: any[]) => {
+                              const queue = [rootId];
+                              while (queue.length > 0) {
+                                const currentId = queue.shift()!;
+                                const children = team.filter(u => u.referred_by === currentId);
+                                
+                                if (children.length < 3) {
+                                  return currentId; // Found a parent with an empty slot!
+                                }
+                                
+                                // Add children to queue to check the next level down
+                                // We sort them to ensure we fill Leg 1 first, then 2, then 3
+                                children.forEach(child => queue.push(child.id));
+                              }
+                              return rootId;
+                            };
+
+                            const parentId = findSpilloverSlot(currentUser.id, fullTeam);
+
                             const newUserId = `SS-USR-${Math.floor(Math.random() * 100000)}`;
                             const newRef = {
                               id: newUserId,
@@ -339,7 +359,8 @@ export default function UserDashboard() {
                               password: 'password123',
                               role: 'associate',
                               status: 'pending',
-                              referred_by: currentUser.id,
+                              referred_by: parentId, // PLACED IN THE SPILLOVER SLOT
+                              sponsor_id: currentUser.id, // Keep track of who actually invited them
                               total_sales: 0,
                               phone: newMemberData.phone,
                               city: newMemberData.city,

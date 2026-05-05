@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { User, Users, ChevronRight, Share2, TrendingUp, PlusCircle, Maximize2, Minimize2, ShieldCheck } from 'lucide-react';
+import { User, Users, ChevronRight, Share2, TrendingUp, PlusCircle, Maximize2, Minimize2 } from 'lucide-react';
 import styles from './NetworkTree.module.css';
 
 interface Referral {
@@ -86,8 +86,30 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
   };
 
   const renderNode = (user: any, parentId: string, legIdx: number, depth: number = 0) => {
-    // Hyper-Resilient matching for children
+    // 1. Get children of this node
     const children = user ? getSubTree(user.id) : [];
+    
+    // 2. Sequential Leg Locking Logic:
+    // If we are at depth > 0 (meaning we are looking at children of a child)
+    // We check if the PREVIOUS leg of the parent is full.
+    let isLocked = false;
+    if (depth === 1 && legIdx > 0) {
+      // Find the parent node in fullTeam
+      const parentNode = fullTeam.find(u => u.id === parentId);
+      if (parentNode) {
+        const parentChildren = getSubTree(parentId);
+        // Look at the node in the previous slot
+        const previousLegNode = parentChildren[legIdx - 1];
+        if (!previousLegNode) {
+          isLocked = true; // Previous leg doesn't even have a root yet
+        } else {
+          const prevLegChildren = getSubTree(previousLegNode.id);
+          if (prevLegChildren.length < 3) {
+            isLocked = true; // Previous leg is not full yet (needs 3 members)
+          }
+        }
+      }
+    }
     
     if (depth > 2) return null; 
 
@@ -96,14 +118,14 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
         {depth === 0 && <div className={styles.legLabel}>Slot {legIdx + 1}</div>}
         
         {user ? (
-          <div className={styles.nodeGroup}>
-            <div className={depth === 0 ? styles.nodeCard : styles.legCard} onClick={() => handleDrillDown(user.id)}>
+          <div className={styles.nodeGroup} style={{ opacity: isLocked ? 0.5 : 1, filter: isLocked ? 'grayscale(1)' : 'none' }}>
+            <div className={depth === 0 ? styles.nodeCard : styles.legCard} onClick={() => !isLocked && handleDrillDown(user.id)}>
               <div className={styles.miniAvatar}>{user.name ? user.name[0] : '?'}</div>
               <div className={styles.nodeInfo}>
                 <strong style={{ fontSize: '0.8rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100px' }}>{user.name}</strong>
                 <span style={{ fontSize: '0.55rem', color: '#94a3b8' }}>ID: {user.id?.toString().slice(-6)}</span>
                 <span className={user.status === 'verified' ? styles.verified : styles.pending}>
-                  {user.status || 'Pending'}
+                  {isLocked ? 'Locked' : (user.status || 'Pending')}
                 </span>
               </div>
             </div>
@@ -116,46 +138,15 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
           </div>
         ) : (
           <div className={styles.emptyNodeSlot}>
-             {(() => {
-               // Full Branch Completion Locking Logic:
-               // We check the SIBLINGS (other children of the parentId)
-               const siblings = getSubTree(parentId);
-               
-               let isLocked = false;
-               let lockReason = "";
-
-               if (legIdx > 0) {
-                 const prevMember = siblings[legIdx - 1];
-                 if (!prevMember) {
-                   isLocked = true;
-                   lockReason = `Fill Slot ${legIdx} first`;
-                 } else {
-                   const prevMemberSubTeam = getSubTree(prevMember.id);
-                   if (prevMemberSubTeam.length < 3) {
-                     isLocked = true;
-                     lockReason = `Complete ${prevMember.name}'s team (3 members) first`;
-                   }
-                 }
-               }
-               
-               if (isLocked) {
-                 return (
-                   <div className={`${styles.emptyNode} ${styles.lockedNode}`}>
-                      <ShieldCheck size={20} opacity={0.3} />
-                      <span>Locked</span>
-                      <p style={{ fontSize: '0.5rem', opacity: 0.5, textAlign: 'center', padding: '0 10px' }}>{lockReason}</p>
-                   </div>
-                 );
-               }
-
-               return (
-                 <div className={`${styles.emptyNode} ${styles.activeJoinNode}`} onClick={() => onAddMember?.(parentId, legIdx)}>
-                    <PlusCircle size={20} />
-                    <span>Join</span>
-                    <span style={{ fontSize: '0.5rem', opacity: 0.5, marginTop: '4px' }}>to {parentId?.toString().slice(-6)}</span>
-                 </div>
-               );
-             })()}
+             <div 
+                className={`${styles.emptyNode} ${isLocked ? styles.lockedNode : styles.activeJoinNode}`} 
+                onClick={() => !isLocked && onAddMember?.(parentId, legIdx)}
+                style={{ cursor: isLocked ? 'not-allowed' : 'pointer' }}
+             >
+                {isLocked ? <ShieldCheck size={20} opacity={0.3} /> : <PlusCircle size={20} />}
+                <span>{isLocked ? 'Locked' : 'Join'}</span>
+                {!isLocked && <span style={{ fontSize: '0.5rem', opacity: 0.5, marginTop: '4px' }}>to {parentId?.toString().slice(-6)}</span>}
+             </div>
           </div>
         )}
       </div>

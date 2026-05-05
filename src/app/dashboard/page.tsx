@@ -275,35 +275,46 @@ export default function UserDashboard() {
                       {isAddingMember && (
                         <form className={styles.addMemberForm} onSubmit={async (e) => {
                           e.preventDefault();
-                          if (!newMemberData.email || !newMemberData.name) {
-                            alert('Please enter at least Name and Email');
-                            return;
-                          }
+                            if (!newMemberData.email || !newMemberData.name) {
+                              alert('Please enter at least Name and Email');
+                              return;
+                            }
 
-                          setRegistering(true);
-                          const newUserId = `SS-USR-${Math.floor(Math.random() * 100000)}`;
-                          const newRef = {
-                            id: newUserId,
-                            name: newMemberData.name,
-                            email: newMemberData.email,
-                            password: 'password123',
-                            role: 'associate',
-                            status: 'pending',
-                            referred_by: user.id,
-                            total_sales: 0,
-                            phone: newMemberData.phone,
-                            city: newMemberData.city,
-                            ps: newMemberData.ps,
-                            po: newMemberData.po,
-                            joined_at: new Date().toISOString()
-                          };
-                          
-                          try {
-                            const { error } = await supabase
-                              .from('users')
-                              .insert([newRef]);
+                            setRegistering(true);
+                            try {
+                              // 1. Get your REAL database ID (to fix the foreign key error)
+                              const { data: currentUser, error: userError } = await supabase
+                                .from('users')
+                                .select('id')
+                                .eq('email', user.email)
+                                .single();
 
-                            if (error) throw error;
+                              if (userError || !currentUser) {
+                                throw new Error('Your account is not fully synced with the database. Please Log Out and Log In again.');
+                              }
+
+                              const newUserId = `SS-USR-${Math.floor(Math.random() * 100000)}`;
+                              const newRef = {
+                                id: newUserId,
+                                name: newMemberData.name,
+                                email: newMemberData.email,
+                                password: 'password123',
+                                role: 'associate',
+                                status: 'pending',
+                                referred_by: currentUser.id, // Use the REAL ID from DB
+                                total_sales: 0,
+                                phone: newMemberData.phone,
+                                city: newMemberData.city,
+                                ps: newMemberData.ps,
+                                po: newMemberData.po,
+                                joined_at: new Date().toISOString()
+                              };
+                              
+                              const { error: insertError } = await supabase
+                                .from('users')
+                                .insert([newRef]);
+
+                              if (insertError) throw insertError;
 
                             alert(`🎉 SUCCESS! ${newMemberData.name} is now registered under you.`);
                             setIsAddingMember(false);

@@ -115,14 +115,19 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
 
     return (
       <div className={styles.nodeWrapper} key={user?.id || `empty-${parentId}-${legIdx}`}>
-        {depth === 0 && <div className={styles.legLabel}>Slot {legIdx + 1}</div>}
+        {depth === 0 && <div className={styles.legLabel}>L{legIdx + 1}</div>}
         
         {user ? (
           <div className={styles.nodeGroup} style={{ opacity: isLocked ? 0.5 : 1, filter: isLocked ? 'grayscale(1)' : 'none' }}>
             <div className={depth === 0 ? styles.nodeCard : styles.legCard} onClick={() => !isLocked && handleDrillDown(user.id)}>
               <div className={styles.miniAvatar}>{user.name ? user.name[0] : '?'}</div>
               <div className={styles.nodeInfo}>
-                <strong style={{ fontSize: '0.8rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100px' }}>{user.name}</strong>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <strong style={{ fontSize: '0.8rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '80px' }}>{user.name}</strong>
+                  {children.length === 3 && (
+                    <span title="Level Complete" style={{ background: '#10b981', color: 'white', fontSize: '10px', padding: '1px 4px', borderRadius: '4px', fontWeight: 'bold' }}>FULL</span>
+                  )}
+                </div>
                 <span style={{ fontSize: '0.55rem', color: '#94a3b8' }}>ID: {user.id?.toString().slice(-6)}</span>
                 <span className={user.status === 'verified' ? styles.verified : styles.pending}>
                   {isLocked ? 'Locked' : (user.status || 'Pending')}

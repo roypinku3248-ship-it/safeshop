@@ -52,7 +52,10 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
 
   // Helper to build the tree recursively
   const getSubTree = (userId: string) => {
-    return fullTeam.filter(u => u.referred_by === userId);
+    if (!userId) return [];
+    return fullTeam.filter(u => 
+      u.referred_by?.toString().toLowerCase() === userId.toString().toLowerCase()
+    );
   };
 
   const handleDrillDown = (userId: string) => {
@@ -75,15 +78,16 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
     if (depth > 2) return null; 
 
     return (
-      <div className={styles.nodeWrapper} key={legIdx}>
+      <div className={styles.nodeWrapper} key={user?.id || `empty-${legIdx}`}>
         {depth === 0 && <div className={styles.legLabel}>Leg {legIdx + 1}</div>}
         
         {user ? (
           <div className={styles.nodeGroup}>
             <div className={depth === 0 ? styles.nodeCard : styles.legCard} onClick={() => handleDrillDown(user.id)}>
-              <div className={styles.miniAvatar}>{user.name[0]}</div>
+              <div className={styles.miniAvatar}>{user.name ? user.name[0] : '?'}</div>
               <div className={styles.nodeInfo}>
                 <strong>{user.name}</strong>
+                <span className={styles.nodeId} style={{ fontSize: '0.6rem', color: '#94a3b8', display: 'block' }}>ID: {user.id.slice(-6)}</span>
                 <span className={user.status === 'verified' ? styles.verified : styles.pending}>
                   {user.status || 'Pending'}
                 </span>
@@ -98,18 +102,12 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
             </div>
           </div>
         ) : (
-          depth <= 1 ? (
-            <div className={styles.emptyNodeSlot}>
-               <div className={`${styles.emptyNode} ${styles.activeJoinNode}`} onClick={() => onAddMember?.(parentId, legIdx)}>
-                  <PlusCircle size={20} />
-                  <span>Join</span>
-               </div>
-            </div>
-          ) : (
-            <div className={styles.miniSlotPlaceholder}>
-               <div className={styles.slotDot} />
-            </div>
-          )
+          <div className={styles.emptyNodeSlot}>
+             <div className={`${styles.emptyNode} ${styles.activeJoinNode}`} onClick={() => onAddMember?.(parentId, legIdx)}>
+                <PlusCircle size={20} />
+                <span>Join</span>
+             </div>
+          </div>
         )}
       </div>
     );

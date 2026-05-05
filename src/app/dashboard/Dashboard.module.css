@@ -623,6 +623,62 @@
   gap: 15px;
 }
 
+.fileUploadGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.fileBox {
+    background: #f8fafc;
+    border: 1px dashed #cbd5e1;
+    padding: 15px;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.fileBox span {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+}
+
+.fileBox input {
+    font-size: 0.8rem;
+    width: 100%;
+}
+
+.miniFormGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.formItem {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.formItem label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #475569;
+}
+
+.formItem input {
+    padding: 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 0.95rem;
+}
+
 .supportLink {
   font-size: 0.9rem;
   color: var(--primary);

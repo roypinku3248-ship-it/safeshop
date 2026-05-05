@@ -92,21 +92,22 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
     // 2. Sequential Leg Locking Logic:
     let isCurrentLegLocked = false;
     
-    // We only enforce sequential locking on the CURRENT VIEWED ROOT'S primary legs (depth 1)
+    // Rule: Subsequent legs (L:1, L:2) of the VIEWED ROOT are locked if previous legs aren't full
     if (depth === 1 && legIdx > 0) {
       const topLevelChildren = getSubTree(currentRoot.id);
-      const previousSibling = topLevelChildren[legIdx - 1];
+      const previousLegMember = topLevelChildren[legIdx - 1];
       
-      if (!previousSibling) {
+      if (!previousLegMember) {
         isCurrentLegLocked = true;
       } else {
-        const prevSiblingTeam = getSubTree(previousSibling.id);
-        if (prevSiblingTeam.length < 3) {
+        const prevLegTeam = getSubTree(previousLegMember.id);
+        if (prevLegTeam.length < 3) {
           isCurrentLegLocked = true;
         }
       }
     }
 
+    // FINAL LOCK STATE: Locked if this leg is restricted OR the parent branch was already restricted
     const isLocked = isParentBranchLocked || isCurrentLegLocked;
     
     if (depth > 2) return null; 
@@ -122,7 +123,7 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
               <div className={styles.nodeInfo}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
                   <strong style={{ fontSize: '0.8rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '80px' }}>{user.name}</strong>
-                  <span style={{ fontSize: '0.45rem', opacity: 0.4 }}>D:{depth} L:{legIdx}</span>
+                  <span style={{ fontSize: '0.45rem', opacity: 0.4 }}>D:{depth} L:{legIdx} LK:{isLocked ? 'T' : 'F'}</span>
                 </div>
                 <span style={{ fontSize: '0.55rem', color: '#94a3b8' }}>ID: {user.id?.toString().slice(-6)}</span>
                 <span className={user.status === 'verified' ? styles.verified : styles.pending}>
@@ -147,7 +148,7 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
                 {isLocked ? <ShieldCheck size={20} opacity={0.3} /> : <PlusCircle size={20} />}
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                    <span style={{ fontSize: '0.75rem', fontWeight: 700 }}>{isLocked ? 'Locked' : 'Join'}</span>
-                   <span style={{ fontSize: '0.4rem', opacity: 0.3 }}>D:{depth} L:{legIdx}</span>
+                   <span style={{ fontSize: '0.4rem', opacity: 0.3 }}>D:{depth} L:{legIdx} LK:{isLocked ? 'T' : 'F'}</span>
                 </div>
                 {!isLocked && <span style={{ fontSize: '0.5rem', opacity: 0.5, marginTop: '4px' }}>to {parentId?.toString().slice(-6)}</span>}
              </div>

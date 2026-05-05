@@ -272,6 +272,24 @@ export default function UserDashboard() {
                   <p>Track your recruitment rewards and indirect sales commissions.</p>
                 </div>
 
+                <div className={styles.networkOverview} style={{ background: 'white', padding: '15px 25px', borderRadius: '12px', border: '1px solid #e2e8f0', marginBottom: '25px', display: 'flex', gap: '30px', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{ background: 'rgba(37, 99, 235, 0.1)', color: 'var(--primary)', padding: '8px', borderRadius: '8px' }}><UsersIcon size={20} /></div>
+                    <div>
+                      <span style={{ fontSize: '0.8rem', color: '#64748b', display: 'block' }}>Direct Referrals</span>
+                      <strong style={{ fontSize: '1.1rem' }}>{referrals.length}</strong>
+                    </div>
+                  </div>
+                  <div style={{ width: '1px', height: '30px', background: '#e2e8f0' }} />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{ background: 'rgba(0, 135, 90, 0.1)', color: 'var(--secondary)', padding: '8px', borderRadius: '8px' }}><TrendingUp size={20} /></div>
+                    <div>
+                      <span style={{ fontSize: '0.8rem', color: '#64748b', display: 'block' }}>Total Team Size</span>
+                      <strong style={{ fontSize: '1.1rem' }}>{fullTeam.length}</strong>
+                    </div>
+                  </div>
+                </div>
+
                 <div className={styles.mlmStats}>
                   <div className={styles.mlmCard}>
                     <div className={styles.mlmIcon} style={{ background: '#e3f2fd', color: '#1976d2' }}><TrendingUp size={24} /></div>

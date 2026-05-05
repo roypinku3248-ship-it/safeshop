@@ -328,16 +328,8 @@ export default function UserDashboard() {
                     <p className={styles.subtext}>Visual representation of your direct sales team (C, D, E).</p>
                     
                     <div className={styles.visualTreeSection}>
-                      <div className={styles.treeHeader} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div className={styles.treeHeader}>
                         <h3>Pyramid Business Structure</h3>
-                        <button 
-                          className={styles.focusActionBtn}
-                          onClick={() => setIsFullScreen(!isFullScreen)}
-                          style={{ padding: '8px 16px', fontSize: '0.85rem', borderRadius: '10px', background: 'var(--primary)', color: 'white', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold' }}
-                        >
-                          {isFullScreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
-                          {isFullScreen ? "Close Focus" : "View Full Pyramid"}
-                        </button>
                       </div>
 
                       <div className={styles.treeContainer}>

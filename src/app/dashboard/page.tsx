@@ -349,6 +349,41 @@ export default function UserDashboard() {
                         )}
                       </div>
 
+                      {/* Flat Team List for Debugging */}
+                      <div className={styles.flatTeamList} style={{ marginTop: '40px', textAlign: 'left', background: 'white', padding: '25px', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+                        <h4 style={{ marginBottom: '15px', color: '#1e293b' }}>All Registered Team Members ({fullTeam.length})</h4>
+                        <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+                            <thead style={{ background: '#f8fafc', position: 'sticky', top: 0 }}>
+                              <tr>
+                                <th style={{ padding: '10px', textAlign: 'left', borderBottom: '1px solid #e2e8f0' }}>Name</th>
+                                <th style={{ padding: '10px', textAlign: 'left', borderBottom: '1px solid #e2e8f0' }}>ID (Suffix)</th>
+                                <th style={{ padding: '10px', textAlign: 'left', borderBottom: '1px solid #e2e8f0' }}>Sponsor ID</th>
+                                <th style={{ padding: '10px', textAlign: 'left', borderBottom: '1px solid #e2e8f0' }}>Status</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {fullTeam.length === 0 ? (
+                                <tr><td colSpan={4} style={{ padding: '20px', textAlign: 'center', color: '#64748b' }}>No members found in database</td></tr>
+                              ) : (
+                                fullTeam.map((m: any) => (
+                                  <tr key={m.id}>
+                                    <td style={{ padding: '10px', borderBottom: '1px solid #f1f5f9' }}>{m.name}</td>
+                                    <td style={{ padding: '10px', borderBottom: '1px solid #f1f5f9' }}>...{m.id.slice(-6)}</td>
+                                    <td style={{ padding: '10px', borderBottom: '1px solid #f1f5f9' }}>{m.referred_by ? `...${m.referred_by.slice(-6)}` : 'None (Root)'}</td>
+                                    <td style={{ padding: '10px', borderBottom: '1px solid #f1f5f9' }}>
+                                      <span style={{ padding: '2px 8px', borderRadius: '10px', fontSize: '0.7rem', background: m.status === 'verified' ? '#e8f5e9' : '#fff3e0', color: m.status === 'verified' ? '#2e7d32' : '#af5200' }}>
+                                        {m.status}
+                                      </span>
+                                    </td>
+                                  </tr>
+                                ))
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+
                       {isAddingMember && (
                         <div className={styles.modalOverlay}>
                           <div className={styles.modalContent}>

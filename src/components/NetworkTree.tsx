@@ -209,7 +209,7 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
           onTouchMove={handleTouchMove}
           onTouchEnd={stopDragging}
         >
-          <div className={styles.pyramidLayout} style={{ transform: `scale(${zoom})`, transformOrigin: 'top center' }}>
+          <div className={styles.pyramidLayout} style={{ zoom: zoom }}>
             <div className={styles.mainRoot}>
               <div className={styles.rootAvatar}>{(currentRoot.name || 'U')[0]}</div>
               <h3>{currentRoot.name}</h3>

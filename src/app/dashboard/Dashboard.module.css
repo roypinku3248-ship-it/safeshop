@@ -693,6 +693,19 @@
   gap: 20px;
 }
 
+.formItem {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.formItem label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #64748b;
+  margin-left: 5px;
+}
+
 .miniFormGrid input {
   padding: 12px 18px;
   border: 1px solid #e2e8f0;
@@ -700,6 +713,7 @@
   font-size: 0.95rem;
   background: #f8fafc;
   transition: all 0.3s;
+  width: 100%;
 }
 
 .miniFormGrid input:focus {

@@ -273,15 +273,75 @@ export default function UserDashboard() {
                       </div>
 
                       {isAddingMember && (
-                        <div className={styles.addMemberForm}>
+                        <form className={styles.addMemberForm} onSubmit={async (e) => {
+                          e.preventDefault();
+                          if (!newMemberData.email || !newMemberData.name) {
+                            alert('Please enter at least Name and Email');
+                            return;
+                          }
+
+                          setRegistering(true);
+                          const newUserId = `SS-USR-${Math.floor(Math.random() * 100000)}`;
+                          const newRef = {
+                            id: newUserId,
+                            name: newMemberData.name,
+                            email: newMemberData.email,
+                            password: 'password123',
+                            role: 'associate',
+                            status: 'pending',
+                            referred_by: user.id,
+                            total_sales: 0,
+                            phone: newMemberData.phone,
+                            city: newMemberData.city,
+                            ps: newMemberData.ps,
+                            po: newMemberData.po,
+                            joined_at: new Date().toISOString()
+                          };
+                          
+                          try {
+                            const { error } = await supabase
+                              .from('users')
+                              .insert([newRef]);
+
+                            if (error) throw error;
+
+                            alert(`🎉 SUCCESS! ${newMemberData.name} is now registered under you.`);
+                            setIsAddingMember(false);
+                            setNewMemberData({ name: '', email: '', phone: '', city: '', ps: '', po: '' });
+                            window.location.reload(); 
+                          } catch (err: any) {
+                            console.error('Registration failed:', err);
+                            alert('⚠️ DATABASE ERROR: ' + (err.message || 'Check your internet or RLS settings'));
+                          } finally {
+                            setRegistering(false);
+                          }
+                        }}>
                           <h4>Quick Register Member</h4>
                           <div className={styles.miniFormGrid}>
-                            <input type="text" placeholder="Full Name" value={newMemberData.name} onChange={(e) => setNewMemberData({...newMemberData, name: e.target.value})} />
-                            <input type="email" placeholder="Email" value={newMemberData.email} onChange={(e) => setNewMemberData({...newMemberData, email: e.target.value})} />
-                            <input type="tel" placeholder="Phone Number" value={newMemberData.phone} onChange={(e) => setNewMemberData({...newMemberData, phone: e.target.value})} />
-                            <input type="text" placeholder="City" value={newMemberData.city} onChange={(e) => setNewMemberData({...newMemberData, city: e.target.value})} />
-                            <input type="text" placeholder="Police Station (PS)" value={newMemberData.ps} onChange={(e) => setNewMemberData({...newMemberData, ps: e.target.value})} />
-                            <input type="text" placeholder="Post Office (PO)" value={newMemberData.po} onChange={(e) => setNewMemberData({...newMemberData, po: e.target.value})} />
+                            <div className={styles.formItem}>
+                              <label>Full Name</label>
+                              <input type="text" placeholder="John Doe" required value={newMemberData.name} onChange={(e) => setNewMemberData({...newMemberData, name: e.target.value})} />
+                            </div>
+                            <div className={styles.formItem}>
+                              <label>Email Address</label>
+                              <input type="email" placeholder="john@example.com" required value={newMemberData.email} onChange={(e) => setNewMemberData({...newMemberData, email: e.target.value})} />
+                            </div>
+                            <div className={styles.formItem}>
+                              <label>Phone Number</label>
+                              <input type="tel" placeholder="9876543210" required value={newMemberData.phone} onChange={(e) => setNewMemberData({...newMemberData, phone: e.target.value})} />
+                            </div>
+                            <div className={styles.formItem}>
+                              <label>City/Village</label>
+                              <input type="text" placeholder="Kolkata" value={newMemberData.city} onChange={(e) => setNewMemberData({...newMemberData, city: e.target.value})} />
+                            </div>
+                            <div className={styles.formItem}>
+                              <label>Police Station (PS)</label>
+                              <input type="text" placeholder="PS Name" value={newMemberData.ps} onChange={(e) => setNewMemberData({...newMemberData, ps: e.target.value})} />
+                            </div>
+                            <div className={styles.formItem}>
+                              <label>Post Office (PO)</label>
+                              <input type="text" placeholder="PO Name" value={newMemberData.po} onChange={(e) => setNewMemberData({...newMemberData, po: e.target.value})} />
+                            </div>
                           </div>
                           
                           <div className={styles.registrationUploads}>
@@ -308,55 +368,14 @@ export default function UserDashboard() {
                           </div>
 
                           <button 
+                            type="submit"
                             className="gradient-primary" 
                             disabled={registering}
-                            style={{ marginTop: '15px', padding: '12px 24px', borderRadius: '8px', color: 'white', fontWeight: 'bold', width: '100%' }}
-                            onClick={async () => {
-                              if (!newMemberData.email || !newMemberData.name) {
-                                alert('Please enter at least Name and Email');
-                                return;
-                              }
-
-                              setRegistering(true);
-                              const newUserId = `SS-USR-${Math.floor(Math.random() * 100000)}`;
-                              const newRef = {
-                                id: newUserId,
-                                name: newMemberData.name,
-                                email: newMemberData.email,
-                                password: 'password123',
-                                role: 'associate',
-                                status: 'pending',
-                                referred_by: user.id,
-                                total_sales: 0,
-                                phone: newMemberData.phone,
-                                city: newMemberData.city,
-                                ps: newMemberData.ps,
-                                po: newMemberData.po,
-                                joined_at: new Date().toISOString()
-                              };
-                              
-                              try {
-                                const { error } = await supabase
-                                  .from('users')
-                                  .insert([newRef]);
-
-                                if (error) throw error;
-
-                                alert(`🎉 Success! ${newMemberData.name} has been joined to your network.`);
-                                setIsAddingMember(false);
-                                setNewMemberData({ name: '', email: '', phone: '', city: '', ps: '', po: '' });
-                                window.location.reload(); 
-                              } catch (err: any) {
-                                console.error('Reg error:', err);
-                                alert('Failed to register: ' + (err.message || 'Unknown database error'));
-                              } finally {
-                                setRegistering(false);
-                              }
-                            }}
+                            style={{ marginTop: '20px', padding: '14px 24px', borderRadius: '12px', color: 'white', fontWeight: 'bold', width: '100%', cursor: 'pointer' }}
                           >
-                            {registering ? 'Registering Member...' : 'Confirm Registration'}
+                            {registering ? 'Processing Database...' : 'Confirm & Register Member'}
                           </button>
-                        </div>
+                        </form>
                       )}
                       
                       <div className={styles.treeContainer}>

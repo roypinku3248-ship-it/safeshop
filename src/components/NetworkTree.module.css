@@ -359,9 +359,6 @@
   border-radius: 20px;
   border: 1px solid #e2e8f0;
   position: relative;
-  display: flex;
-  align-items: flex-start;
-  justify-content: flex-start;
 }
 
 .grabbing {
@@ -369,22 +366,22 @@
 }
 
 .pyramidLayout {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 80px 500px;
+  display: block;
+  padding: 100px 1000px;
   width: max-content;
   min-width: 100%;
   min-height: 100%;
   transition: transform 0.1s ease-out;
+  text-align: center;
 }
 
 .levelContainer {
-  display: flex;
+  display: inline-flex;
   justify-content: center;
   min-width: fit-content;
   gap: 20px;
   padding: 40px 20px;
+  margin: 0 auto;
 }
 
 .nodeInfo {

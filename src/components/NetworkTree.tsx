@@ -85,29 +85,27 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
     }
   };
 
-  const renderNode = (user: any, parentId: string, legIdx: number, depth: number = 0) => {
+  const renderNode = (user: any, parentId: string, legIdx: number, depth: number = 0, isParentLocked: boolean = false) => {
     // 1. Get children of this node
     const children = user ? getSubTree(user.id) : [];
     
     // 2. Sequential Leg Locking Logic:
-    // We check if the PREVIOUS leg of the parent is full.
-    // This ONLY affects the ability to ADD NEW members (the Join slots).
-    let isRecruitmentLocked = false;
-    if (depth > 0 && legIdx > 0) {
-      const parentNode = fullTeam.find(u => u.id === parentId);
-      if (parentNode) {
-        const parentChildren = getSubTree(parentId);
-        const previousLegNode = parentChildren[legIdx - 1];
-        if (!previousLegNode) {
-          isRecruitmentLocked = true;
-        } else {
-          const prevLegChildren = getSubTree(previousLegNode.id);
-          if (prevLegChildren.length < 3) {
-            isRecruitmentLocked = true;
-          }
+    let isCurrentLegLocked = false;
+    if (depth === 1 && legIdx > 0) {
+      const rootChildren = getSubTree(rootUser.id);
+      const previousLegMember = rootChildren[legIdx - 1];
+      if (!previousLegMember) {
+        isCurrentLegLocked = true;
+      } else {
+        const prevLegTeam = getSubTree(previousLegMember.id);
+        if (prevLegTeam.length < 3) {
+          isCurrentLegLocked = true;
         }
       }
     }
+
+    // A node is locked if its leg is locked OR its parent is locked
+    const isLocked = isParentLocked || isCurrentLegLocked;
     
     if (depth > 2) return null; 
 
@@ -130,20 +128,20 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
             
             <div className={styles.subLevel}>
               {[0, 1, 2].map((idx) => (
-                renderNode(children[idx], user.id, idx, depth + 1)
+                renderNode(children[idx], user.id, idx, depth + 1, isLocked)
               ))}
             </div>
           </div>
         ) : (
           <div className={styles.emptyNodeSlot}>
              <div 
-                className={`${styles.emptyNode} ${isRecruitmentLocked ? styles.lockedNode : styles.activeJoinNode}`} 
-                onClick={() => !isRecruitmentLocked && onAddMember?.(parentId, legIdx)}
-                style={{ cursor: isRecruitmentLocked ? 'not-allowed' : 'pointer' }}
+                className={`${styles.emptyNode} ${isLocked ? styles.lockedNode : styles.activeJoinNode}`} 
+                onClick={() => !isLocked && onAddMember?.(parentId, legIdx)}
+                style={{ cursor: isLocked ? 'not-allowed' : 'pointer' }}
              >
-                {isRecruitmentLocked ? <ShieldCheck size={20} opacity={0.3} /> : <PlusCircle size={20} />}
-                <span>{isRecruitmentLocked ? 'Locked' : 'Join'}</span>
-                {!isRecruitmentLocked && <span style={{ fontSize: '0.5rem', opacity: 0.5, marginTop: '4px' }}>to {parentId?.toString().slice(-6)}</span>}
+                {isLocked ? <ShieldCheck size={20} opacity={0.3} /> : <PlusCircle size={20} />}
+                <span>{isLocked ? 'Locked' : 'Join'}</span>
+                {!isLocked && <span style={{ fontSize: '0.5rem', opacity: 0.5, marginTop: '4px' }}>to {parentId?.toString().slice(-6)}</span>}
              </div>
           </div>
         )}

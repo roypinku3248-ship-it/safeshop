@@ -113,64 +113,48 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
   const [isDragging, setIsDragging] = React.useState(false);
   const [startX, setStartX] = React.useState(0);
   const [startY, setStartY] = React.useState(0);
-  const [scrollLeft, setScrollLeft] = React.useState(0);
-  const [scrollTop, setScrollTop] = React.useState(0);
+  const [offsetX, setOffsetX] = React.useState(0);
+  const [offsetY, setOffsetY] = React.useState(0);
+  const [startOffsetX, setStartOffsetX] = React.useState(0);
+  const [startOffsetY, setStartOffsetY] = React.useState(0);
 
-  // Auto-center the tree when it loads or changes
   React.useEffect(() => {
-    const centerTree = () => {
-      if (scrollRef.current) {
-        const container = scrollRef.current;
-        const scrollPos = (container.scrollWidth - container.clientWidth) / 2;
-        container.scrollLeft = scrollPos;
-      }
-    };
-    // Short timeout allows the DOM to finish painting the wide layout first
-    const timeoutId = setTimeout(centerTree, 100);
-    return () => clearTimeout(timeoutId);
-  }, [currentRootId, zoom, viewType]);
+    // Reset offset when root changes to keep it centered
+    setOffsetX(0);
+    setOffsetY(0);
+  }, [currentRootId, viewType]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
-    if (!scrollRef.current) return;
-    const rect = scrollRef.current.getBoundingClientRect();
     setIsDragging(true);
-    setStartX(e.pageX - rect.left);
-    setStartY(e.pageY - rect.top);
-    setScrollLeft(scrollRef.current.scrollLeft);
-    setScrollTop(scrollRef.current.scrollTop);
+    setStartX(e.pageX);
+    setStartY(e.pageY);
+    setStartOffsetX(offsetX);
+    setStartOffsetY(offsetY);
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging || !scrollRef.current) return;
-    const rect = scrollRef.current.getBoundingClientRect();
+    if (!isDragging) return;
     e.preventDefault();
-    const x = e.pageX - rect.left;
-    const y = e.pageY - rect.top;
-    const walkX = (x - startX) * 2;
-    const walkY = (y - startY) * 2;
-    scrollRef.current.scrollLeft = scrollLeft - walkX;
-    scrollRef.current.scrollTop = scrollTop - walkY;
+    const walkX = (e.pageX - startX);
+    const walkY = (e.pageY - startY);
+    setOffsetX(startOffsetX + walkX);
+    setOffsetY(startOffsetY + walkY);
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
-    if (!scrollRef.current) return;
-    const rect = scrollRef.current.getBoundingClientRect();
     setIsDragging(true);
-    setStartX(e.touches[0].pageX - rect.left);
-    setStartY(e.touches[0].pageY - rect.top);
-    setScrollLeft(scrollRef.current.scrollLeft);
-    setScrollTop(scrollRef.current.scrollTop);
+    setStartX(e.touches[0].pageX);
+    setStartY(e.touches[0].pageY);
+    setStartOffsetX(offsetX);
+    setStartOffsetY(offsetY);
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isDragging || !scrollRef.current) return;
-    const rect = scrollRef.current.getBoundingClientRect();
-    const x = e.touches[0].pageX - rect.left;
-    const y = e.touches[0].pageY - rect.top;
-    const walkX = (x - startX) * 2;
-    const walkY = (y - startY) * 2;
-    scrollRef.current.scrollLeft = scrollLeft - walkX;
-    scrollRef.current.scrollTop = scrollTop - walkY;
+    if (!isDragging) return;
+    const walkX = (e.touches[0].pageX - startX);
+    const walkY = (e.touches[0].pageY - startY);
+    setOffsetX(startOffsetX + walkX);
+    setOffsetY(startOffsetY + walkY);
   };
 
   const stopDragging = () => {
@@ -238,7 +222,14 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
           onTouchMove={handleTouchMove}
           onTouchEnd={stopDragging}
         >
-          <div className={styles.pyramidLayout} style={{ zoom: zoom }}>
+          <div 
+            className={styles.pyramidLayout} 
+            style={{ 
+              zoom: zoom, 
+              transform: `translate3d(${offsetX}px, ${offsetY}px, 0)`,
+              transition: isDragging ? 'none' : 'transform 0.3s ease-out'
+            }}
+          >
             <div className={styles.mainRoot}>
               <div className={styles.rootAvatar}>{(currentRoot.name || 'U')[0]}</div>
               <h3>{currentRoot.name}</h3>

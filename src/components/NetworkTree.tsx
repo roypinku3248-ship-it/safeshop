@@ -90,19 +90,21 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
     const children = user ? getSubTree(user.id) : [];
     
     // 2. Sequential Leg Locking Logic:
-    // This rule ensures you fill one leg's direct team before moving to the next sibling leg.
-    let isLocked = false;
-    if (legIdx > 0) {
-      // Look at the sibling in the previous slot under the same parent
-      const parentChildren = getSubTree(parentId);
-      const previousLegNode = parentChildren[legIdx - 1];
-      
-      if (!previousLegNode) {
-        isLocked = true; // Previous leg doesn't have a member yet
-      } else {
-        const prevLegChildren = getSubTree(previousLegNode.id);
-        if (prevLegChildren.length < 3) {
-          isLocked = true; // Previous leg member hasn't recruited their 3 direct members yet
+    // We check if the PREVIOUS leg of the parent is full.
+    // This ONLY affects the ability to ADD NEW members (the Join slots).
+    let isRecruitmentLocked = false;
+    if (depth > 0 && legIdx > 0) {
+      const parentNode = fullTeam.find(u => u.id === parentId);
+      if (parentNode) {
+        const parentChildren = getSubTree(parentId);
+        const previousLegNode = parentChildren[legIdx - 1];
+        if (!previousLegNode) {
+          isRecruitmentLocked = true;
+        } else {
+          const prevLegChildren = getSubTree(previousLegNode.id);
+          if (prevLegChildren.length < 3) {
+            isRecruitmentLocked = true;
+          }
         }
       }
     }
@@ -114,14 +116,14 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
         {depth === 0 && <div className={styles.legLabel}>Slot {legIdx + 1}</div>}
         
         {user ? (
-          <div className={styles.nodeGroup} style={{ opacity: isLocked ? 0.5 : 1, filter: isLocked ? 'grayscale(1)' : 'none' }}>
-            <div className={depth === 0 ? styles.nodeCard : styles.legCard} onClick={() => !isLocked && handleDrillDown(user.id)}>
+          <div className={styles.nodeGroup}>
+            <div className={depth === 0 ? styles.nodeCard : styles.legCard} onClick={() => handleDrillDown(user.id)}>
               <div className={styles.miniAvatar}>{user.name ? user.name[0] : '?'}</div>
               <div className={styles.nodeInfo}>
                 <strong style={{ fontSize: '0.8rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100px' }}>{user.name}</strong>
                 <span style={{ fontSize: '0.55rem', color: '#94a3b8' }}>ID: {user.id?.toString().slice(-6)}</span>
                 <span className={user.status === 'verified' ? styles.verified : styles.pending}>
-                  {isLocked ? 'Locked' : (user.status || 'Pending')}
+                  {user.status || 'Pending'}
                 </span>
               </div>
             </div>
@@ -135,13 +137,13 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
         ) : (
           <div className={styles.emptyNodeSlot}>
              <div 
-                className={`${styles.emptyNode} ${isLocked ? styles.lockedNode : styles.activeJoinNode}`} 
-                onClick={() => !isLocked && onAddMember?.(parentId, legIdx)}
-                style={{ cursor: isLocked ? 'not-allowed' : 'pointer' }}
+                className={`${styles.emptyNode} ${isRecruitmentLocked ? styles.lockedNode : styles.activeJoinNode}`} 
+                onClick={() => !isRecruitmentLocked && onAddMember?.(parentId, legIdx)}
+                style={{ cursor: isRecruitmentLocked ? 'not-allowed' : 'pointer' }}
              >
-                {isLocked ? <ShieldCheck size={20} opacity={0.3} /> : <PlusCircle size={20} />}
-                <span>{isLocked ? 'Locked' : 'Join'}</span>
-                {!isLocked && <span style={{ fontSize: '0.5rem', opacity: 0.5, marginTop: '4px' }}>to {parentId?.toString().slice(-6)}</span>}
+                {isRecruitmentLocked ? <ShieldCheck size={20} opacity={0.3} /> : <PlusCircle size={20} />}
+                <span>{isRecruitmentLocked ? 'Locked' : 'Join'}</span>
+                {!isRecruitmentLocked && <span style={{ fontSize: '0.5rem', opacity: 0.5, marginTop: '4px' }}>to {parentId?.toString().slice(-6)}</span>}
              </div>
           </div>
         )}

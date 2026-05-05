@@ -171,6 +171,49 @@ export default function AdminPage() {
   };
 
   const [selectedNetworkUser, setSelectedNetworkUser] = React.useState<any>(null);
+  const [viewingKyc, setViewingKyc] = React.useState<any>(null);
+
+  const renderKycModal = () => {
+    if (!viewingKyc) return null;
+    return (
+      <div className={styles.modalOverlay} onClick={() => setViewingKyc(null)}>
+        <div className={styles.kycDocModal} onClick={e => e.stopPropagation()}>
+          <div className={styles.modalHeader}>
+            <h3>ID Documents: {viewingKyc.user_name}</h3>
+            <button className={styles.closeBtn} onClick={() => setViewingKyc(null)}><XCircle size={24} /></button>
+          </div>
+          <div className={styles.docGrid}>
+            <div className={styles.docItem}>
+              <span>Document Type: {viewingKyc.doc_type}</span>
+              <div className={styles.docImage}>
+                {/* Fallback to placeholders since actual storage upload is being implemented */}
+                <img src="https://images.unsplash.com/photo-1557124816-e9b7d5440de2?w=500" alt="Front" />
+                <p>Front Side</p>
+              </div>
+            </div>
+            <div className={styles.docItem}>
+              <span>Document Back</span>
+              <div className={styles.docImage}>
+                <img src="https://images.unsplash.com/photo-1634224143540-062bb00700ae?w=500" alt="Back" />
+                <p>Back Side</p>
+              </div>
+            </div>
+            <div className={styles.docItem}>
+              <span>Face Verification</span>
+              <div className={styles.docImage}>
+                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500" alt="Selfie" />
+                <p>User Selfie</p>
+              </div>
+            </div>
+          </div>
+          <div className={styles.modalActions}>
+            <button className={styles.approveBtn} onClick={() => { handleKycAction(viewingKyc.id, 'approve'); setViewingKyc(null); }}>Approve Verification</button>
+            <button className={styles.rejectBtn} onClick={() => { handleKycAction(viewingKyc.id, 'reject'); setViewingKyc(null); }}>Reject Documents</button>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className={styles.adminPage}>
@@ -442,7 +485,7 @@ export default function AdminPage() {
                         </div>
                       </div>
                       <div className={styles.kycActions}>
-                        <button className={styles.viewDocBtn}>View Documents</button>
+                        <button className={styles.viewDocBtn} onClick={() => setViewingKyc(req)}>View Documents</button>
                         <button className="gradient-primary" onClick={() => router.push('/kyc')}>Check ID Verification Status</button>
                         <button className={styles.approveBtn} onClick={() => handleKycAction(req.id, 'approve')}>
                           <UserCheck size={18} /> Approve
@@ -552,6 +595,7 @@ export default function AdminPage() {
           </div>
         </div>
       )}
+      {renderKycModal()}
     </div>
   );
 }

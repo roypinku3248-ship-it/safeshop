@@ -179,9 +179,11 @@ export default function UserDashboard() {
                 <div className={styles.avatar}>{user.name.charAt(0)}</div>
               )}
               <div>
-                <h3>{user.name}</h3>
-                <p>Member since {new Date(user.joined_at || Date.now()).getFullYear()}</p>
-                <p style={{ fontWeight: 'bold', color: 'var(--primary)', marginTop: '2px', fontSize: '0.85rem' }}>R-{user.id?.toString().slice(-6).toUpperCase()}</p>
+                <h3 style={{ color: 'white' }}>{user.name}</h3>
+                <p style={{ color: 'rgba(255,255,255,0.8)' }}>Member since {new Date(user.joined_at || Date.now()).getFullYear()}</p>
+                <p style={{ fontWeight: 'bold', color: 'white', marginTop: '4px', fontSize: '0.9rem', background: 'rgba(255,255,255,0.15)', padding: '2px 8px', borderRadius: '4px', display: 'inline-block' }}>
+                  R-{user.id?.toString().replace(/^R-/, '').slice(-6).toUpperCase()}
+                </p>
               </div>
             </div>
             

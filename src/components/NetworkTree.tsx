@@ -119,19 +119,17 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
         </div>
         
         {viewType === 'pyramid' && (
-          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-            <div className={styles.zoomControls}>
-              <button onClick={() => setZoom(Math.max(0.4, zoom - 0.1))} title="Zoom Out">-</button>
-              <span>{Math.round(zoom * 100)}%</span>
-              <button onClick={() => setZoom(Math.min(1.5, zoom + 0.1))} title="Zoom In">+</button>
-              <button onClick={() => setZoom(1)} style={{ marginLeft: '5px', fontSize: '0.7rem' }}>Reset</button>
-            </div>
-            {navigationStack.length > 0 && (
-              <button className={styles.backBtn} onClick={handleGoBack}>
-                ← Go Up
-              </button>
-            )}
+          <div className={styles.floatingZoom}>
+            <button onClick={() => setZoom(Math.max(0.4, zoom - 0.1))} title="Zoom Out">-</button>
+            <div className={styles.zoomValue}>{Math.round(zoom * 100)}%</div>
+            <button onClick={() => setZoom(Math.min(1.5, zoom + 0.1))} title="Zoom In">+</button>
+            <button onClick={() => setZoom(1)} className={styles.resetBtn}>Reset</button>
           </div>
+        )}
+        {viewType === 'pyramid' && navigationStack.length > 0 && (
+          <button className={styles.backBtn} onClick={handleGoBack}>
+            ← Go Up
+          </button>
         )}
       </div>
 

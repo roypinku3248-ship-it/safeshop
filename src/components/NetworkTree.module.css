@@ -11,43 +11,63 @@
   margin-bottom: 40px;
 }
 
-.zoomControls {
+.floatingZoom {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  padding: 8px 15px;
+  border-radius: 15px;
   display: flex;
   align-items: center;
-  background: #f1f5f9;
-  padding: 4px 8px;
-  border-radius: 10px;
-  gap: 8px;
-  border: 1px solid #e2e8f0;
+  gap: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  border: 1px solid rgba(255,255,255,0.3);
+  z-index: 1000;
+  animation: slideUp 0.4s ease;
 }
 
-.zoomControls button {
-  width: 24px;
-  height: 24px;
-  border-radius: 6px;
-  border: 1px solid #cbd5e1;
+.floatingZoom button {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  border: 1px solid #e2e8f0;
   background: white;
+  color: #1e293b;
+  font-size: 1.2rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  font-weight: 700;
-  color: #475569;
-  transition: all 0.2s;
 }
 
-.zoomControls button:hover {
+.floatingZoom button:hover {
   background: var(--primary);
   color: white;
-  border-color: var(--primary);
+  transform: scale(1.1);
 }
 
-.zoomControls span {
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: #475569;
-  min-width: 40px;
+.zoomValue {
+  font-weight: 800;
+  color: #1e293b;
+  min-width: 50px;
   text-align: center;
+  font-size: 0.9rem;
+}
+
+.resetBtn {
+  font-size: 0.75rem !important;
+  border-radius: 8px !important;
+  width: auto !important;
+  padding: 0 12px !important;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .viewToggle button {

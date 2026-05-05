@@ -90,23 +90,19 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
     const children = user ? getSubTree(user.id) : [];
     
     // 2. Sequential Leg Locking Logic:
-    // If we are at depth > 0 (meaning we are looking at children of a child)
-    // We check if the PREVIOUS leg of the parent is full.
+    // This rule ensures you fill one leg's direct team before moving to the next sibling leg.
     let isLocked = false;
-    if (depth === 1 && legIdx > 0) {
-      // Find the parent node in fullTeam
-      const parentNode = fullTeam.find(u => u.id === parentId);
-      if (parentNode) {
-        const parentChildren = getSubTree(parentId);
-        // Look at the node in the previous slot
-        const previousLegNode = parentChildren[legIdx - 1];
-        if (!previousLegNode) {
-          isLocked = true; // Previous leg doesn't even have a root yet
-        } else {
-          const prevLegChildren = getSubTree(previousLegNode.id);
-          if (prevLegChildren.length < 3) {
-            isLocked = true; // Previous leg is not full yet (needs 3 members)
-          }
+    if (legIdx > 0) {
+      // Look at the sibling in the previous slot under the same parent
+      const parentChildren = getSubTree(parentId);
+      const previousLegNode = parentChildren[legIdx - 1];
+      
+      if (!previousLegNode) {
+        isLocked = true; // Previous leg doesn't have a member yet
+      } else {
+        const prevLegChildren = getSubTree(previousLegNode.id);
+        if (prevLegChildren.length < 3) {
+          isLocked = true; // Previous leg member hasn't recruited their 3 direct members yet
         }
       }
     }

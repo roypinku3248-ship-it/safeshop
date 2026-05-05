@@ -514,9 +514,8 @@
 .listStats span { display: block; font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; }
 .listStats strong { font-size: 0.9rem; }
 
-.statusV { color: #10b981; font-weight: 700; font-size: 0.8rem; }
-.statusP { color: #ef4444; font-weight: 700; font-size: 0.8rem; }
-.pending { color: #ef4444; font-size: 0.75rem; font-weight: 700; }
+.statusV, .verified { color: #10b981; font-weight: 700; font-size: 0.8rem; }
+.statusP, .pending { color: #ef4444; font-weight: 700; font-size: 0.8rem; }
 
 .noData {
   padding: 60px;

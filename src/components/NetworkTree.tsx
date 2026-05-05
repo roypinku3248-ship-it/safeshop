@@ -129,7 +129,7 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
                   )}
                 </div>
                 <span style={{ fontSize: '0.55rem', color: '#94a3b8' }}>ID: {user.id?.toString().slice(-6)}</span>
-                <span className={user.status === 'verified' ? styles.verified : styles.pending}>
+                <span className={user.status?.toLowerCase() === 'verified' ? styles.verified : styles.pending}>
                   {isLocked ? 'Locked' : (user.status || 'Pending')}
                 </span>
               </div>

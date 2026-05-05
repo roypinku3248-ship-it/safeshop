@@ -36,7 +36,7 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
   // Drill-down State
   const [currentRootId, setCurrentRootId] = React.useState(rootUser.id);
   const [navigationStack, setNavigationStack] = React.useState<string[]>([]);
-  const [zoom] = React.useState(1);
+  const [zoom, setZoom] = React.useState(0.8);
   
   // Find the current user being viewed
   const currentRoot = fullTeam.find(u => u.id === currentRootId) || rootUser;
@@ -119,7 +119,7 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
     // Short timeout allows the DOM to finish painting the wide layout first
     const timeoutId = setTimeout(centerTree, 100);
     return () => clearTimeout(timeoutId);
-  }, [currentRootId, viewType]);
+  }, [currentRootId, zoom, viewType]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!scrollRef.current) return;
@@ -182,6 +182,15 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
           </button>
         </div>
         
+        {viewType === 'pyramid' && (
+          <div className={styles.floatingZoom}>
+            <button onClick={() => setZoom(Math.max(0.2, zoom - 0.1))} title="Zoom Out">-</button>
+            <div className={styles.zoomValue}>{Math.round(zoom * 100)}%</div>
+            <button onClick={() => setZoom(Math.min(1.5, zoom + 0.1))} title="Zoom In">+</button>
+            <button onClick={() => setZoom(1)} className={styles.resetBtn}>Reset</button>
+          </div>
+        )}
+        
         {viewType === 'pyramid' && navigationStack.length > 0 && (
           <button className={styles.backBtn} onClick={handleGoBack}>
             ← Go Up
@@ -201,7 +210,7 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
           onTouchMove={handleTouchMove}
           onTouchEnd={stopDragging}
         >
-          <div className={styles.pyramidLayout}>
+          <div className={styles.pyramidLayout} style={{ zoom: zoom }}>
             <div className={styles.mainRoot}>
               <div className={styles.rootAvatar}>{(currentRoot.name || 'U')[0]}</div>
               <h3>{currentRoot.name}</h3>

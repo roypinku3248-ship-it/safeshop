@@ -396,7 +396,7 @@ export default function UserDashboard() {
                             setRegistering(false);
                           }
                         }}>
-                          <h4>Quick Register Member (v2.0 - KYC Enabled)</h4>
+                          <h4>!!!! CHECK THIS VERSION - v3.0 !!!!</h4>
                           <div className={styles.miniFormGrid}>
                             <div className={styles.formItem}>
                               <label>Full Name</label>
@@ -412,7 +412,7 @@ export default function UserDashboard() {
                             </div>
                           </div>
 
-                          <div style={{ background: '#fffbeb', padding: '20px', borderRadius: '12px', border: '2px solid #fde68a', marginTop: '25px' }}>
+                          <div style={{ background: '#fffbeb', padding: '20px', borderRadius: '12px', border: '5px solid red', marginTop: '25px' }}>
                             <h4 style={{ color: '#92400e', marginBottom: '15px' }}>KYC & Bank Details (REQUIRED)</h4>
                             <div className={styles.miniFormGrid}>
                               <div className={styles.formItem}>

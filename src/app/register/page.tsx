@@ -45,22 +45,26 @@ export default function RegisterPage() {
 
     try {
       // 1. Save to Supabase (The Real Database)
-      const { error } = await supabase
+      console.log('Attempting to register user:', newUser);
+      const { data, error } = await supabase
         .from('users')
-        .insert([newUser]);
+        .insert([newUser])
+        .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase Insert Error:', error);
+        throw new Error(`Database Error: ${error.message} (Code: ${error.code})`);
+      }
 
+      console.log('Registration successful:', data);
+      
       // 2. Backup to LocalStorage (For immediate login flow)
       localStorage.setItem('safeshop-pending-registration', JSON.stringify(formData));
       
-      const globalUsers = JSON.parse(localStorage.getItem('safeshop-global-users') || '[]');
-      localStorage.setItem('safeshop-global-users', JSON.stringify([...globalUsers, newUser]));
-      
       router.push('/login?registered=true');
     } catch (error: any) {
-      console.error('Registration error:', error.message);
-      alert('Error during registration: ' + error.message);
+      console.error('Registration flow failed:', error);
+      alert('Registration Failed!\n\nReason: ' + error.message + '\n\nCheck the browser console (F12) for more details.');
     }
   };
 

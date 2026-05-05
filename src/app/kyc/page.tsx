@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { ShieldCheck, Upload, FileText, CheckCircle, AlertCircle, Camera, UserCircle } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 import styles from './KYC.module.css';
 
 export default function KYCPage() {
@@ -22,24 +23,29 @@ export default function KYCPage() {
     return <div className={styles.kycPage}><div className="container">Checking verification status...</div></div>;
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Save to localStorage so Admin can see it
-    const pendingKyc = JSON.parse(localStorage.getItem('safeshop-kyc-queue') || '[]');
     const newRequest = {
-      id: Date.now().toString(),
-      name: user?.name || 'Anonymous User',
-      email: user?.email, // Added email for admin to track
-      type: docType === 'aadhaar' ? 'Aadhaar Card' : (docType === 'pan' ? 'PAN Card' : 'Voter ID'),
-      date: new Date().toLocaleDateString(),
+      user_id: user?.id || 'anonymous',
+      user_name: user?.name || 'Anonymous User',
+      user_email: user?.email,
+      doc_type: docType === 'aadhaar' ? 'Aadhaar Card' : (docType === 'pan' ? 'PAN Card' : 'Voter ID'),
       status: 'Pending',
-      hasFace: true,
-      hasDoc: true
+      has_face: true,
+      has_doc: true
     };
-    localStorage.setItem('safeshop-kyc-queue', JSON.stringify([newRequest, ...pendingKyc]));
-    
-    setIsSubmitted(true);
+
+    try {
+      const { error } = await supabase
+        .from('kyc_submissions')
+        .insert([newRequest]);
+
+      if (error) throw error;
+      setIsSubmitted(true);
+    } catch (err: any) {
+      alert('Error submitting KYC: ' + err.message);
+    }
   };
 
   if (isSubmitted) {

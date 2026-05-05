@@ -5,6 +5,7 @@ import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { ShieldCheck, Lock, CreditCard, Landmark, Wallet, CheckCircle2, Loader2, ArrowRight } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 import styles from './Checkout.module.css';
 
 type PaymentMethod = 'upi' | 'card' | 'netbanking';
@@ -31,32 +32,40 @@ export default function CheckoutPage() {
     e.preventDefault();
     setStep('processing');
     
-    // Save order to localStorage
     const orderId = `#SS-${Math.floor(100000 + Math.random() * 900000)}`;
     const newOrder = {
       id: orderId,
-      date: new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
+      user_id: user?.id || 'anonymous',
+      customer_name: user?.name || 'Guest',
       items: cart.map(item => ({
         id: item.id,
         name: item.name,
         image: item.image,
         price: item.price,
         quantity: item.quantity,
-        bv: (item as any).bv || 100 // Default BV if missing
+        bv: (item as any).bv || 100
       })),
       total: totalPrice,
       status: 'In Transit (Escrow Active)',
-      seller: cart[0].seller.name
+      seller_name: cart[0].seller.name
     };
 
-    const existingOrders = JSON.parse(localStorage.getItem('safeshop-orders') || '[]');
-    localStorage.setItem('safeshop-orders', JSON.stringify([newOrder, ...existingOrders]));
-    
-    // Mock payment processing
-    await new Promise(resolve => setTimeout(resolve, 3000));
-    
-    setStep('success');
-    clearCart();
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .insert([newOrder]);
+
+      if (error) throw error;
+
+      // Mock payment processing delay
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      
+      setStep('success');
+      clearCart();
+    } catch (err: any) {
+      alert('Error placing order: ' + err.message);
+      setStep('payment');
+    }
   };
 
   if (loading || (!user && step !== 'success')) {

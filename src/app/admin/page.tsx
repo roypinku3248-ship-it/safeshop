@@ -6,7 +6,7 @@ import { sellers, products } from '@/data/mockData';
 import { NetworkTree } from '@/components/NetworkTree';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabase';
-import { Users as UsersIcon, Package, AlertTriangle, BarChart3, CheckCircle, XCircle, Search, ChevronDown, ChevronRight, UserCheck, Loader2 } from 'lucide-react';
+import { Users as UsersIcon, Package, AlertTriangle, BarChart3, CheckCircle, XCircle, Search, ChevronDown, ChevronRight, UserCheck, Loader2, Trash2 } from 'lucide-react';
 import styles from './Admin.module.css';
 
 export default function AdminPage() {
@@ -31,10 +31,16 @@ export default function AdminPage() {
 
   const [globalUsers, setGlobalUsers] = React.useState<any[]>([]);
   const [dataLoading, setDataLoading] = React.useState(true);
+  
+  // User Deletion State
+  const [showDeleteModal, setShowDeleteModal] = React.useState(false);
+  const [userToDelete, setUserToDelete] = React.useState<any>(null);
+  const [adminPassword, setAdminPassword] = React.useState('');
 
   const loadData = async () => {
     setDataLoading(true);
     try {
+      // 1. Fetch Users
       const { data: usersData, error: usersError } = await supabase
         .from('users')
         .select('*')
@@ -43,6 +49,7 @@ export default function AdminPage() {
       if (usersError) throw usersError;
       setGlobalUsers(usersData || []);
 
+      // 2. Fetch Pending Products
       const { data: prodData, error: prodError } = await supabase
         .from('products')
         .select('*')
@@ -51,12 +58,29 @@ export default function AdminPage() {
       if (prodError) throw prodError;
       setPendingProducts(prodData || []);
 
-      // Keep LocalStorage backups for now
-      const savedKyc = localStorage.getItem('safeshop-kyc-queue');
-      if (savedKyc) setKycQueue(JSON.parse(savedKyc));
+      // 3. Fetch KYC Submissions (Cloud)
+      const { data: kycData, error: kycError } = await supabase
+        .from('kyc_submissions')
+        .select('*')
+        .order('submitted_at', { ascending: false });
       
-      const savedOrders = localStorage.getItem('safeshop-orders');
-      if (savedOrders) setAllOrders(JSON.parse(savedOrders));
+      if (kycError) {
+        console.warn('KYC table might not exist yet:', kycError.message);
+      } else {
+        setKycQueue(kycData || []);
+      }
+      
+      // 4. Fetch Orders (Cloud)
+      const { data: ordersData, error: ordersError } = await supabase
+        .from('orders')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (ordersError) {
+        console.warn('Orders table might not exist yet:', ordersError.message);
+      } else {
+        setAllOrders(ordersData || []);
+      }
 
     } catch (error: any) {
       console.error('Data load error:', error.message);
@@ -80,27 +104,31 @@ export default function AdminPage() {
     }
   };
 
-  const handleKycAction = (id: string, action: 'approve' | 'reject') => {
-    if (action === 'approve') {
-      const request = kycQueue.find(item => item.id === id);
-      if (request) {
-        // Try to find the user in global list or current session
-        const savedGlobal = JSON.parse(localStorage.getItem('safeshop-global-users') || '[]');
-        const updatedGlobal = savedGlobal.map((u: any) => {
-          if (u.email === request.email || u.id === id) {
-            return { ...u, status: 'verified', role: 'seller', isVerified: true };
-          }
-          return u;
-        });
-        localStorage.setItem('safeshop-global-users', JSON.stringify(updatedGlobal));
-        setGlobalUsers(updatedGlobal);
-      }
-    }
+  const handleKycAction = async (id: string, action: 'approve' | 'reject') => {
+    try {
+      const { error } = await supabase
+        .from('kyc_submissions')
+        .update({ status: action === 'approve' ? 'Approved' : 'Rejected' })
+        .eq('id', id);
 
-    const updated = kycQueue.filter(item => item.id !== id);
-    setKycQueue(updated);
-    localStorage.setItem('safeshop-kyc-queue', JSON.stringify(updated));
-    alert(action === 'approve' ? 'KYC Approved!' : 'KYC Rejected');
+      if (error) throw error;
+
+      if (action === 'approve') {
+        const request = kycQueue.find(item => item.id === id);
+        if (request) {
+          // Update the user status in users table as well
+          await supabase
+            .from('users')
+            .update({ status: 'verified', role: 'seller' })
+            .eq('id', request.user_id || id);
+        }
+      }
+
+      loadData(); // Refresh list
+      alert(action === 'approve' ? 'KYC Approved!' : 'KYC Rejected');
+    } catch (err: any) {
+      alert('Error: ' + err.message);
+    }
   };
 
   React.useEffect(() => {
@@ -113,6 +141,33 @@ export default function AdminPage() {
     const updated = pendingProducts.filter(p => p.id !== id);
     setPendingProducts(updated);
     localStorage.setItem('safeshop-pending-products', JSON.stringify(updated));
+  };
+
+  const handleDeleteUser = async () => {
+    // SECURITY CHECK
+    if (adminPassword !== 'admin123') {
+      alert('❌ Incorrect Admin Password! Access Denied.');
+      return;
+    }
+
+    if (!userToDelete) return;
+
+    try {
+      const { error } = await supabase
+        .from('users')
+        .delete()
+        .eq('id', userToDelete.id);
+
+      if (error) throw error;
+
+      alert(`✅ User ${userToDelete.name} has been permanently removed.`);
+      setShowDeleteModal(false);
+      setUserToDelete(null);
+      setAdminPassword('');
+      loadData(); // Refresh the list
+    } catch (err: any) {
+      alert('Error deleting user: ' + err.message);
+    }
   };
 
   const [selectedNetworkUser, setSelectedNetworkUser] = React.useState<any>(null);
@@ -296,10 +351,12 @@ export default function AdminPage() {
                   <tr key={u.id || i}>
                     <td>
                       <div className={styles.userNameCell}>
-                        <div className={styles.avatarMini} style={{ width: '30px', height: '30px', fontSize: '0.8rem' }}>{u.name[0]}</div>
+                        <div className={styles.avatarMini} style={{ width: '30px', height: '30px', fontSize: '0.8rem' }}>
+                          {(u.name || 'U')[0]}
+                        </div>
                         <div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <span>{u.name}</span>
+                            <span>{u.name || 'Unnamed User'}</span>
                             {u.hasDocs && <span className={styles.docsBadge}>Docs Ready</span>}
                           </div>
                           <p style={{ fontSize: '0.7rem', color: 'var(--muted)', margin: 0 }}>{u.email}</p>
@@ -338,6 +395,15 @@ export default function AdminPage() {
                       >
                         Network
                       </button>
+                      <button 
+                        className={styles.deleteBtn}
+                        onClick={() => {
+                          setUserToDelete(u);
+                          setShowDeleteModal(true);
+                        }}
+                      >
+                        <Trash2 size={14} /> Remove
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -360,10 +426,10 @@ export default function AdminPage() {
                   kycQueue.map((req) => (
                     <div key={req.id} className={styles.kycItem}>
                       <div className={styles.kycUser}>
-                        <div className={styles.userInitial}>{req.name[0]}</div>
+                        <div className={styles.userInitial}>{(req.user_name || 'U')[0]}</div>
                         <div>
-                          <h4>{req.name}</h4>
-                          <p>{req.type} • Submitted {req.date}</p>
+                          <h4>{req.user_name}</h4>
+                          <p>{req.doc_type} • Submitted {new Date(req.submitted_at).toLocaleDateString()}</p>
                         </div>
                       </div>
                       <div className={styles.kycActions}>
@@ -407,9 +473,13 @@ export default function AdminPage() {
                     {allOrders.map(order => (
                       <tr key={order.id}>
                         <td>{order.id}</td>
-                        <td>{order.customer?.name || 'Guest'}</td>
+                        <td>{order.customer_name || 'Guest'}</td>
                         <td>₹{order.total?.toLocaleString() || '0'}</td>
-                        <td><span className={`${styles.status} ${styles[order.status?.toLowerCase()]}`}>{order.status}</span></td>
+                        <td>
+                          <span className={`${styles.status} ${styles[(order.status || 'pending').toLowerCase().split(' ')[0]] || styles.pending}`}>
+                            {order.status || 'Pending'}
+                          </span>
+                        </td>
                         <td><span className={styles.escrowTag}>Protected</span></td>
                       </tr>
                     ))}
@@ -448,6 +518,31 @@ export default function AdminPage() {
           </div>
         )}
       </div>
+
+      {/* Delete Verification Modal */}
+      {showDeleteModal && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.deleteModal}>
+            <Trash2 size={48} color="#ff4757" style={{ marginBottom: '15px' }} />
+            <h3>Confirm Deletion</h3>
+            <p>You are about to permanently delete <strong>{userToDelete?.name}</strong>. This action cannot be undone.</p>
+            
+            <input 
+              type="password" 
+              className={styles.modalInput} 
+              placeholder="Enter Admin Password"
+              value={adminPassword}
+              onChange={(e) => setAdminPassword(e.target.value)}
+              autoFocus
+            />
+
+            <div className={styles.modalActions}>
+              <button className={styles.cancelBtn} onClick={() => setShowDeleteModal(false)}>Cancel</button>
+              <button className={styles.confirmDeleteBtn} onClick={handleDeleteUser}>Confirm Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

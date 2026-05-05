@@ -51,9 +51,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw new Error('Email and Password are required.');
       }
 
-      // 2. Special case for Admin Master
       if (email === 'admin@smstudioapp.com') {
-        if (password === 'admin123') {
+        const normalizedPassword = password.toLowerCase();
+        if (normalizedPassword === 'admin123') {
           const adminUser: User = {
             id: 'SS-ADMIN-MASTER',
             name: 'Root Admin',

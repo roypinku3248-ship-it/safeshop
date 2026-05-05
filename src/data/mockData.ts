@@ -90,10 +90,10 @@ const generateProducts = () => {
       originalPrice: p.originalPrice,
       category: p.category,
       image: p.image,
-      safetyScore: Math.floor(Math.random() * 3) + 7,
+      safetyScore: 7 + (idx % 4), // Deterministic
       seller: sellers[idx % sellers.length],
-      rating: parseFloat((Math.random() * 1 + 4).toFixed(1)),
-      reviewsCount: Math.floor(Math.random() * 1000) + 50,
+      rating: 4 + (idx % 10) / 10, // Deterministic
+      reviewsCount: 50 + idx * 10,
       description: 'This premium product is verified by SafeShop for 100% authenticity and safety.',
       features: ['1 Year Warranty', 'Free Shipping', 'Verified Seller', 'Escrow Protected'],
       bv: Math.floor(p.price / 10)
@@ -102,8 +102,8 @@ const generateProducts = () => {
 
   // Generate 40 more to reach 55
   for (let i = 1; i <= 40; i++) {
-    const cat = categories[Math.floor(Math.random() * categories.length)];
-    const price = Math.floor(Math.random() * 10000) + 500;
+    const cat = categories[i % categories.length];
+    const price = 500 + i * 200;
     allProducts.push({
       id: `P-${2000 + i}`,
       name: `${cat} Verified Essential #${i}`,
@@ -111,10 +111,10 @@ const generateProducts = () => {
       originalPrice: price + Math.floor(price * 0.2),
       category: cat,
       image: `https://images.unsplash.com/photo-${1500000000000 + i}?w=500&auto=format`,
-      safetyScore: Math.floor(Math.random() * 4) + 6,
+      safetyScore: 6 + (i % 5),
       seller: sellers[i % sellers.length],
-      rating: parseFloat((Math.random() * 1.5 + 3.5).toFixed(1)),
-      reviewsCount: Math.floor(Math.random() * 300) + 20,
+      rating: 3.5 + (i % 15) / 10,
+      reviewsCount: 20 + i * 5,
       description: 'High-quality verified item sourced from trusted sellers across India.',
       features: ['Secure Packaging', 'Fast Delivery', 'Quality Assured'],
       bv: Math.floor(price / 10)

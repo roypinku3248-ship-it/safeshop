@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { User, Users, ChevronRight, Share2, TrendingUp, PlusCircle, Maximize2, Minimize2 } from 'lucide-react';
+import { User, Users, ChevronRight, Share2, TrendingUp, PlusCircle, Maximize2, Minimize2, ShieldCheck } from 'lucide-react';
 import styles from './NetworkTree.module.css';
 
 interface Referral {

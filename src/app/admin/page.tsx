@@ -230,6 +230,8 @@ export default function AdminPage() {
         </div>
       </div>
     );
+  };
+
   const renderKycModal = () => {
     if (!viewingKyc) return null;
     return (

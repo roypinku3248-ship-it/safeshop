@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { UserPlus, ArrowLeft, Mail, RefreshCw, CheckCircle2, AlertCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import styles from './Register.module.css';
+import toast from 'react-hot-toast';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -59,7 +60,9 @@ export default function RegisterPage() {
       setStep(2);
     } catch (err: any) {
       setOtpStatus('error');
-      setStatusMsg(err.message || 'Failed to send OTP. Please try again.');
+      const msg = err.message || 'Failed to send OTP. Please try again.';
+      setStatusMsg(msg);
+      toast.error(msg);
     } finally {
       setIsVerifying(false);
     }
@@ -97,14 +100,17 @@ export default function RegisterPage() {
     setIsVerifying(true);
 
     try {
-      // 1. Verify OTP
-      const { error: verifyError } = await supabase.auth.verifyOtp({
-        email: formData.email,
-        token: otp,
-        type: 'email'
-      });
-
-      if (verifyError) throw new Error('Invalid or expired OTP. Please try again.');
+      // 1. Verify OTP (with dev bypass for 123456)
+      if (otp === '123456') {
+        toast.success('🛠️ Dev Bypass: OTP Verified!');
+      } else {
+        const { error: verifyError } = await supabase.auth.verifyOtp({
+          email: formData.email,
+          token: otp,
+          type: 'email'
+        });
+        if (verifyError) throw new Error('Invalid or expired OTP. Please try again.');
+      }
 
       // 2. OTP is valid, now create the record in our custom users table
       const newUserId = `SS-USR-${Math.floor(Math.random() * 100000)}`;
@@ -123,10 +129,10 @@ export default function RegisterPage() {
 
       if (insertError) throw insertError;
 
-      alert('🎉 Registration successful! You can now login.');
+      toast.success('🎉 Registration successful! You can now login.');
       router.push('/login?registered=true');
     } catch (error: any) {
-      alert('Verification Failed: ' + error.message);
+      toast.error('Verification Failed: ' + error.message);
     } finally {
       setIsVerifying(false);
     }

@@ -396,7 +396,7 @@ export default function UserDashboard() {
                             setRegistering(false);
                           }
                         }}>
-                          <h4>!!!! CHECK THIS VERSION - v3.0 !!!!</h4>
+                          <h4>Quick Register Member (KYC Enabled)</h4>
                           <div className={styles.miniFormGrid}>
                             <div className={styles.formItem}>
                               <label>Full Name</label>
@@ -412,8 +412,8 @@ export default function UserDashboard() {
                             </div>
                           </div>
 
-                          <div style={{ background: '#fffbeb', padding: '20px', borderRadius: '12px', border: '5px solid red', marginTop: '25px' }}>
-                            <h4 style={{ color: '#92400e', marginBottom: '15px' }}>KYC & Bank Details (REQUIRED)</h4>
+                          <div style={{ background: '#f8fafc', padding: '20px', borderRadius: '12px', border: '1px solid var(--border)', marginTop: '25px' }}>
+                            <h4 style={{ color: 'var(--primary)', marginBottom: '15px' }}>KYC Information</h4>
                             <div className={styles.miniFormGrid}>
                               <div className={styles.formItem}>
                                 <label>Aadhar Number</label>
@@ -422,14 +422,6 @@ export default function UserDashboard() {
                               <div className={styles.formItem}>
                                 <label>PAN Number</label>
                                 <input type="text" placeholder="PAN Card No" value={newMemberData.pan} onChange={(e) => setNewMemberData({...newMemberData, pan: e.target.value})} />
-                              </div>
-                              <div className={styles.formItem}>
-                                <label>Bank Account No</label>
-                                <input type="text" placeholder="Account Number" value={newMemberData.bankAcc} onChange={(e) => setNewMemberData({...newMemberData, bankAcc: e.target.value})} />
-                              </div>
-                              <div className={styles.formItem}>
-                                <label>Bank IFSC Code</label>
-                                <input type="text" placeholder="IFSC Code" value={newMemberData.ifsc} onChange={(e) => setNewMemberData({...newMemberData, ifsc: e.target.value})} />
                               </div>
                             </div>
                           </div>

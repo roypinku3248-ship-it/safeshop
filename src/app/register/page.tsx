@@ -35,53 +35,12 @@ export default function RegisterPage() {
     return () => clearTimeout(timer);
   }, [resendCooldown]);
 
-  // Core OTP send — standalone function, no event needed
-  const sendOtp = async () => {
-    setIsVerifying(true);
-    setOtpStatus('idle');
-    setStatusMsg('');
-    try {
-      const { error } = await supabase.auth.signInWithOtp({
-        email: formData.email,
-        options: { shouldCreateUser: false }
-      });
-
-      if (error) {
-        // Supabase dev limiter or SMTP not configured
-        if (error.message.includes('rate') || error.message.includes('limit')) {
-          throw new Error('Too many OTP requests. Please wait 60 seconds before retrying.');
-        }
-        throw error;
-      }
-
-      setOtpStatus('sent');
-      setStatusMsg(`OTP sent to ${formData.email}. Check your inbox and spam folder.`);
-      setResendCooldown(60);
-      setStep(2);
-    } catch (err: any) {
-      // If rate limit hit, still allow proceeding to Step 2 for Dev Bypass
-      if (err.message.toLowerCase().includes('rate') || err.message.toLowerCase().includes('limit')) {
-        toast.error('Supabase Rate Limit Hit! Entering Bypass Mode...');
-        setOtpStatus('sent');
-        setStatusMsg('Rate limit hit. Use bypass code 123456 to proceed.');
-        setStep(2);
-      } else {
-        setOtpStatus('error');
-        const msg = err.message || 'Failed to send OTP. Please try again.';
-        setStatusMsg(msg);
-        toast.error(msg);
-      }
-    } finally {
-      setIsVerifying(false);
-    }
-  };
-
-  const handleSendOtp = async (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Check if email already registered
     setIsVerifying(true);
+
     try {
+      // 1. Check if email already registered
       const { data: existingUser } = await supabase
         .from('users')
         .select('email')
@@ -89,38 +48,11 @@ export default function RegisterPage() {
         .single();
 
       if (existingUser) {
-        setOtpStatus('error');
-        setStatusMsg('This email is already registered. Please login instead.');
+        toast.error('This email is already registered. Please login instead.');
         return;
       }
-    } catch (_) {
-      // no match is fine — proceed
-    } finally {
-      setIsVerifying(false);
-    }
 
-    await sendOtp();
-  };
-
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsVerifying(true);
-
-    try {
-      // 1. Verify OTP (with dev bypass for 123456)
-      if (otp === '123456') {
-        toast.success('🛠️ Dev Bypass: OTP Verified!');
-      } else {
-        const { error: verifyError } = await supabase.auth.verifyOtp({
-          email: formData.email,
-          token: otp,
-          type: 'email'
-        });
-        if (verifyError) throw new Error('Invalid or expired OTP. Please try again.');
-      }
-
-      // 2. OTP is valid, now create the record in our custom users table
+      // 2. Create the record in our custom users table directly
       const newUserId = `SS-USR-${Math.floor(Math.random() * 100000)}`;
       const newUser = {
         id: newUserId,
@@ -140,7 +72,7 @@ export default function RegisterPage() {
       toast.success('🎉 Registration successful! You can now login.');
       router.push('/login?registered=true');
     } catch (error: any) {
-      toast.error('Verification Failed: ' + error.message);
+      toast.error('Registration Failed: ' + error.message);
     } finally {
       setIsVerifying(false);
     }
@@ -152,120 +84,62 @@ export default function RegisterPage() {
         <div className={styles.card}>
           <div className={styles.header}>
             <div className={styles.iconBox}>
-              {step === 1 ? <UserPlus size={32} /> : <Mail size={32} />}
+              <UserPlus size={32} />
             </div>
-            <h1>{step === 1 ? 'Create Account' : 'Verify Email'}</h1>
-            <p>
-              {step === 1 
-                ? 'Join SafeShop for a secure and protected experience.' 
-                : `Enter the 6-digit code sent to ${formData.email}`}
-            </p>
+            <h1>Create Account</h1>
+            <p>Join SafeShop for a secure and protected experience.</p>
           </div>
 
-          {step === 1 ? (
-            <form className={styles.form} onSubmit={handleSendOtp}>
-              <div className={styles.grid}>
-                <div className={styles.inputGroup}>
-                  <label>Full Name</label>
-                  <input type="text" required value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} />
-                </div>
-                <div className={styles.inputGroup}>
-                  <label>Email Address</label>
-                  <input type="email" required value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} />
-                </div>
-                <div className={styles.inputGroup}>
-                  <label>Password</label>
-                  <input type="password" required value={formData.password} onChange={(e) => setFormData({...formData, password: e.target.value})} />
-                </div>
-                <div className={styles.inputGroup}>
-                  <label>Phone Number</label>
-                  <input type="tel" required value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} />
-                </div>
-                <div className={styles.inputGroup}>
-                  <label>State</label>
-                  <input type="text" required value={formData.state} onChange={(e) => setFormData({...formData, state: e.target.value})} />
-                </div>
-                <div className={styles.inputGroup}>
-                  <label>City</label>
-                  <input type="text" required value={formData.city} onChange={(e) => setFormData({...formData, city: e.target.value})} />
-                </div>
-                <div className={styles.inputGroup}>
-                  <label>P.S. (Police Station)</label>
-                  <input type="text" required value={formData.ps} onChange={(e) => setFormData({...formData, ps: e.target.value})} />
-                </div>
-                <div className={styles.inputGroup}>
-                  <label>P.O. (Post Office)</label>
-                  <input type="text" required value={formData.po} onChange={(e) => setFormData({...formData, po: e.target.value})} />
-                </div>
-                <div className={styles.inputGroup}>
-                  <label>PIN Code</label>
-                  <input type="text" required value={formData.pin} onChange={(e) => setFormData({...formData, pin: e.target.value})} />
-                </div>
+          <form className={styles.form} onSubmit={handleRegister}>
+            <div className={styles.grid}>
+              {/* Form fields remain same */}
+              <div className={styles.inputGroup}>
+                <label>Full Name</label>
+                <input type="text" required value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} />
               </div>
-
-              <div className={styles.agreement}>
-                <input type="checkbox" required />
-                <span>I agree to the SafeShop Terms & Privacy Policy.</span>
+              <div className={styles.inputGroup}>
+                <label>Email Address</label>
+                <input type="email" required value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} />
               </div>
-
-              <button type="submit" className={`${styles.submitBtn} gradient-primary`} disabled={isVerifying}>
-                {isVerifying ? 'Checking email...' : 'Send OTP & Register'}
-              </button>
-            </form>
-          ) : (
-            <form className={styles.form} onSubmit={handleSubmit}>
-              <div className={styles.otpSection}>
-                {/* Status Banner */}
-                {statusMsg && (
-                  <div style={{
-                    display: 'flex', alignItems: 'center', gap: '8px',
-                    padding: '12px 16px', borderRadius: '10px', marginBottom: '16px',
-                    background: otpStatus === 'sent' ? '#ecfdf5' : '#fef2f2',
-                    color: otpStatus === 'sent' ? '#065f46' : '#991b1b',
-                    fontSize: '0.875rem', fontWeight: 600
-                  }}>
-                    {otpStatus === 'sent'
-                      ? <CheckCircle2 size={16} />
-                      : <AlertCircle size={16} />}
-                    {statusMsg}
-                  </div>
-                )}
-
-                <label>Verification Code</label>
-                <input 
-                  type="text" 
-                  maxLength={6} 
-                  className={styles.otpInput} 
-                  placeholder="000000"
-                  required 
-                  value={otp} 
-                  onChange={(e) => setOtp(e.target.value)}
-                  autoFocus
-                />
-                <p className={styles.resendText}>
-                  Didn't receive it?{' '}
-                  <button
-                    type="button"
-                    onClick={sendOtp}
-                    disabled={resendCooldown > 0 || isVerifying}
-                    className={styles.linkBtn}
-                    style={{ opacity: resendCooldown > 0 ? 0.5 : 1 }}
-                  >
-                    <RefreshCw size={12} style={{ display: 'inline', marginRight: 4 }} />
-                    {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend OTP'}
-                  </button>
-                </p>
+              <div className={styles.inputGroup}>
+                <label>Password</label>
+                <input type="password" required value={formData.password} onChange={(e) => setFormData({...formData, password: e.target.value})} />
               </div>
+              <div className={styles.inputGroup}>
+                <label>Phone Number</label>
+                <input type="tel" required value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} />
+              </div>
+              <div className={styles.inputGroup}>
+                <label>State</label>
+                <input type="text" required value={formData.state} onChange={(e) => setFormData({...formData, state: e.target.value})} />
+              </div>
+              <div className={styles.inputGroup}>
+                <label>City</label>
+                <input type="text" required value={formData.city} onChange={(e) => setFormData({...formData, city: e.target.value})} />
+              </div>
+              <div className={styles.inputGroup}>
+                <label>P.S. (Police Station)</label>
+                <input type="text" required value={formData.ps} onChange={(e) => setFormData({...formData, ps: e.target.value})} />
+              </div>
+              <div className={styles.inputGroup}>
+                <label>P.O. (Post Office)</label>
+                <input type="text" required value={formData.po} onChange={(e) => setFormData({...formData, po: e.target.value})} />
+              </div>
+              <div className={styles.inputGroup}>
+                <label>PIN Code</label>
+                <input type="text" required value={formData.pin} onChange={(e) => setFormData({...formData, pin: e.target.value})} />
+              </div>
+            </div>
 
-              <button type="submit" className={`${styles.submitBtn} gradient-primary`} disabled={isVerifying}>
-                {isVerifying ? 'Verifying...' : 'Complete Verification'}
-              </button>
-              
-              <button type="button" className={styles.backBtn} onClick={() => setStep(1)}>
-                <ArrowLeft size={16} /> Edit Details
-              </button>
-            </form>
-          )}
+            <div className={styles.agreement}>
+              <input type="checkbox" required />
+              <span>I agree to the SafeShop Terms & Privacy Policy.</span>
+            </div>
+
+            <button type="submit" className={`${styles.submitBtn} gradient-primary`} disabled={isVerifying}>
+              {isVerifying ? 'Creating Account...' : 'Complete Registration'}
+            </button>
+          </form>
         </div>
       </div>
     </div>

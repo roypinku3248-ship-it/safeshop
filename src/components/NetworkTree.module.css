@@ -349,29 +349,30 @@
   color: #94a3b8;
 }
 
-.treeCanvas {
+.pyramidContainer {
   width: 100%;
-  height: 600px; /* Fixed height for better scroll control */
+  height: 600px;
   overflow: auto;
-  border-radius: 15px;
-  background: #f8fafc;
   cursor: grab;
+  user-select: none;
+  background: rgba(248, 250, 252, 0.5);
+  border-radius: 20px;
+  border: 1px solid #e2e8f0;
   position: relative;
-  touch-action: pan-x pan-y;
-  scrollbar-width: thin;
 }
 
-.treeCanvas:active {
-  cursor: grabbing;
+.grabbing {
+  cursor: grabbing !important;
 }
 
 .pyramidLayout {
-  display: inline-flex; /* Use inline-flex for auto-sizing */
+  display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 100px; /* Large padding to allow zooming from top */
+  padding: 100px;
   min-width: 100%;
-  transition: transform 0.2s ease;
+  min-height: 100%;
+  transition: transform 0.1s ease-out;
 }
 
 .levelContainer {

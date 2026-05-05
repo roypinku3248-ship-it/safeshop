@@ -100,6 +100,37 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
     );
   };
 
+  const scrollRef = React.useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = React.useState(false);
+  const [startX, setStartX] = React.useState(0);
+  const [startY, setStartY] = React.useState(0);
+  const [scrollLeft, setScrollLeft] = React.useState(0);
+  const [scrollTop, setScrollTop] = React.useState(0);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!scrollRef.current) return;
+    setIsDragging(true);
+    setStartX(e.pageX - scrollRef.current.offsetLeft);
+    setStartY(e.pageY - scrollRef.current.offsetTop);
+    setScrollLeft(scrollRef.current.scrollLeft);
+    setScrollTop(scrollRef.current.scrollTop);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || !scrollRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - scrollRef.current.offsetLeft;
+    const y = e.pageY - scrollRef.current.offsetTop;
+    const walkX = (x - startX) * 1.5;
+    const walkY = (y - startY) * 1.5;
+    scrollRef.current.scrollLeft = scrollLeft - walkX;
+    scrollRef.current.scrollTop = scrollTop - walkY;
+  };
+
+  const stopDragging = () => {
+    setIsDragging(false);
+  };
+
   return (
     <div className={styles.treeWrapper}>
       <div className={styles.treeHeader}>
@@ -134,7 +165,14 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
       </div>
 
       {viewType === 'pyramid' ? (
-        <div className={styles.treeCanvas}>
+        <div 
+          ref={scrollRef}
+          className={`${styles.pyramidContainer} ${isDragging ? styles.grabbing : ''}`}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={stopDragging}
+          onMouseLeave={stopDragging}
+        >
           <div className={styles.pyramidLayout} style={{ transform: `scale(${zoom})`, transformOrigin: 'top center' }}>
             <div className={styles.mainRoot}>
               <div className={styles.rootAvatar}>{(currentRoot.name || 'U')[0]}</div>
@@ -155,7 +193,7 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
             
             <div className={styles.legend}>
               <span><div className={styles.legCard} style={{ width: 40, height: 25, display: 'inline-flex', marginRight: 8 }}></div> Level 2 Team Members</span>
-              <p>Click any member to zoom in</p>
+              <p>Click any member to zoom in | Click & Drag to move</p>
             </div>
           </div>
         </div>

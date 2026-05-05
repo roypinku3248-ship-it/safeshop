@@ -134,27 +134,29 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
       </div>
 
       {viewType === 'pyramid' ? (
-        <div className={styles.pyramidLayout} style={{ transform: `scale(${zoom})`, transformOrigin: 'top center' }}>
-          <div className={styles.mainRoot}>
-            <div className={styles.rootAvatar}>{(currentRoot.name || 'U')[0]}</div>
-            <h3>{currentRoot.name}</h3>
-            <p>{navigationStack.length === 0 ? 'Master Account' : 'Team Overview'}</p>
-          </div>
+        <div className={styles.treeCanvas}>
+          <div className={styles.pyramidLayout} style={{ transform: `scale(${zoom})`, transformOrigin: 'top center' }}>
+            <div className={styles.mainRoot}>
+              <div className={styles.rootAvatar}>{(currentRoot.name || 'U')[0]}</div>
+              <h3>{currentRoot.name}</h3>
+              <p>{navigationStack.length === 0 ? 'Master Account' : 'Team Overview'}</p>
+            </div>
 
-          <div className={styles.mainConnectors}>
-             <div className={styles.horizontalBar} />
-          </div>
+            <div className={styles.mainConnectors}>
+               <div className={styles.horizontalBar} />
+            </div>
 
-          <div className={styles.levelContainer}>
-            {[0, 1, 2].map((idx) => {
-              const children = getSubTree(currentRoot.id);
-              return renderNode(children[idx], currentRoot.id, idx, 0);
-            })}
-          </div>
-          
-          <div className={styles.legend}>
-            <span><div className={styles.legCard} style={{ width: 40, height: 25, display: 'inline-flex', marginRight: 8 }}></div> Level 2 Team Members</span>
-            <p>Click any member to zoom in</p>
+            <div className={styles.levelContainer}>
+              {[0, 1, 2].map((idx) => {
+                const children = getSubTree(currentRoot.id);
+                return renderNode(children[idx], currentRoot.id, idx, 0);
+              })}
+            </div>
+            
+            <div className={styles.legend}>
+              <span><div className={styles.legCard} style={{ width: 40, height: 25, display: 'inline-flex', marginRight: 8 }}></div> Level 2 Team Members</span>
+              <p>Click any member to zoom in</p>
+            </div>
           </div>
         </div>
       ) : (

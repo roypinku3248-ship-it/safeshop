@@ -11,12 +11,43 @@
   margin-bottom: 40px;
 }
 
-.viewToggle {
-  background: #f1f5f9;
-  padding: 5px;
-  border-radius: 12px;
+.zoomControls {
   display: flex;
-  gap: 5px;
+  align-items: center;
+  background: #f1f5f9;
+  padding: 4px 8px;
+  border-radius: 10px;
+  gap: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.zoomControls button {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-weight: 700;
+  color: #475569;
+  transition: all 0.2s;
+}
+
+.zoomControls button:hover {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+.zoomControls span {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #475569;
+  min-width: 40px;
+  text-align: center;
 }
 
 .viewToggle button {

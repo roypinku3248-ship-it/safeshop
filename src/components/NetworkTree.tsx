@@ -33,10 +33,11 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
 }) => {
   const [viewType, setViewType] = React.useState<'pyramid' | 'list'>('pyramid');
   
-  // Drill-down State: Which user's pyramid are we currently looking at?
+  // Drill-down State
   const [currentRootId, setCurrentRootId] = React.useState(rootUser.id);
   const [navigationStack, setNavigationStack] = React.useState<string[]>([]);
-
+  const [zoom, setZoom] = React.useState(1);
+  
   // Find the current user being viewed
   const currentRoot = fullTeam.find(u => u.id === currentRootId) || rootUser;
 
@@ -117,15 +118,25 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
           </button>
         </div>
         
-        {viewType === 'pyramid' && navigationStack.length > 0 && (
-          <button className={styles.backBtn} onClick={handleGoBack}>
-            ← Go Up
-          </button>
+        {viewType === 'pyramid' && (
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+            <div className={styles.zoomControls}>
+              <button onClick={() => setZoom(Math.max(0.4, zoom - 0.1))} title="Zoom Out">-</button>
+              <span>{Math.round(zoom * 100)}%</span>
+              <button onClick={() => setZoom(Math.min(1.5, zoom + 0.1))} title="Zoom In">+</button>
+              <button onClick={() => setZoom(1)} style={{ marginLeft: '5px', fontSize: '0.7rem' }}>Reset</button>
+            </div>
+            {navigationStack.length > 0 && (
+              <button className={styles.backBtn} onClick={handleGoBack}>
+                ← Go Up
+              </button>
+            )}
+          </div>
         )}
       </div>
 
       {viewType === 'pyramid' ? (
-        <div className={styles.pyramidLayout}>
+        <div className={styles.pyramidLayout} style={{ transform: `scale(${zoom})`, transformOrigin: 'top center' }}>
           <div className={styles.mainRoot}>
             <div className={styles.rootAvatar}>{(currentRoot.name || 'U')[0]}</div>
             <h3>{currentRoot.name}</h3>

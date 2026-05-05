@@ -341,13 +341,13 @@ export default function AdminPage() {
             <table className={styles.table}>
               <thead>
                 <tr>
-                  <th>Member ID</th>
-                  <th>User Name</th>
-                  <th>Phone & Address</th>
-                  <th>Referred By</th>
-                  <th>Role</th>
-                  <th>Total Sales</th>
-                  <th>Actions</th>
+                  <th style={{ color: 'red' }}>MEMBER UNIQUE ID</th>
+                  <th>USER FULL NAME</th>
+                  <th>PHONE & ADDRESS</th>
+                  <th>REFERRED BY</th>
+                  <th>ACCOUNT ROLE</th>
+                  <th>TOTAL SALES</th>
+                  <th>ACTIONS</th>
                 </tr>
               </thead>
               <tbody>

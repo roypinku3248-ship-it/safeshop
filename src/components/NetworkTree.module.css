@@ -167,17 +167,55 @@
   background: #f1f5f9;
 }
 
+.dotNode, .emptyDot, .legCard, .emptyLeg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
 .dotNode, .emptyDot {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   font-size: 0.75rem;
   font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s;
+}
+
+.legCard {
+  width: 80px;
+  height: 45px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #1e293b;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+}
+
+.legCard:hover {
+  transform: scale(1.1);
+  border-color: var(--primary);
+  box-shadow: 0 8px 15px rgba(0,0,0,0.05);
+  z-index: 5;
+}
+
+.emptyLeg {
+  width: 80px;
+  height: 45px;
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  color: #94a3b8;
+  font-size: 1.2rem;
+}
+
+.emptyLeg:hover {
+  background: #f1f5f9;
+  border-color: var(--primary);
+  color: var(--primary);
 }
 
 .dotNode {

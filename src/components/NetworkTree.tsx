@@ -88,11 +88,11 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
                 return (
                   <div key={idx} className={styles.subNodeWrapper}>
                     {subUser ? (
-                      <div className={styles.dotNode} onClick={() => handleDrillDown(subUser.id)} title={subUser.name}>
-                        {subUser.name[0]}
+                      <div className={styles.legCard} onClick={() => handleDrillDown(subUser.id)} title={subUser.name}>
+                        {subUser.name}
                       </div>
                     ) : (
-                      <div className={styles.emptyDot} onClick={() => onAddMember?.(user.id, idx)}>+</div>
+                      <div className={styles.emptyLeg} onClick={() => onAddMember?.(user.id, idx)}>+</div>
                     )}
                   </div>
                 );
@@ -156,7 +156,7 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
           </div>
           
           <div className={styles.legend}>
-            <span><div className={styles.dotNode} style={{ width: 12, height: 12 }}></div> Level 2 Team</span>
+            <span><div className={styles.legCard} style={{ width: 40, height: 25, display: 'inline-flex', marginRight: 8 }}></div> Level 2 Team Members</span>
             <p>Click any member to zoom in</p>
           </div>
         </div>

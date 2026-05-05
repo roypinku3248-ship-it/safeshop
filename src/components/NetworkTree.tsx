@@ -107,6 +107,20 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
   const [scrollLeft, setScrollLeft] = React.useState(0);
   const [scrollTop, setScrollTop] = React.useState(0);
 
+  // Auto-center the tree when it loads or changes
+  React.useEffect(() => {
+    const centerTree = () => {
+      if (scrollRef.current) {
+        const container = scrollRef.current;
+        const scrollPos = (container.scrollWidth - container.clientWidth) / 2;
+        container.scrollLeft = scrollPos;
+      }
+    };
+    // Short timeout allows the DOM to finish painting the wide layout first
+    const timeoutId = setTimeout(centerTree, 100);
+    return () => clearTimeout(timeoutId);
+  }, [currentRootId, zoom, viewType]);
+
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!scrollRef.current) return;
     setIsDragging(true);

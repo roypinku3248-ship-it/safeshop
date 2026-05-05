@@ -31,8 +31,8 @@ function LoginForm() {
       } else {
         router.push(callbackUrl);
       }
-    } catch (err) {
-      setError('Invalid email or password');
+    } catch (err: any) {
+      setError(err.message || 'Invalid email or password');
     } finally {
       setIsSubmitting(false);
     }
@@ -92,10 +92,6 @@ function LoginForm() {
 
       <div className={styles.footer}>
         <p>New to SafeShop? <Link href="/register">Create a secure account</Link></p>
-        <div className={styles.mockHint}>
-          <p>Admin: <strong>admin@smstudioapp.com</strong></p>
-          <p>Seller: <strong>seller@safeshop.in</strong></p>
-        </div>
       </div>
     </div>
   );

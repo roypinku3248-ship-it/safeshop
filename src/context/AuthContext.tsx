@@ -43,18 +43,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLoading(true);
     
     try {
-      // 1. Fetch real user data from Supabase
+      // 1. Special case for Admin Master
+      if (email === 'admin@smstudioapp.com' && password === 'admin123') {
+        const adminUser: User = {
+          id: 'SS-ADMIN-MASTER',
+          name: 'Root Admin',
+          email: email,
+          role: 'admin',
+          joined_at: new Date().toISOString(),
+          avatar: `https://ui-avatars.com/api/?name=Admin&background=0052cc&color=fff`,
+        };
+        setUser(adminUser);
+        localStorage.setItem('safeshop-user', JSON.stringify(adminUser));
+        return;
+      }
+
+      // 2. Strict Check: Verify email AND password in database
       const { data, error } = await supabase
         .from('users')
         .select('*')
         .eq('email', email)
+        .eq('password', password)
         .single();
 
       if (error || !data) {
-        throw new Error('User not found in database.');
+        throw new Error('Invalid Email or Password. Please try again.');
       }
 
-      // 2. Map the database data to our User object
+      // 3. Login Successful
       const realUser: User = {
         id: data.id,
         name: data.name,
@@ -67,16 +83,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(realUser);
       localStorage.setItem('safeshop-user', JSON.stringify(realUser));
     } catch (err: any) {
-      console.error('Login Error:', err.message);
-      // Fallback for demo purposes if DB fetch fails
-      const mockUser: User = {
-        id: Math.random().toString(36).substr(2, 9),
-        name: 'SafeShop User',
-        email: email,
-        role: 'user',
-        avatar: `https://ui-avatars.com/api/?name=User&background=0052cc&color=fff`,
-      };
-      setUser(mockUser);
+      console.error('Login Failed:', err.message);
+      throw err;
     } finally {
       setLoading(false);
     }

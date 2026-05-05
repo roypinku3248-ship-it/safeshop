@@ -32,14 +32,31 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
   isAdminView = false 
 }) => {
   const [viewType, setViewType] = React.useState<'pyramid' | 'list'>('pyramid');
+  
+  // Drill-down State: Which user's pyramid are we currently looking at?
+  const [currentRootId, setCurrentRootId] = React.useState(rootUser.id);
+  const [navigationStack, setNavigationStack] = React.useState<string[]>([]);
+
+  // Find the current user being viewed
+  const currentRoot = fullTeam.find(u => u.id === currentRootId) || rootUser;
 
   // Helper to build the tree recursively
   const getSubTree = (userId: string) => {
     return fullTeam.filter(u => u.referred_by === userId);
   };
-  
-  const rootChildren = getSubTree(rootUser.id);
-  const nextLegIdx = rootChildren.length < 3 ? rootChildren.length : -1;
+
+  const handleDrillDown = (userId: string) => {
+    setNavigationStack([...navigationStack, currentRootId]);
+    setCurrentRootId(userId);
+  };
+
+  const handleGoBack = () => {
+    const prevId = navigationStack.pop();
+    if (prevId) {
+      setCurrentRootId(prevId);
+      setNavigationStack([...navigationStack]);
+    }
+  };
 
   return (
     <div className={styles.treeWrapper}>
@@ -47,66 +64,74 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
         <div className={styles.viewToggle}>
           <button 
             className={viewType === 'pyramid' ? styles.activeView : ''} 
-            onClick={() => setViewType('pyramid')}
+            onClick={() => { setViewType('pyramid'); setCurrentRootId(rootUser.id); setNavigationStack([]); }}
           >
-            Ternary Pyramid
+            Unlimited Pyramid
           </button>
           <button 
             className={viewType === 'list' ? styles.activeView : ''} 
             onClick={() => setViewType('list')}
           >
-            Direct Join List
+            Personal Directs
           </button>
         </div>
+        
+        {viewType === 'pyramid' && navigationStack.length > 0 && (
+          <button className={styles.backBtn} onClick={handleGoBack}>
+            ← Back to Up-line
+          </button>
+        )}
       </div>
 
       {viewType === 'pyramid' ? (
         <div className={styles.pyramidLayout}>
           <div className={styles.rootBox}>
-            <div className={styles.nodeAvatarMain}>{(rootUser.name || 'U')[0]}</div>
-            <strong>{rootUser.name}</strong>
-            <span className={styles.idBadge}>Your Master ID</span>
+            <div className={styles.nodeAvatarMain}>{(currentRoot.name || 'U')[0]}</div>
+            <strong>{currentRoot.name}</strong>
+            <span className={styles.idBadge}>
+              {currentRoot.id === rootUser.id ? 'Your Master View' : 'Down-line Team View'}
+            </span>
           </div>
 
           <div className={styles.connectorLine} />
 
-          {/* Recursive Level 1 */}
           <div className={styles.levelOne}>
             {[0, 1, 2].map((idx) => {
-              const children = getSubTree(rootUser.id);
+              const children = getSubTree(currentRoot.id);
               const user = children[idx];
               
               return (
                 <div key={idx} className={styles.branchWrapper}>
                   <div className={styles.legLabel}>Leg {idx + 1}</div>
                   {user ? (
-                    <div className={styles.nodeCard}>
+                    <div className={styles.nodeCard} onClick={() => handleDrillDown(user.id)} style={{ cursor: 'pointer' }}>
                       <div className={styles.miniAvatar}>{user.name[0]}</div>
                       <strong>{user.name}</strong>
                       <span className={user.status === 'verified' ? styles.verified : styles.pending}>
                         {user.status || 'Pending'}
                       </span>
                       
-                      {/* Depth Indicator */}
                       <div className={styles.depthInfo}>
-                        Team: {fullTeam.filter(u => u.referred_by === user.id).length}
+                        Click to view {fullTeam.filter(u => u.referred_by === user.id).length} members
                       </div>
                     </div>
                   ) : (!isAdminView && idx === children.length) ? (
-                    <div className={`${styles.emptyNode} ${styles.activeJoinNode}`} onClick={() => onAddMember?.(rootUser.id, idx)}>
+                    <div className={`${styles.emptyNode} ${styles.activeJoinNode}`} onClick={() => onAddMember?.(currentRoot.id, idx)}>
                       <div className={styles.plusIcon}><PlusCircle size={24} /></div>
                       <button>Join Now</button>
                     </div>
                   ) : (
                     <div className={styles.emptyNode}>
                       <div className={styles.plusIcon} style={{ opacity: 0.3 }}>+</div>
-                      <span>Empty</span>
+                      <span>Empty Slot</span>
                     </div>
                   )}
                 </div>
               );
             })}
           </div>
+          
+          <p className={styles.drillHint}>💡 Tip: Click on any member to explore their team levels.</p>
         </div>
       ) : (
         <div className={styles.listLayout}>

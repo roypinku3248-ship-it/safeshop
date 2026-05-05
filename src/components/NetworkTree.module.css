@@ -36,148 +36,170 @@
   box-shadow: 0 4px 10px rgba(0,0,0,0.05);
 }
 
-/* Pyramid Layout */
-.pyramidLayout {
+.mainRoot {
   display: flex;
   flex-direction: column;
   align-items: center;
-  text-align: center;
+  margin-bottom: 20px;
 }
 
-.rootBox {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-}
-
-.nodeAvatarMain {
-  width: 70px;
-  height: 70px;
+.rootAvatar {
+  width: 80px;
+  height: 80px;
   background: var(--primary, #2563eb);
   color: white;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.8rem;
+  font-size: 2rem;
   font-weight: 800;
-  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 10px 25px rgba(37, 99, 235, 0.2);
 }
 
-.idBadge {
-  font-size: 0.75rem;
-  color: #94a3b8;
-  background: #f8fafc;
-  padding: 2px 8px;
-  border-radius: 4px;
-}
-
-.connectorLine {
-  width: 2px;
-  height: 40px;
-  background: #e2e8f0;
-  margin: 10px 0;
-}
-
-.levelOne {
-  display: flex;
-  justify-content: center;
-  gap: 40px;
+.mainConnectors {
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
 }
 
-.branchWrapper {
+.horizontalBar {
+  width: 70%;
+  height: 2px;
+  background: #e2e8f0;
+  position: relative;
+}
+
+.horizontalBar::before {
+  content: '';
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  width: 2px;
+  height: 20px;
+  background: #e2e8f0;
+}
+
+.levelContainer {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+  gap: 20px;
+}
+
+.nodeWrapper {
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   position: relative;
-  width: 160px;
 }
 
-.branchWrapper::before {
+.nodeWrapper::before {
   content: '';
   position: absolute;
-  top: -10px;
+  top: -20px;
   width: 2px;
-  height: 10px;
+  height: 20px;
   background: #e2e8f0;
 }
 
-.legLabel {
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  color: #94a3b8;
-  margin-bottom: 8px;
-  font-weight: 700;
+.nodeGroup {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .nodeCard {
   background: white;
   border: 1px solid #e2e8f0;
-  padding: 15px;
+  padding: 12px;
   border-radius: 12px;
-  width: 100%;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 5px;
-  transition: transform 0.3s ease;
+  gap: 10px;
+  width: 180px;
+  cursor: pointer;
+  transition: all 0.3s;
+  z-index: 2;
 }
 
 .nodeCard:hover {
-  transform: translateY(-5px);
-  border-color: var(--primary, #2563eb);
+  transform: scale(1.05);
+  border-color: var(--primary);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.05);
 }
 
-.miniAvatar {
-  width: 40px;
-  height: 40px;
+.subLevel {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 25px;
+  position: relative;
+  width: 100%;
+}
+
+.subLevel::before {
+  content: '';
+  position: absolute;
+  top: -15px;
+  width: 80%;
+  height: 2px;
   background: #f1f5f9;
+}
+
+.subNodeWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.subNodeWrapper::before {
+  content: '';
+  position: absolute;
+  top: -15px;
+  width: 2px;
+  height: 15px;
+  background: #f1f5f9;
+}
+
+.dotNode, .emptyDot {
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 0.75rem;
   font-weight: 700;
-  color: #1e293b;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
-.verified { color: #10b981; font-size: 0.75rem; font-weight: 700; }
-.pending { color: #f59e0b; font-size: 0.75rem; font-weight: 700; }
+.dotNode {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: var(--primary);
+}
 
-.emptyNode {
+.dotNode:hover { background: var(--primary); color: white; }
+
+.emptyDot {
   background: #f8fafc;
   border: 1px dashed #cbd5e1;
-  padding: 15px;
-  border-radius: 12px;
-  width: 100%;
   color: #94a3b8;
 }
 
-.plusIcon {
-  font-size: 1.5rem;
-  margin-bottom: 5px;
-}
+.emptyDot:hover { background: #f1f5f9; border-color: #94a3b8; }
 
-.emptyNode button {
-  background: white;
-  border: 1px solid #e2e8f0;
-  padding: 5px 10px;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  cursor: pointer;
-}
-
-.moreIndicator {
-  margin-top: 40px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
+.legend {
+  margin-top: 50px;
+  font-size: 0.8rem;
   color: #64748b;
-  font-size: 0.85rem;
-  background: #f1f5f9;
-  padding: 8px 20px;
-  border-radius: 20px;
 }
 
 /* List Layout */
@@ -222,6 +244,26 @@
   font-size: 0.8rem;
   font-weight: 700;
   color: #94a3b8;
+}
+
+.pyramidLayout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.nodeInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.emptyNodeSlot {
+  width: 180px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .listUser {

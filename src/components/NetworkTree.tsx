@@ -58,6 +58,59 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
     }
   };
 
+  const renderNode = (user: any, parentId: string, legIdx: number, depth: number = 0) => {
+    const children = getSubTree(user?.id || '');
+    const isNextToJoin = !user && !isAdminView; // Simple logic for now
+
+    if (depth > 1) return null; // Limit visual depth for clarity, can drill deeper
+
+    return (
+      <div className={styles.nodeWrapper} key={legIdx}>
+        <div className={styles.legLabel}>Leg {legIdx + 1}</div>
+        
+        {user ? (
+          <div className={styles.nodeGroup}>
+            <div className={styles.nodeCard} onClick={() => handleDrillDown(user.id)}>
+              <div className={styles.miniAvatar}>{user.name[0]}</div>
+              <div className={styles.nodeInfo}>
+                <strong>{user.name}</strong>
+                <span className={user.status === 'verified' ? styles.verified : styles.pending}>
+                  {user.status || 'Pending'}
+                </span>
+              </div>
+            </div>
+            
+            {/* Render Grandchildren (Level 2) */}
+            <div className={styles.subLevel}>
+              {[0, 1, 2].map((idx) => {
+                const subChildren = getSubTree(user.id);
+                const subUser = subChildren[idx];
+                return (
+                  <div key={idx} className={styles.subNodeWrapper}>
+                    {subUser ? (
+                      <div className={styles.dotNode} onClick={() => handleDrillDown(subUser.id)} title={subUser.name}>
+                        {subUser.name[0]}
+                      </div>
+                    ) : (
+                      <div className={styles.emptyDot} onClick={() => onAddMember?.(user.id, idx)}>+</div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ) : (
+          <div className={styles.emptyNodeSlot}>
+             <div className={`${styles.emptyNode} ${styles.activeJoinNode}`} onClick={() => onAddMember?.(parentId, legIdx)}>
+                <PlusCircle size={20} />
+                <span>Join</span>
+             </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className={styles.treeWrapper}>
       <div className={styles.treeHeader}>
@@ -66,72 +119,46 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
             className={viewType === 'pyramid' ? styles.activeView : ''} 
             onClick={() => { setViewType('pyramid'); setCurrentRootId(rootUser.id); setNavigationStack([]); }}
           >
-            Unlimited Pyramid
+            Business Structure
           </button>
           <button 
             className={viewType === 'list' ? styles.activeView : ''} 
             onClick={() => setViewType('list')}
           >
-            Personal Directs
+            Direct List
           </button>
         </div>
         
         {viewType === 'pyramid' && navigationStack.length > 0 && (
           <button className={styles.backBtn} onClick={handleGoBack}>
-            ← Back to Up-line
+            ← Go Up
           </button>
         )}
       </div>
 
       {viewType === 'pyramid' ? (
         <div className={styles.pyramidLayout}>
-          <div className={styles.rootBox}>
-            <div className={styles.nodeAvatarMain}>{(currentRoot.name || 'U')[0]}</div>
-            <strong>{currentRoot.name}</strong>
-            <span className={styles.idBadge}>
-              {currentRoot.id === rootUser.id ? 'Your Master View' : 'Down-line Team View'}
-            </span>
+          <div className={styles.mainRoot}>
+            <div className={styles.rootAvatar}>{(currentRoot.name || 'U')[0]}</div>
+            <h3>{currentRoot.name}</h3>
+            <p>{navigationStack.length === 0 ? 'Master Account' : 'Team Overview'}</p>
           </div>
 
-          <div className={styles.connectorLine} />
+          <div className={styles.mainConnectors}>
+             <div className={styles.horizontalBar} />
+          </div>
 
-          <div className={styles.levelOne}>
+          <div className={styles.levelContainer}>
             {[0, 1, 2].map((idx) => {
               const children = getSubTree(currentRoot.id);
-              const user = children[idx];
-              
-              return (
-                <div key={idx} className={styles.branchWrapper}>
-                  <div className={styles.legLabel}>Leg {idx + 1}</div>
-                  {user ? (
-                    <div className={styles.nodeCard} onClick={() => handleDrillDown(user.id)} style={{ cursor: 'pointer' }}>
-                      <div className={styles.miniAvatar}>{user.name[0]}</div>
-                      <strong>{user.name}</strong>
-                      <span className={user.status === 'verified' ? styles.verified : styles.pending}>
-                        {user.status || 'Pending'}
-                      </span>
-                      
-                      <div className={styles.depthInfo}>
-                        Click to view {fullTeam.filter(u => u.referred_by === user.id).length} members
-                      </div>
-                    </div>
-                  ) : (!isAdminView && idx === children.length) ? (
-                    <div className={`${styles.emptyNode} ${styles.activeJoinNode}`} onClick={() => onAddMember?.(currentRoot.id, idx)}>
-                      <div className={styles.plusIcon}><PlusCircle size={24} /></div>
-                      <button>Join Now</button>
-                    </div>
-                  ) : (
-                    <div className={styles.emptyNode}>
-                      <div className={styles.plusIcon} style={{ opacity: 0.3 }}>+</div>
-                      <span>Empty Slot</span>
-                    </div>
-                  )}
-                </div>
-              );
+              return renderNode(children[idx], currentRoot.id, idx, 0);
             })}
           </div>
           
-          <p className={styles.drillHint}>💡 Tip: Click on any member to explore their team levels.</p>
+          <div className={styles.legend}>
+            <span><div className={styles.dotNode} style={{ width: 12, height: 12 }}></div> Level 2 Team</span>
+            <p>Click any member to zoom in</p>
+          </div>
         </div>
       ) : (
         <div className={styles.listLayout}>

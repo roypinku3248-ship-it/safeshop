@@ -181,6 +181,7 @@ export default function UserDashboard() {
               <div>
                 <h3>{user.name}</h3>
                 <p>Member since {new Date(user.joined_at || Date.now()).getFullYear()}</p>
+                <p style={{ fontWeight: 'bold', color: 'var(--primary)', marginTop: '2px', fontSize: '0.85rem' }}>R-{user.id?.toString().slice(-6).toUpperCase()}</p>
               </div>
             </div>
             

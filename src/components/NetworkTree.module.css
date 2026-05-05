@@ -298,7 +298,8 @@
 .listStats strong { font-size: 0.9rem; }
 
 .statusV { color: #10b981; font-weight: 700; font-size: 0.8rem; }
-.statusP { color: #f59e0b; font-weight: 700; font-size: 0.8rem; }
+.statusP { color: #ef4444; font-weight: 700; font-size: 0.8rem; }
+.pending { color: #ef4444; font-size: 0.75rem; font-weight: 700; }
 
 .noData {
   padding: 60px;

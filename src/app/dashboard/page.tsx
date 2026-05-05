@@ -314,13 +314,16 @@ export default function UserDashboard() {
                       {isAddingMember && (
                         <form className={styles.addMemberForm} style={{ marginTop: '40px' }} onSubmit={async (e) => {
                           e.preventDefault();
+                          console.log('Starting Registration...');
+                          
                           if (!newMemberData.email || !newMemberData.name) {
-                            alert('Please enter at least Name and Email');
+                            alert('⚠️ Error: Please enter both Name and Email.');
                             return;
                           }
 
                           setRegistering(true);
                           try {
+                            // 1. Get current user's DB ID
                             const { data: currentUser, error: userError } = await supabase
                               .from('users')
                               .select('id')
@@ -328,22 +331,21 @@ export default function UserDashboard() {
                               .single();
 
                             if (userError || !currentUser) {
-                              throw new Error('Please sync your account first.');
+                              throw new Error('Please refresh your page and try again.');
                             }
 
-                            // 1. Smart Spillover: Find the first available slot in your network
+                            // 2. Smart Spillover Logic
                             const findSpilloverSlot = (rootId: string, team: any[]) => {
+                              console.log('Calculating Spillover for team size:', team.length);
                               const queue = [rootId];
                               while (queue.length > 0) {
                                 const currentId = queue.shift()!;
                                 const children = team.filter(u => u.referred_by === currentId);
                                 
                                 if (children.length < 3) {
-                                  return currentId; // Found a parent with an empty slot!
+                                  console.log('Slot found under Parent ID:', currentId);
+                                  return currentId;
                                 }
-                                
-                                // Add children to queue to check the next level down
-                                // We sort them to ensure we fill Leg 1 first, then 2, then 3
                                 children.forEach(child => queue.push(child.id));
                               }
                               return rootId;
@@ -351,6 +353,7 @@ export default function UserDashboard() {
 
                             const parentId = findSpilloverSlot(currentUser.id, fullTeam);
 
+                            // 3. Insert New User
                             const newUserId = `SS-USR-${Math.floor(Math.random() * 100000)}`;
                             const newRef = {
                               id: newUserId,
@@ -359,9 +362,8 @@ export default function UserDashboard() {
                               password: 'password123',
                               role: 'associate',
                               status: 'pending',
-                              referred_by: parentId, // PLACED IN THE SPILLOVER SLOT
-                              sponsor_id: currentUser.id, // Keep track of who actually invited them
-                              total_sales: 0,
+                              referred_by: parentId,
+                              sponsor_id: currentUser.id,
                               phone: newMemberData.phone,
                               city: newMemberData.city,
                               ps: newMemberData.ps,
@@ -369,17 +371,19 @@ export default function UserDashboard() {
                               joined_at: new Date().toISOString()
                             };
                             
+                            console.log('Inserting user into DB:', newRef);
                             const { error: insertError } = await supabase
                               .from('users')
                               .insert([newRef]);
 
                             if (insertError) throw insertError;
 
-                            alert(`🎉 SUCCESS! ${newMemberData.name} is registered.`);
+                            alert(`✅ SUCCESS! ${newMemberData.name} has been registered successfully.`);
                             setIsAddingMember(false);
                             window.location.reload(); 
                           } catch (err: any) {
-                            alert('⚠️ ERROR: ' + err.message);
+                            console.error('Registration error:', err);
+                            alert('❌ Registration Failed: ' + err.message);
                           } finally {
                             setRegistering(false);
                           }

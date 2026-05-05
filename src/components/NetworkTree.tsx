@@ -228,12 +228,11 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
               Direct List
             </button>
             <button 
-              className={styles.focusBtn} 
+              className={`${styles.focusToggle} ${isFullScreen ? styles.activeView : ''}`} 
               onClick={() => setIsFullScreen(!isFullScreen)}
-              style={{ marginLeft: '10px', height: '100%', padding: '0 15px', borderRadius: '8px', fontSize: '0.85rem' }}
             >
               {isFullScreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
-              <span style={{ marginLeft: '6px' }}>{isFullScreen ? 'Close Focus' : 'View Full Pyramid'}</span>
+              <span>{isFullScreen ? 'Close Focus' : 'View Full Pyramid'}</span>
             </button>
           </div>
         </div>

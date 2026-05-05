@@ -117,6 +117,15 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
+.viewToggle {
+  display: flex;
+  align-items: center;
+  background: #f1f5f9;
+  padding: 4px;
+  border-radius: 12px;
+  gap: 4px;
+}
+
 .viewToggle button {
   padding: 10px 20px;
   border-radius: 8px;
@@ -132,6 +141,26 @@
   background: white;
   color: #1e293b;
   box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.focusToggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-left: 10px;
+}
+
+.focusToggle:hover {
+  background: rgba(37, 99, 235, 0.05);
+  color: var(--primary);
 }
 
 .mainRoot {

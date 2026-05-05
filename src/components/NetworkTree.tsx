@@ -50,12 +50,20 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
   // Find the current user being viewed
   const currentRoot = fullTeam.find(u => u.id === currentRootId) || rootUser;
 
-  // Helper to build the tree recursively
+  // Smart Helper to build the tree recursively
   const getSubTree = (userId: string) => {
-    if (!userId) return [];
-    return fullTeam.filter(u => 
-      u.referred_by?.toString().toLowerCase() === userId.toString().toLowerCase()
-    );
+    if (!userId || !fullTeam) return [];
+    
+    const normalizedId = userId.toString().toLowerCase().trim();
+    
+    return fullTeam.filter(u => {
+      if (!u.referred_by) return false;
+      
+      const refId = u.referred_by.toString().toLowerCase().trim();
+      
+      // Try matching by ID, or if that fails, try matching by email as a fallback
+      return refId === normalizedId || (u.referred_by_email && u.referred_by_email === currentRoot.email);
+    });
   };
 
   const handleDrillDown = (userId: string) => {

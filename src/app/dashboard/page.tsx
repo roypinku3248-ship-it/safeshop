@@ -396,7 +396,7 @@ export default function UserDashboard() {
                             setRegistering(false);
                           }
                         }}>
-                          <h4>Quick Register Member</h4>
+                          <h4>Quick Register Member (v2.0 - KYC Enabled)</h4>
                           <div className={styles.miniFormGrid}>
                             <div className={styles.formItem}>
                               <label>Full Name</label>

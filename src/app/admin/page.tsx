@@ -339,6 +339,7 @@ export default function AdminPage() {
             <table className={styles.table}>
               <thead>
                 <tr>
+                  <th>Member ID</th>
                   <th>User Name</th>
                   <th>Phone & Address</th>
                   <th>Referred By</th>
@@ -350,6 +351,11 @@ export default function AdminPage() {
               <tbody>
                 {[...sellers, ...globalUsers].map((u, i) => (
                   <tr key={u.id || i}>
+                    <td>
+                      <code style={{ background: '#f1f5f9', padding: '4px 8px', borderRadius: '4px', fontWeight: 'bold', color: '#1e293b', fontSize: '0.8rem' }}>
+                        R-{u.id?.toString().slice(-6).toUpperCase()}
+                      </code>
+                    </td>
                     <td>
                       <div className={styles.userNameCell}>
                         <div className={styles.avatarMini} style={{ width: '30px', height: '30px', fontSize: '0.8rem' }}>

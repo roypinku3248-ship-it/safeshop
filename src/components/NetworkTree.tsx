@@ -85,27 +85,31 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
     }
   };
 
-  const renderNode = (user: any, parentId: string, legIdx: number, depth: number = 0, isParentLocked: boolean = false) => {
+  const renderNode = (user: any, parentId: string, legIdx: number, depth: number = 0, isParentBranchLocked: boolean = false) => {
     // 1. Get children of this node
     const children = user ? getSubTree(user.id) : [];
     
     // 2. Sequential Leg Locking Logic:
+    // Check if this specific LEG of the parent is locked.
     let isCurrentLegLocked = false;
+    
+    // We only enforce sequential locking on the ROOT user's primary legs (depth 1)
     if (depth === 1 && legIdx > 0) {
       const rootChildren = getSubTree(rootUser.id);
-      const previousLegMember = rootChildren[legIdx - 1];
-      if (!previousLegMember) {
+      const previousSibling = rootChildren[legIdx - 1];
+      
+      if (!previousSibling) {
         isCurrentLegLocked = true;
       } else {
-        const prevLegTeam = getSubTree(previousLegMember.id);
-        if (prevLegTeam.length < 3) {
+        const prevSiblingTeam = getSubTree(previousSibling.id);
+        if (prevSiblingTeam.length < 3) {
           isCurrentLegLocked = true;
         }
       }
     }
 
-    // A node is locked if its leg is locked OR its parent is locked
-    const isLocked = isParentLocked || isCurrentLegLocked;
+    // A slot is locked if its branch is locked OR its parent's branch was locked
+    const isLocked = isParentBranchLocked || isCurrentLegLocked;
     
     if (depth > 2) return null; 
 

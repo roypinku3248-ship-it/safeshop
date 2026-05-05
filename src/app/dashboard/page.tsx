@@ -4,7 +4,7 @@ import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
-import { Package, ShieldCheck, MapPin, Settings, Heart, LogOut, Clock, Truck, Loader2, IndianRupee, TrendingUp, Users as UsersIcon, Award, Plus, ShieldAlert } from 'lucide-react';
+import { Package, ShieldCheck, MapPin, Settings, Heart, LogOut, Clock, Truck, Loader2, IndianRupee, TrendingUp, Users as UsersIcon, Award, Plus, ShieldAlert, PlusCircle } from 'lucide-react';
 import { NetworkTree } from '@/components/NetworkTree';
 import { supabase } from '@/lib/supabase';
 import styles from './Dashboard.module.css';
@@ -17,6 +17,7 @@ export default function UserDashboard() {
   
   // New State for MLM Logic
   const [referrals, setReferrals] = React.useState<any[]>([]);
+  const [fullTeam, setFullTeam] = React.useState<any[]>([]);
 
   const [stats, setStats] = React.useState({
     totalBv: 0,
@@ -53,32 +54,40 @@ export default function UserDashboard() {
 
     // Load dynamic referrals from Supabase
     const loadReferrals = async () => {
-      const { data, error } = await supabase
+      // 1. Fetch Direct Referrals (For the List)
+      const { data: directs, error: directError } = await supabase
         .from('users')
         .select('*')
         .eq('referred_by', user?.id);
       
-      if (!error && data) {
-        const formatted = data.map(u => ({
+      let formattedDirects: any[] = [];
+      if (!directError && directs) {
+        formattedDirects = directs.map(u => ({
           id: u.id,
           name: u.name,
           avatar: u.name[0],
           sales: u.total_sales || 0,
-          indirectSales: 0, // In a real app, calculate recursively
-          status: u.status
+          status: u.status,
+          email: u.email
         }));
-        setReferrals(formatted);
+        setReferrals(formattedDirects);
+      }
 
-        // Calculate Commissions
-        const directComm = formatted.reduce((acc: number, ref: any) => acc + (ref.sales * 0.10), 0);
-        const indirectComm = formatted.reduce((acc: number, ref: any) => acc + (ref.indirectSales * 0.02), 0);
+      // 2. Fetch ALL users (For the Pyramid - so we can see depth)
+      const { data: allUsers, error: teamError } = await supabase
+        .from('users')
+        .select('*');
+      
+      if (!teamError && allUsers) {
+        setFullTeam(allUsers || []);
 
+        // Calculate Commissions based on Directs
+        const directComm = formattedDirects.reduce((acc: number, ref: any) => acc + (ref.sales * 0.10), 0);
         setStats(prev => ({
           ...prev,
           directCommission: directComm,
-          indirectCommission: indirectComm,
-          totalCommission: directComm + indirectComm,
-          referralsCount: formatted.length
+          referralsCount: formattedDirects.length,
+          totalCommission: directComm + prev.indirectCommission
         }));
       }
     };
@@ -87,7 +96,7 @@ export default function UserDashboard() {
       loadReferrals();
     }
 
-    // Calculate Personal BV stats based on local orders (for now)
+    // Calculate Personal BV stats
     const personalBv = savedOrders.reduce((acc: number, order: any) => {
       return acc + order.items.reduce((sum: number, item: any) => sum + (item.bv * item.quantity), 0);
     }, 0);
@@ -270,62 +279,86 @@ export default function UserDashboard() {
                     <div className={styles.visualTreeSection}>
                       <div className={styles.treeHeader}>
                         <h3>Pyramid Business Structure</h3>
-                        <button className={styles.addMemberBtn} onClick={() => setIsAddingMember(!isAddingMember)}>
-                          <Plus size={16} /> {isAddingMember ? 'Cancel' : 'Register Member'}
-                        </button>
+                      </div>
+
+                      
+                      <div className={styles.treeContainer}>
+                        <NetworkTree 
+                          rootUser={{ name: user.name, id: user.id }}
+                          directReferrals={referrals}
+                          fullTeam={fullTeam}
+                          onAddMember={() => setIsAddingMember(true)}
+                        />
+                      </div>
+
+                      {/* Move Button and Form here to the bottom */}
+                      <div style={{ marginTop: '40px', textAlign: 'center' }}>
+                        {!isAddingMember ? (
+                          <button 
+                            className={styles.addMemberBtn}
+                            onClick={() => setIsAddingMember(true)}
+                          >
+                            <PlusCircle size={20} /> Add New Direct Member
+                          </button>
+                        ) : (
+                          <button 
+                            className={styles.cancelBtn}
+                            onClick={() => setIsAddingMember(false)}
+                            style={{ background: '#f1f5f9', color: '#64748b', padding: '10px 20px', borderRadius: '10px', fontWeight: 'bold' }}
+                          >
+                            - Cancel Registration
+                          </button>
+                        )}
                       </div>
 
                       {isAddingMember && (
-                        <form className={styles.addMemberForm} onSubmit={async (e) => {
+                        <form className={styles.addMemberForm} style={{ marginTop: '40px' }} onSubmit={async (e) => {
                           e.preventDefault();
-                            if (!newMemberData.email || !newMemberData.name) {
-                              alert('Please enter at least Name and Email');
-                              return;
+                          if (!newMemberData.email || !newMemberData.name) {
+                            alert('Please enter at least Name and Email');
+                            return;
+                          }
+
+                          setRegistering(true);
+                          try {
+                            const { data: currentUser, error: userError } = await supabase
+                              .from('users')
+                              .select('id')
+                              .eq('email', user.email)
+                              .single();
+
+                            if (userError || !currentUser) {
+                              throw new Error('Please sync your account first.');
                             }
 
-                            setRegistering(true);
-                            try {
-                              // 1. Get your REAL database ID (to fix the foreign key error)
-                              const { data: currentUser, error: userError } = await supabase
-                                .from('users')
-                                .select('id')
-                                .eq('email', user.email)
-                                .single();
+                            const newUserId = `SS-USR-${Math.floor(Math.random() * 100000)}`;
+                            const newRef = {
+                              id: newUserId,
+                              name: newMemberData.name,
+                              email: newMemberData.email,
+                              password: 'password123',
+                              role: 'associate',
+                              status: 'pending',
+                              referred_by: currentUser.id,
+                              total_sales: 0,
+                              phone: newMemberData.phone,
+                              city: newMemberData.city,
+                              ps: newMemberData.ps,
+                              po: newMemberData.po,
+                              joined_at: new Date().toISOString()
+                            };
+                            
+                            const { error: insertError } = await supabase
+                              .from('users')
+                              .insert([newRef]);
 
-                              if (userError || !currentUser) {
-                                throw new Error('Your account is not fully synced with the database. Please Log Out and Log In again.');
-                              }
+                            if (insertError) throw insertError;
 
-                              const newUserId = `SS-USR-${Math.floor(Math.random() * 100000)}`;
-                              const newRef = {
-                                id: newUserId,
-                                name: newMemberData.name,
-                                email: newMemberData.email,
-                                password: 'password123',
-                                role: 'associate',
-                                status: 'pending',
-                                referred_by: currentUser.id, // Use the REAL ID from DB
-                                total_sales: 0,
-                                phone: newMemberData.phone,
-                                city: newMemberData.city,
-                                ps: newMemberData.ps,
-                                po: newMemberData.po,
-                                joined_at: new Date().toISOString()
-                              };
-                              
-                              const { error: insertError } = await supabase
-                                .from('users')
-                                .insert([newRef]);
-
-                              if (insertError) throw insertError;
-
-                            alert(`🎉 SUCCESS! ${newMemberData.name} is now registered under you.`);
+                            alert(`🎉 SUCCESS! ${newMemberData.name} is registered.`);
                             setIsAddingMember(false);
-                            setNewMemberData({ name: '', email: '', phone: '', city: '', ps: '', po: '' });
                             window.location.reload(); 
                           } catch (err: any) {
-                            console.error('Registration failed:', err);
-                            alert('⚠️ DATABASE ERROR: ' + (err.message || 'Check your internet or RLS settings'));
+                            alert('⚠️ ERROR: ' + err.message);
                           } finally {
                             setRegistering(false);
                           }
@@ -334,71 +367,41 @@ export default function UserDashboard() {
                           <div className={styles.miniFormGrid}>
                             <div className={styles.formItem}>
                               <label>Full Name</label>
-                              <input type="text" placeholder="John Doe" required value={newMemberData.name} onChange={(e) => setNewMemberData({...newMemberData, name: e.target.value})} />
+                              <input type="text" placeholder="Full Name" required value={newMemberData.name} onChange={(e) => setNewMemberData({...newMemberData, name: e.target.value})} />
                             </div>
                             <div className={styles.formItem}>
                               <label>Email Address</label>
-                              <input type="email" placeholder="john@example.com" required value={newMemberData.email} onChange={(e) => setNewMemberData({...newMemberData, email: e.target.value})} />
+                              <input type="email" placeholder="Email" required value={newMemberData.email} onChange={(e) => setNewMemberData({...newMemberData, email: e.target.value})} />
                             </div>
                             <div className={styles.formItem}>
                               <label>Phone Number</label>
-                              <input type="tel" placeholder="9876543210" required value={newMemberData.phone} onChange={(e) => setNewMemberData({...newMemberData, phone: e.target.value})} />
+                              <input type="tel" placeholder="Phone" required value={newMemberData.phone} onChange={(e) => setNewMemberData({...newMemberData, phone: e.target.value})} />
                             </div>
                             <div className={styles.formItem}>
                               <label>City/Village</label>
-                              <input type="text" placeholder="Kolkata" value={newMemberData.city} onChange={(e) => setNewMemberData({...newMemberData, city: e.target.value})} />
+                              <input type="text" placeholder="City" value={newMemberData.city} onChange={(e) => setNewMemberData({...newMemberData, city: e.target.value})} />
                             </div>
                             <div className={styles.formItem}>
                               <label>Police Station (PS)</label>
-                              <input type="text" placeholder="PS Name" value={newMemberData.ps} onChange={(e) => setNewMemberData({...newMemberData, ps: e.target.value})} />
+                              <input type="text" placeholder="PS" value={newMemberData.ps} onChange={(e) => setNewMemberData({...newMemberData, ps: e.target.value})} />
                             </div>
                             <div className={styles.formItem}>
                               <label>Post Office (PO)</label>
-                              <input type="text" placeholder="PO Name" value={newMemberData.po} onChange={(e) => setNewMemberData({...newMemberData, po: e.target.value})} />
+                              <input type="text" placeholder="PO" value={newMemberData.po} onChange={(e) => setNewMemberData({...newMemberData, po: e.target.value})} />
                             </div>
                           </div>
                           
-                          <div className={styles.registrationUploads}>
-                            <p><strong>Referral ID Documents (KYC)</strong></p>
-                            <div className={styles.uploadRow}>
-                              <div className={styles.miniUpload}>
-                                <input type="file" id="ref-front" />
-                                <label htmlFor="ref-front">ID Front</label>
-                              </div>
-                              <div className={styles.miniUpload}>
-                                <input type="file" id="ref-back" />
-                                <label htmlFor="ref-back">ID Back</label>
-                              </div>
-                              <div className={styles.miniUpload}>
-                                <input type="file" id="ref-selfie" />
-                                <label htmlFor="ref-selfie">Selfie</label>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className={styles.termsConsent}>
-                            <input type="checkbox" id="reg-terms" required />
-                            <label htmlFor="reg-terms">I agree to SafeShop's <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a> for this new member.</label>
-                          </div>
-
                           <button 
                             type="submit"
                             className="gradient-primary" 
                             disabled={registering}
                             style={{ marginTop: '20px', padding: '14px 24px', borderRadius: '12px', color: 'white', fontWeight: 'bold', width: '100%', cursor: 'pointer' }}
                           >
-                            {registering ? 'Processing Database...' : 'Confirm & Register Member'}
+                            {registering ? 'Processing...' : 'Confirm & Register Member'}
                           </button>
                         </form>
                       )}
-                      
-                      <div className={styles.treeContainer}>
-                        <NetworkTree 
-                          rootUser={{ name: user.name, id: user.id }}
-                          referrals={referrals}
-                          onAddMember={() => setIsAddingMember(true)}
-                        />
-                      </div>
+
                     </div>
                   )}
 

@@ -15,9 +15,10 @@ interface User {
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  error: string | null;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
-  refreshUser: () => void;
+  refreshUser: () => Promise<void>;
   isAuthenticated: boolean;
 }
 
@@ -26,6 +27,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const savedUser = localStorage.getItem('safeshop-user');
@@ -41,43 +43,57 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, password: string) => {
     setLoading(true);
+    setError(''); // Clear previous errors
     
     try {
-      // 1. Special case for Admin Master
-      if (email === 'admin@smstudioapp.com' && password === 'admin123') {
-        const adminUser: User = {
-          id: 'SS-ADMIN-MASTER',
-          name: 'Root Admin',
-          email: email,
-          role: 'admin',
-          joined_at: new Date().toISOString(),
-          avatar: `https://ui-avatars.com/api/?name=Admin&background=0052cc&color=fff`,
-        };
-        setUser(adminUser);
-        localStorage.setItem('safeshop-user', JSON.stringify(adminUser));
-        return;
+      // 1. Mandatory Input Check
+      if (!email || !password || password.trim() === '') {
+        throw new Error('Email and Password are required.');
       }
 
-      // 2. Strict Check: Verify email AND password in database
-      const { data, error } = await supabase
+      // 2. Special case for Admin Master
+      if (email === 'admin@smstudioapp.com') {
+        if (password === 'admin123') {
+          const adminUser: User = {
+            id: 'SS-ADMIN-MASTER',
+            name: 'Root Admin',
+            email: email,
+            role: 'admin',
+            joined_at: new Date().toISOString(),
+            avatar: `https://ui-avatars.com/api/?name=Admin&background=0052cc&color=fff`,
+          };
+          setUser(adminUser);
+          localStorage.setItem('safeshop-user', JSON.stringify(adminUser));
+          return;
+        } else {
+          throw new Error('Incorrect Password for Admin Master.');
+        }
+      }
+
+      // 3. Database Check: Fetch user with matching email
+      const { data: dbUser, error: dbError } = await supabase
         .from('users')
         .select('*')
         .eq('email', email)
-        .eq('password', password)
         .single();
 
-      if (error || !data) {
-        throw new Error('Invalid Email or Password. Please try again.');
+      if (dbError || !dbUser) {
+        throw new Error('No account found with this email.');
       }
 
-      // 3. Login Successful
+      // 4. Manual Password Match (Case Sensitive)
+      if (dbUser.password !== password) {
+        throw new Error('The password you entered is incorrect.');
+      }
+
+      // 5. Login Successful
       const realUser: User = {
-        id: data.id,
-        name: data.name,
-        email: data.email,
-        role: data.role as any || 'user',
-        joined_at: data.joined_at,
-        avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(data.name)}&background=0052cc&color=fff`,
+        id: dbUser.id,
+        name: dbUser.name,
+        email: dbUser.email,
+        role: dbUser.role as any || 'user',
+        joined_at: dbUser.joined_at,
+        avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(dbUser.name)}&background=0052cc&color=fff`,
       };
 
       setUser(realUser);
@@ -125,6 +141,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       value={{
         user,
         loading,
+        error,
         login,
         logout,
         refreshUser,

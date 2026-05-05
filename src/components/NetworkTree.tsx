@@ -18,23 +18,28 @@ interface NetworkTreeProps {
     name: string;
     id: string;
   };
-  referrals: any[];
-  onAddMember?: () => void;
+  directReferrals: any[];
+  fullTeam: any[];
+  onAddMember?: (parentId?: string, legIndex?: number) => void;
   isAdminView?: boolean;
 }
 
 export const NetworkTree: React.FC<NetworkTreeProps> = ({ 
   rootUser, 
-  referrals = [], 
+  directReferrals = [], 
+  fullTeam = [],
   onAddMember,
   isAdminView = false 
 }) => {
-  const [viewType, setViewType] = React.useState<'pyramid' | 'list'>('list');
+  const [viewType, setViewType] = React.useState<'pyramid' | 'list'>('pyramid');
 
-  const displayedUsers = referrals.slice(0, 50);
+  // Helper to build the tree recursively
+  const getSubTree = (userId: string) => {
+    return fullTeam.filter(u => u.referred_by === userId);
+  };
   
-  // Find the next available leg index (0, 1, or 2)
-  const nextLegIdx = displayedUsers.length < 3 ? displayedUsers.length : -1;
+  const rootChildren = getSubTree(rootUser.id);
+  const nextLegIdx = rootChildren.length < 3 ? rootChildren.length : -1;
 
   return (
     <div className={styles.treeWrapper}>
@@ -60,16 +65,17 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
           <div className={styles.rootBox}>
             <div className={styles.nodeAvatarMain}>{(rootUser.name || 'U')[0]}</div>
             <strong>{rootUser.name}</strong>
-            <span className={styles.idBadge}>ID: {rootUser.id.substring(0, 8)}</span>
+            <span className={styles.idBadge}>Your Master ID</span>
           </div>
 
           <div className={styles.connectorLine} />
 
+          {/* Recursive Level 1 */}
           <div className={styles.levelOne}>
             {[0, 1, 2].map((idx) => {
-              const user = displayedUsers[idx];
-              const isNextToJoin = idx === nextLegIdx && !isAdminView;
-
+              const children = getSubTree(rootUser.id);
+              const user = children[idx];
+              
               return (
                 <div key={idx} className={styles.branchWrapper}>
                   <div className={styles.legLabel}>Leg {idx + 1}</div>
@@ -80,40 +86,42 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
                       <span className={user.status === 'verified' ? styles.verified : styles.pending}>
                         {user.status || 'Pending'}
                       </span>
+                      
+                      {/* Depth Indicator */}
+                      <div className={styles.depthInfo}>
+                        Team: {fullTeam.filter(u => u.referred_by === user.id).length}
+                      </div>
                     </div>
-                  ) : isNextToJoin ? (
-                    <div className={`${styles.emptyNode} ${styles.activeJoinNode}`} onClick={onAddMember}>
+                  ) : (!isAdminView && idx === children.length) ? (
+                    <div className={`${styles.emptyNode} ${styles.activeJoinNode}`} onClick={() => onAddMember?.(rootUser.id, idx)}>
                       <div className={styles.plusIcon}><PlusCircle size={24} /></div>
                       <button>Join Now</button>
                     </div>
                   ) : (
                     <div className={styles.emptyNode}>
                       <div className={styles.plusIcon} style={{ opacity: 0.3 }}>+</div>
-                      <span>Locked</span>
+                      <span>Empty</span>
                     </div>
                   )}
                 </div>
               );
             })}
           </div>
-
-          {displayedUsers.length > 3 && (
-            <div className={styles.moreIndicator}>
-              <TrendingUp size={16} />
-              <span>+{displayedUsers.length - 3} more members in your direct team</span>
-            </div>
-          )}
         </div>
       ) : (
         <div className={styles.listLayout}>
           <div className={styles.listGrid}>
-            {displayedUsers.map((user, index) => (
+            <div className={styles.listHeader}>
+              <h4>Direct Sponsorship List</h4>
+              <p>Total Personally Joined: {directReferrals.length}</p>
+            </div>
+            {directReferrals.map((user, index) => (
               <div key={user.id} className={styles.listBranch}>
                 <div className={styles.listConnector} />
                 <div className={styles.listItem}>
                   <div className={styles.listIndex}>{index + 1}</div>
                   <div className={styles.listUser}>
-                    <div className={styles.listAvatar}>{user.name[0]}</div>
+                    <div className={styles.listAvatar}>{user.avatar || user.name[0]}</div>
                     <div>
                       <strong>{user.name}</strong>
                       <p>{user.email}</p>
@@ -128,21 +136,17 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
               </div>
             ))}
             
-            {/* The NEXT spot to join */}
-            {!isAdminView && displayedUsers.length < 50 && (
+            {!isAdminView && (
               <div className={styles.listBranch}>
                 <div className={styles.listConnector} />
-                <div className={`${styles.listItem} ${styles.joinRow}`} onClick={onAddMember}>
-                  <div className={styles.listIndex}>{displayedUsers.length + 1}</div>
+                <div className={`${styles.listItem} ${styles.joinRow}`} onClick={() => onAddMember?.()}>
+                  <div className={styles.listIndex}>+</div>
                   <div className={styles.listUser}>
                     <div className={`${styles.listAvatar} ${styles.joinAvatar}`}><PlusCircle size={20} /></div>
                     <div>
-                      <strong style={{ color: 'var(--primary)' }}>Add New Member</strong>
-                      <p>Click here to join a user to your direct network</p>
+                      <strong style={{ color: 'var(--primary)' }}>Add New Personal Referral</strong>
+                      <p>Invite someone directly to your team</p>
                     </div>
-                  </div>
-                  <div className={styles.listStats}>
-                    <button className={styles.miniJoinBtnAction}>Join Now</button>
                   </div>
                 </div>
               </div>

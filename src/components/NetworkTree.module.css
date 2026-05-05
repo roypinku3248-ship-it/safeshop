@@ -122,22 +122,24 @@
   align-items: center;
   gap: 10px;
   width: 180px;
+  flex-shrink: 0;
   cursor: pointer;
   transition: all 0.3s;
   z-index: 2;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
 
 .nodeCard:hover {
-  transform: scale(1.05);
+  transform: translateY(-5px);
   border-color: var(--primary);
-  box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+  box-shadow: 0 12px 20px rgba(0,0,0,0.1);
 }
 
 .subLevel {
   display: flex;
   justify-content: center;
-  gap: 10px;
-  margin-top: 25px;
+  gap: 40px;
+  margin-top: 40px;
   position: relative;
   width: 100%;
 }
@@ -145,10 +147,10 @@
 .subLevel::before {
   content: '';
   position: absolute;
-  top: -15px;
-  width: 80%;
+  top: -20px;
+  width: calc(100% - 100px);
   height: 2px;
-  background: #f1f5f9;
+  background: #e2e8f0;
 }
 
 .subNodeWrapper {
@@ -184,38 +186,49 @@
 }
 
 .legCard {
-  width: 80px;
-  height: 45px;
+  width: 110px;
+  min-height: 55px;
   background: white;
   border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  font-size: 0.8rem;
+  border-radius: 10px;
+  font-size: 0.75rem;
   font-weight: 700;
   color: #1e293b;
+  flex-shrink: 0;
   box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+  padding: 5px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
 }
 
 .legCard:hover {
-  transform: scale(1.1);
+  transform: translateY(-3px);
   border-color: var(--primary);
-  box-shadow: 0 8px 15px rgba(0,0,0,0.05);
+  box-shadow: 0 8px 15px rgba(0,0,0,0.08);
   z-index: 5;
 }
 
 .emptyLeg {
-  width: 80px;
-  height: 45px;
+  width: 110px;
+  min-height: 55px;
   background: #f8fafc;
   border: 1px dashed #cbd5e1;
-  border-radius: 8px;
+  border-radius: 10px;
   color: #94a3b8;
   font-size: 1.2rem;
+  flex-shrink: 0;
 }
 
 .emptyLeg:hover {
-  background: #f1f5f9;
+  background: white;
   border-color: var(--primary);
   color: var(--primary);
+  border-style: solid;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 15px rgba(0,0,0,0.05);
 }
 
 .dotNode {
@@ -301,22 +314,23 @@
 }
 
 .emptyNodeSlot {
-  min-width: 100px;
+  min-width: 200px;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
 .emptyNode {
-  width: 80px;
-  height: 45px;
-  border-radius: 8px;
+  width: 180px;
+  height: 60px;
+  border-radius: 12px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
-  font-size: 0.7rem;
+  gap: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
 }
 
 .listUser {

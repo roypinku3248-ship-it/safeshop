@@ -35,7 +35,11 @@ export default function UserDashboard() {
     phone: '',
     city: '',
     ps: '',
-    po: ''
+    po: '',
+    aadhar: '',
+    pan: '',
+    bankAcc: '',
+    ifsc: ''
   });
 
   useEffect(() => {
@@ -376,7 +380,7 @@ export default function UserDashboard() {
 
                             alert(`✅ SUCCESS! ${newMemberData.name} has been registered successfully.`);
                             setIsAddingMember(false);
-                            setNewMemberData({ name: '', email: '', phone: '', city: '', ps: '', po: '' }); // Reset form
+                            setNewMemberData({ name: '', email: '', phone: '', city: '', ps: '', po: '', aadhar: '', pan: '', bankAcc: '', ifsc: '' }); // Reset all fields
                             window.location.reload(); 
                           } catch (err: any) {
                             console.error('Registration error:', err);
@@ -410,6 +414,46 @@ export default function UserDashboard() {
                             <div className={styles.formItem}>
                               <label>Post Office (PO)</label>
                               <input type="text" placeholder="PO" value={newMemberData.po} onChange={(e) => setNewMemberData({...newMemberData, po: e.target.value})} />
+                            </div>
+                          </div>
+
+                          <h4 style={{ marginTop: '25px', color: 'var(--primary)' }}>KYC & Bank Details</h4>
+                          <div className={styles.miniFormGrid}>
+                            <div className={styles.formItem}>
+                              <label>Aadhar Number</label>
+                              <input type="text" placeholder="12-digit Aadhar" value={newMemberData.aadhar} onChange={(e) => setNewMemberData({...newMemberData, aadhar: e.target.value})} />
+                            </div>
+                            <div className={styles.formItem}>
+                              <label>PAN Number</label>
+                              <input type="text" placeholder="PAN Card No" value={newMemberData.pan} onChange={(e) => setNewMemberData({...newMemberData, pan: e.target.value})} />
+                            </div>
+                            <div className={styles.formItem}>
+                              <label>Bank Account No</label>
+                              <input type="text" placeholder="Account Number" value={newMemberData.bankAcc} onChange={(e) => setNewMemberData({...newMemberData, bankAcc: e.target.value})} />
+                            </div>
+                            <div className={styles.formItem}>
+                              <label>Bank IFSC Code</label>
+                              <input type="text" placeholder="IFSC Code" value={newMemberData.ifsc} onChange={(e) => setNewMemberData({...newMemberData, ifsc: e.target.value})} />
+                            </div>
+                          </div>
+
+                          <h4 style={{ marginTop: '25px', color: 'var(--primary)' }}>Document Uploads (Images)</h4>
+                          <div className={styles.fileUploadGrid}>
+                            <div className={styles.fileBox}>
+                              <span>Aadhar Front</span>
+                              <input type="file" accept="image/*" />
+                            </div>
+                            <div className={styles.fileBox}>
+                              <span>Aadhar Back</span>
+                              <input type="file" accept="image/*" />
+                            </div>
+                            <div className={styles.fileBox}>
+                              <span>PAN Card</span>
+                              <input type="file" accept="image/*" />
+                            </div>
+                            <div className={styles.fileBox}>
+                              <span>Passbook/Cheque</span>
+                              <input type="file" accept="image/*" />
                             </div>
                           </div>
                           

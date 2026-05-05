@@ -66,9 +66,9 @@
 }
 
 .horizontalBar {
-  width: 70%;
-  height: 2px;
-  background: #e2e8f0;
+  width: 80%;
+  height: 3px;
+  background: #cbd5e1;
   position: relative;
 }
 
@@ -84,9 +84,10 @@
 
 .levelContainer {
   display: flex;
-  justify-content: space-around;
+  justify-content: center;
   width: 100%;
-  gap: 20px;
+  gap: 60px;
+  padding: 40px 0;
 }
 
 .nodeWrapper {
@@ -100,10 +101,10 @@
 .nodeWrapper::before {
   content: '';
   position: absolute;
-  top: -20px;
-  width: 2px;
-  height: 20px;
-  background: #e2e8f0;
+  top: -40px;
+  width: 3px;
+  height: 40px;
+  background: #cbd5e1;
 }
 
 .nodeGroup {
@@ -138,8 +139,8 @@
 .subLevel {
   display: flex;
   justify-content: center;
-  gap: 40px;
-  margin-top: 40px;
+  gap: 25px;
+  margin-top: 60px;
   position: relative;
   width: 100%;
 }
@@ -147,10 +148,10 @@
 .subLevel::before {
   content: '';
   position: absolute;
-  top: -20px;
-  width: calc(100% - 100px);
-  height: 2px;
-  background: #e2e8f0;
+  top: -30px;
+  width: calc(100% - 40px);
+  height: 3px;
+  background: #cbd5e1;
 }
 
 .subNodeWrapper {

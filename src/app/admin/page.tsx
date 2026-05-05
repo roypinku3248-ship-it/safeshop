@@ -89,45 +89,67 @@ export default function AdminPage() {
     }
   };
 
-  const handleApproveUser = async (id: string) => {
+  const handleApproveUser = async (userId: string) => {
+    setPendingVerificationId(userId);
+    setAdminPassword('');
+  };
+
+  const confirmVerification = async () => {
+    if (adminPassword !== 'admin123') { // Fixed passkey for now, should be env variable
+      alert('Incorrect Admin Pass Key!');
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from('users')
         .update({ status: 'verified', role: 'seller' })
-        .eq('id', id);
+        .eq('id', pendingVerificationId);
 
       if (error) throw error;
-      setGlobalUsers(globalUsers.map(u => u.id === id ? { ...u, status: 'verified', role: 'seller' } : u));
-      alert('User ID Verified successfully!');
-    } catch (error: any) {
-      alert('Error: ' + error.message);
+      setGlobalUsers(globalUsers.map(u => u.id === pendingVerificationId ? { ...u, status: 'verified', role: 'seller' } : u));
+      setPendingVerificationId(null);
+      alert('User verified successfully!');
+    } catch (err: any) {
+      alert('Error verifying user: ' + err.message);
     }
   };
 
+  const [pendingKycAction, setPendingKycAction] = React.useState<{id: string, action: 'approve' | 'reject'} | null>(null);
+
   const handleKycAction = async (id: string, action: 'approve' | 'reject') => {
+    setPendingKycAction({ id, action });
+    setAdminPassword('');
+  };
+
+  const confirmKycAction = async () => {
+    if (!pendingKycAction) return;
+    if (adminPassword !== 'admin123') {
+      alert('Incorrect Admin Pass Key!');
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from('kyc_submissions')
-        .update({ status: action === 'approve' ? 'Approved' : 'Rejected' })
-        .eq('id', id);
+        .update({ status: pendingKycAction.action === 'approve' ? 'Approved' : 'Rejected' })
+        .eq('id', pendingKycAction.id);
 
       if (error) throw error;
-
-      if (action === 'approve') {
-        const request = kycQueue.find(item => item.id === id);
-        if (request) {
-          // Update the user status in users table as well
-          await supabase
-            .from('users')
-            .update({ status: 'verified', role: 'seller' })
-            .eq('id', request.user_id || id);
+      setKycQueue(kycQueue.filter(q => q.id !== pendingKycAction.id));
+      
+      if (pendingKycAction.action === 'approve') {
+        const submission = kycQueue.find(q => q.id === pendingKycAction.id);
+        if (submission) {
+          await supabase.from('users').update({ status: 'verified', role: 'seller' }).eq('id', submission.user_id);
+          setGlobalUsers(globalUsers.map(u => u.id === submission.user_id ? { ...u, status: 'verified', role: 'seller' } : u));
         }
       }
-
-      loadData(); // Refresh list
-      alert(action === 'approve' ? 'KYC Approved!' : 'KYC Rejected');
+      
+      setPendingKycAction(null);
+      alert(`KYC ${pendingKycAction.action === 'approve' ? 'Approved' : 'Rejected'} successfully!`);
     } catch (err: any) {
-      alert('Error: ' + err.message);
+      alert('Error updating KYC: ' + err.message);
     }
   };
 
@@ -173,6 +195,41 @@ export default function AdminPage() {
   const [selectedNetworkUser, setSelectedNetworkUser] = React.useState<any>(null);
   const [viewingKyc, setViewingKyc] = React.useState<any>(null);
 
+  const renderAuthModal = () => {
+    const isPending = pendingVerificationId || pendingKycAction;
+    if (!isPending) return null;
+
+    const actionText = pendingVerificationId ? 'Verify User ID' : (pendingKycAction?.action === 'approve' ? 'Approve KYC Documents' : 'Reject KYC Documents');
+
+    return (
+      <div className={styles.modalOverlay}>
+        <div className={styles.deleteModal} style={{ borderColor: 'var(--primary)' }}>
+          <ShieldCheck size={48} color="var(--primary)" style={{ marginBottom: '15px' }} />
+          <h3>Admin Authorization</h3>
+          <p>Please enter the Admin Pass Key to <strong>{actionText}</strong>.</p>
+          
+          <input 
+            type="password" 
+            className={styles.modalInput} 
+            placeholder="Pass Key"
+            value={adminPassword}
+            onChange={(e) => setAdminPassword(e.target.value)}
+            autoFocus
+          />
+
+          <div className={styles.modalActions}>
+            <button className={styles.cancelBtn} onClick={() => { setPendingVerificationId(null); setPendingKycAction(null); }}>Cancel</button>
+            <button 
+              className={styles.approveBtn} 
+              style={{ flex: 1 }} 
+              onClick={pendingVerificationId ? confirmVerification : confirmKycAction}
+            >
+              Confirm Action
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   const renderKycModal = () => {
     if (!viewingKyc) return null;
     return (
@@ -282,7 +339,12 @@ export default function AdminPage() {
                       <td><code style={{ fontSize: '0.7rem' }}>R-{u.id.slice(-6).toUpperCase()}</code></td>
                       <td>{u.name}</td>
                       <td><span className={styles.statusPending}>Pending</span></td>
-                      <td><button className={styles.viewBtn} onClick={() => handleApproveUser(u.id)}>Verify Now</button></td>
+                      <td>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <button className={styles.viewBtn} style={{ fontSize: '0.75rem' }} onClick={() => setViewingKyc(u)}>View Docs</button>
+                          <button className={styles.approveBtn} style={{ fontSize: '0.75rem', padding: '4px 10px' }} onClick={() => handleApproveUser(u.id)}>Verify Now</button>
+                        </div>
+                      </td>
                     </tr>
                   ))
                 )}
@@ -596,6 +658,7 @@ export default function AdminPage() {
         </div>
       )}
       {renderKycModal()}
+      {renderAuthModal()}
     </div>
   );
 }

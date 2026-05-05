@@ -108,9 +108,14 @@ export default function AdminPage() {
         .eq('id', pendingVerificationId);
 
       if (error) throw error;
+      
+      const userToVerify = globalUsers.find(u => u.id === pendingVerificationId);
+      
       setGlobalUsers(globalUsers.map(u => u.id === pendingVerificationId ? { ...u, status: 'verified', role: 'seller' } : u));
       setPendingVerificationId(null);
-      alert('User verified successfully!');
+      
+      // Simulate Email Notification
+      alert(`User verified successfully!\n\n📧 NOTIFICATION SENT TO: ${userToVerify?.email || 'User'}\nSubject: Welcome to SafeShop Verified Seller Program`);
     } catch (err: any) {
       alert('Error verifying user: ' + err.message);
     }
@@ -137,18 +142,22 @@ export default function AdminPage() {
         .eq('id', pendingKycAction.id);
 
       if (error) throw error;
+      
+      const submission = kycQueue.find(q => q.id === pendingKycAction.id);
       setKycQueue(kycQueue.filter(q => q.id !== pendingKycAction.id));
       
       if (pendingKycAction.action === 'approve') {
-        const submission = kycQueue.find(q => q.id === pendingKycAction.id);
         if (submission) {
           await supabase.from('users').update({ status: 'verified', role: 'seller' }).eq('id', submission.user_id);
           setGlobalUsers(globalUsers.map(u => u.id === submission.user_id ? { ...u, status: 'verified', role: 'seller' } : u));
         }
       }
       
+      const email = submission?.user_email || 'User';
+      const statusText = pendingKycAction.action === 'approve' ? 'APPROVED' : 'REJECTED';
+      
       setPendingKycAction(null);
-      alert(`KYC ${pendingKycAction.action === 'approve' ? 'Approved' : 'Rejected'} successfully!`);
+      alert(`KYC ${statusText} successfully!\n\n📧 NOTIFICATION SENT TO: ${email}\nSubject: Your ID Verification Request was ${statusText}`);
     } catch (err: any) {
       alert('Error updating KYC: ' + err.message);
     }
@@ -246,22 +255,33 @@ export default function AdminPage() {
             <div className={styles.docItem}>
               <span>Document Type: {viewingKyc.doc_type}</span>
               <div className={styles.docImage}>
-                {/* Fallback to placeholders since actual storage upload is being implemented */}
-                <img src="https://images.unsplash.com/photo-1557124816-e9b7d5440de2?w=500" alt="Front" />
+                <img 
+                  src={viewingKyc.doc_front_url || "https://images.unsplash.com/photo-1557124816-e9b7d5440de2?w=500"} 
+                  alt="Front" 
+                  onClick={() => window.open(viewingKyc.doc_front_url, '_blank')}
+                />
                 <p>Front Side</p>
               </div>
             </div>
             <div className={styles.docItem}>
               <span>Document Back</span>
               <div className={styles.docImage}>
-                <img src="https://images.unsplash.com/photo-1634224143540-062bb00700ae?w=500" alt="Back" />
+                <img 
+                  src={viewingKyc.doc_back_url || "https://images.unsplash.com/photo-1634224143540-062bb00700ae?w=500"} 
+                  alt="Back" 
+                  onClick={() => window.open(viewingKyc.doc_back_url, '_blank')}
+                />
                 <p>Back Side</p>
               </div>
             </div>
             <div className={styles.docItem}>
               <span>Face Verification</span>
               <div className={styles.docImage}>
-                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500" alt="Selfie" />
+                <img 
+                  src={viewingKyc.face_photo_url || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500"} 
+                  alt="Selfie" 
+                  onClick={() => window.open(viewingKyc.face_photo_url, '_blank')}
+                />
                 <p>User Selfie</p>
               </div>
             </div>

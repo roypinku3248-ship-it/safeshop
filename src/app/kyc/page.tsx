@@ -10,6 +10,8 @@ import styles from './KYC.module.css';
 export default function KYCPage() {
   const { user, isAuthenticated, loading } = useAuth();
   const router = useRouter();
+  const [files, setFiles] = useState<{front?: File, back?: File, face?: File}>({});
+  const [isUploading, setIsUploading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [docType, setDocType] = useState('aadhaar');
 
@@ -23,20 +25,51 @@ export default function KYCPage() {
     return <div className={styles.kycPage}><div className="container">Checking verification status...</div></div>;
   }
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, key: keyof typeof files) => {
+    if (e.target.files && e.target.files[0]) {
+      setFiles(prev => ({ ...prev, [key]: e.target.files![0] }));
+    }
+  };
+
+  const uploadFile = async (file: File, path: string) => {
+    const fileName = `${user?.id}_${Date.now()}_${file.name}`;
+    const { data, error } = await supabase.storage
+      .from('kyc-docs')
+      .upload(`${path}/${fileName}`, file);
+    
+    if (error) throw error;
+    const { data: { publicUrl } } = supabase.storage.from('kyc-docs').getPublicUrl(data.path);
+    return publicUrl;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    const newRequest = {
-      user_id: user?.id || 'anonymous',
-      user_name: user?.name || 'Anonymous User',
-      user_email: user?.email,
-      doc_type: docType === 'aadhaar' ? 'Aadhaar Card' : (docType === 'pan' ? 'PAN Card' : 'Voter ID'),
-      status: 'Pending',
-      has_face: true,
-      has_doc: true
-    };
+    if (!files.front || !files.back || !files.face) {
+      alert('Please upload all required documents and your face photo.');
+      return;
+    }
 
+    setIsUploading(true);
     try {
+      // 1. Upload Files
+      const frontUrl = await uploadFile(files.front, 'front');
+      const backUrl = await uploadFile(files.back, 'back');
+      const faceUrl = await uploadFile(files.face, 'face');
+
+      // 2. Insert Submission Record
+      const newRequest = {
+        user_id: user?.id || 'anonymous',
+        user_name: user?.name || 'Anonymous User',
+        user_email: user?.email,
+        doc_type: docType === 'aadhaar' ? 'Aadhaar Card' : (docType === 'pan' ? 'PAN Card' : 'Voter ID'),
+        doc_front_url: frontUrl,
+        doc_back_url: backUrl,
+        face_photo_url: faceUrl,
+        status: 'Pending',
+        has_face: true,
+        has_doc: true
+      };
+
       const { error } = await supabase
         .from('kyc_submissions')
         .insert([newRequest]);
@@ -45,6 +78,8 @@ export default function KYCPage() {
       setIsSubmitted(true);
     } catch (err: any) {
       alert('Error submitting KYC: ' + err.message);
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -114,18 +149,18 @@ export default function KYCPage() {
                 <h3>Upload ID Documents</h3>
                 <div className={styles.uploadGrid}>
                   <div className={styles.uploadBox}>
-                    <input type="file" required id="doc-front" className={styles.fileInput} />
-                    <label htmlFor="doc-front">
+                    <input type="file" required id="doc-front" className={styles.fileInput} onChange={(e) => handleFileChange(e, 'front')} />
+                    <label htmlFor="doc-front" className={files.front ? styles.fileSelected : ''}>
                       <Upload size={24} />
-                      <span>Front Side</span>
+                      <span>{files.front ? files.front.name : 'Front Side'}</span>
                       <small>JPG, PNG or PDF</small>
                     </label>
                   </div>
                   <div className={styles.uploadBox}>
-                    <input type="file" required id="doc-back" className={styles.fileInput} />
-                    <label htmlFor="doc-back">
+                    <input type="file" required id="doc-back" className={styles.fileInput} onChange={(e) => handleFileChange(e, 'back')} />
+                    <label htmlFor="doc-back" className={files.back ? styles.fileSelected : ''}>
                       <Upload size={24} />
-                      <span>Back Side</span>
+                      <span>{files.back ? files.back.name : 'Back Side'}</span>
                       <small>JPG, PNG or PDF</small>
                     </label>
                   </div>
@@ -145,10 +180,10 @@ export default function KYCPage() {
                     </div>
                   </div>
                   <div className={styles.uploadBoxFull}>
-                    <input type="file" required id="face-photo" className={styles.fileInput} />
-                    <label htmlFor="face-photo">
+                    <input type="file" required id="face-photo" className={styles.fileInput} onChange={(e) => handleFileChange(e, 'face')} />
+                    <label htmlFor="face-photo" className={files.face ? styles.fileSelected : ''}>
                       <Camera size={24} />
-                      <span>Click to Upload Selfie</span>
+                      <span>{files.face ? files.face.name : 'Click to Upload Selfie'}</span>
                     </label>
                   </div>
                 </div>
@@ -159,8 +194,8 @@ export default function KYCPage() {
                 <label htmlFor="consent">I confirm that the documents uploaded belong to me and all information is accurate.</label>
               </div>
 
-              <button type="submit" className={`${styles.submitBtn} gradient-primary`}>
-                Submit All Documents
+              <button type="submit" disabled={isUploading} className={`${styles.submitBtn} gradient-primary`}>
+                {isUploading ? 'Uploading Documents...' : 'Submit All Documents'}
               </button>
             </form>
           </div>

@@ -59,18 +59,18 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
   };
 
   const renderNode = (user: any, parentId: string, legIdx: number, depth: number = 0) => {
-    const children = getSubTree(user?.id || '');
-    const isNextToJoin = !user && !isAdminView; // Simple logic for now
-
-    if (depth > 1) return null; // Limit visual depth for clarity, can drill deeper
+    const children = user ? getSubTree(user.id) : [];
+    
+    // Depth limiter to prevent UI overflow, but allows drilling
+    if (depth > 2) return null; 
 
     return (
       <div className={styles.nodeWrapper} key={legIdx}>
-        <div className={styles.legLabel}>Leg {legIdx + 1}</div>
+        {depth === 0 && <div className={styles.legLabel}>Leg {legIdx + 1}</div>}
         
         {user ? (
           <div className={styles.nodeGroup}>
-            <div className={styles.nodeCard} onClick={() => handleDrillDown(user.id)}>
+            <div className={depth === 0 ? styles.nodeCard : styles.legCard} onClick={() => handleDrillDown(user.id)}>
               <div className={styles.miniAvatar}>{user.name[0]}</div>
               <div className={styles.nodeInfo}>
                 <strong>{user.name}</strong>
@@ -80,23 +80,11 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
               </div>
             </div>
             
-            {/* Render Grandchildren (Level 2) */}
+            {/* Recursive Children Rendering */}
             <div className={styles.subLevel}>
-              {[0, 1, 2].map((idx) => {
-                const subChildren = getSubTree(user.id);
-                const subUser = subChildren[idx];
-                return (
-                  <div key={idx} className={styles.subNodeWrapper}>
-                    {subUser ? (
-                      <div className={styles.legCard} onClick={() => handleDrillDown(subUser.id)} title={subUser.name}>
-                        {subUser.name}
-                      </div>
-                    ) : (
-                      <div className={styles.emptyLeg} onClick={() => onAddMember?.(user.id, idx)}>+</div>
-                    )}
-                  </div>
-                );
-              })}
+              {[0, 1, 2].map((idx) => (
+                renderNode(children[idx], user.id, idx, depth + 1)
+              ))}
             </div>
           </div>
         ) : (

@@ -288,6 +288,9 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding: 20px;
+  overflow-x: auto;
+  min-width: 100%;
 }
 
 .nodeInfo {
@@ -298,10 +301,22 @@
 }
 
 .emptyNodeSlot {
-  width: 180px;
+  min-width: 100px;
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+
+.emptyNode {
+  width: 80px;
+  height: 45px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  font-size: 0.7rem;
 }
 
 .listUser {

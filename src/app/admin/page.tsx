@@ -220,6 +220,7 @@ export default function AdminPage() {
             <table className={styles.table}>
               <thead>
                 <tr>
+                  <th>ID</th>
                   <th>Seller Name</th>
                   <th>Status</th>
                   <th>Action</th>
@@ -235,6 +236,7 @@ export default function AdminPage() {
                 ) : (
                   globalUsers.filter(u => u.status === 'pending').slice(0, 5).map(u => (
                     <tr key={u.id}>
+                      <td><code style={{ fontSize: '0.7rem' }}>R-{u.id.slice(-6).toUpperCase()}</code></td>
                       <td>{u.name}</td>
                       <td><span className={styles.statusPending}>Pending</span></td>
                       <td><button className={styles.viewBtn} onClick={() => handleApproveUser(u.id)}>Verify Now</button></td>

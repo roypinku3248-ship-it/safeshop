@@ -302,8 +302,28 @@
   cursor: pointer;
 }
 
+.listBranch {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  position: relative;
+  width: 100%;
+}
+
+.listConnector {
+  width: 2px;
+  height: 15px;
+  background: #e2e8f0;
+  margin-left: 50px;
+}
+
+.listBranch:first-child .listConnector {
+  display: none;
+}
+
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
 

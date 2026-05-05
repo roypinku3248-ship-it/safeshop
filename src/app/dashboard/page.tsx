@@ -27,12 +27,12 @@ export default function UserDashboard() {
   });
 
   const [isAddingMember, setIsAddingMember] = React.useState(false);
+  const [registering, setRegistering] = React.useState(false);
   const [newMemberData, setNewMemberData] = React.useState({
     name: '',
     email: '',
     phone: '',
     city: '',
-    state: '',
     ps: '',
     po: ''
   });
@@ -309,14 +309,21 @@ export default function UserDashboard() {
 
                           <button 
                             className="gradient-primary" 
-                            style={{ marginTop: '15px', padding: '10px 20px', borderRadius: '8px', color: 'white', fontWeight: 'bold' }}
+                            disabled={registering}
+                            style={{ marginTop: '15px', padding: '12px 24px', borderRadius: '8px', color: 'white', fontWeight: 'bold', width: '100%' }}
                             onClick={async () => {
-                              const newUserId = `SS-USR-${Math.floor(Math.random() * 10000)}`;
+                              if (!newMemberData.email || !newMemberData.name) {
+                                alert('Please enter at least Name and Email');
+                                return;
+                              }
+
+                              setRegistering(true);
+                              const newUserId = `SS-USR-${Math.floor(Math.random() * 100000)}`;
                               const newRef = {
                                 id: newUserId,
                                 name: newMemberData.name,
                                 email: newMemberData.email,
-                                password: 'password123', // Default for now
+                                password: 'password123',
                                 role: 'associate',
                                 status: 'pending',
                                 referred_by: user.id,
@@ -335,18 +342,19 @@ export default function UserDashboard() {
 
                                 if (error) throw error;
 
-                                alert(`Member ${newMemberData.name} registered successfully! Admin will verify their documents soon.`);
+                                alert(`🎉 Success! ${newMemberData.name} has been joined to your network.`);
                                 setIsAddingMember(false);
-                                setNewMemberData({ name: '', email: '', phone: '', city: '', state: '', ps: '', po: '' });
-                                
-                                // Refresh referrals list
+                                setNewMemberData({ name: '', email: '', phone: '', city: '', ps: '', po: '' });
                                 window.location.reload(); 
                               } catch (err: any) {
-                                alert('Error: ' + err.message);
+                                console.error('Reg error:', err);
+                                alert('Failed to register: ' + (err.message || 'Unknown database error'));
+                              } finally {
+                                setRegistering(false);
                               }
                             }}
                           >
-                            Confirm Registration
+                            {registering ? 'Registering Member...' : 'Confirm Registration'}
                           </button>
                         </div>
                       )}

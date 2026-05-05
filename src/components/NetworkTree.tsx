@@ -108,18 +108,21 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
         <div className={styles.listLayout}>
           <div className={styles.listGrid}>
             {displayedUsers.map((user, index) => (
-              <div key={user.id} className={styles.listItem}>
-                <div className={styles.listIndex}>{index + 1}</div>
-                <div className={styles.listUser}>
-                  <div className={styles.listAvatar}>{user.name[0]}</div>
-                  <div>
-                    <strong>{user.name}</strong>
-                    <p>{user.email}</p>
+              <div key={user.id} className={styles.listBranch}>
+                <div className={styles.listConnector} />
+                <div className={styles.listItem}>
+                  <div className={styles.listIndex}>{index + 1}</div>
+                  <div className={styles.listUser}>
+                    <div className={styles.listAvatar}>{user.name[0]}</div>
+                    <div>
+                      <strong>{user.name}</strong>
+                      <p>{user.email}</p>
+                    </div>
                   </div>
-                </div>
-                <div className={styles.listStats}>
-                  <div className={user.status === 'verified' ? styles.statusV : styles.statusP}>
-                    {user.status}
+                  <div className={styles.listStats}>
+                    <div className={user.status === 'verified' ? styles.statusV : styles.statusP}>
+                      {user.status}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -127,17 +130,20 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
             
             {/* The NEXT spot to join */}
             {!isAdminView && displayedUsers.length < 50 && (
-              <div className={`${styles.listItem} ${styles.joinRow}`} onClick={onAddMember}>
-                <div className={styles.listIndex}>{displayedUsers.length + 1}</div>
-                <div className={styles.listUser}>
-                  <div className={`${styles.listAvatar} ${styles.joinAvatar}`}><PlusCircle size={20} /></div>
-                  <div>
-                    <strong style={{ color: 'var(--primary)' }}>Add New Member</strong>
-                    <p>Click here to join a user to your direct network</p>
+              <div className={styles.listBranch}>
+                <div className={styles.listConnector} />
+                <div className={`${styles.listItem} ${styles.joinRow}`} onClick={onAddMember}>
+                  <div className={styles.listIndex}>{displayedUsers.length + 1}</div>
+                  <div className={styles.listUser}>
+                    <div className={`${styles.listAvatar} ${styles.joinAvatar}`}><PlusCircle size={20} /></div>
+                    <div>
+                      <strong style={{ color: 'var(--primary)' }}>Add New Member</strong>
+                      <p>Click here to join a user to your direct network</p>
+                    </div>
                   </div>
-                </div>
-                <div className={styles.listStats}>
-                  <button className={styles.miniJoinBtnAction}>Join Now</button>
+                  <div className={styles.listStats}>
+                    <button className={styles.miniJoinBtnAction}>Join Now</button>
+                  </div>
                 </div>
               </div>
             )}

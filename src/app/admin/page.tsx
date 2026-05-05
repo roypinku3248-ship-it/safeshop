@@ -308,7 +308,7 @@ export default function AdminPage() {
                     </div>
                   </div>
 
-                  <div className={styles.pyramidArea}>
+                  <div className={styles.pyramidArea} style={{ background: 'transparent', padding: 0, border: 'none' }}>
                     <NetworkTree 
                       rootUser={{ name: selectedNetworkUser?.name || 'User', id: selectedNetworkUser?.id || 'ID' }} 
                       referrals={globalUsers.filter(u => u.referred_by === selectedNetworkUser?.id)}

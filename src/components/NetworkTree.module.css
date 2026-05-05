@@ -1,0 +1,261 @@
+.treeWrapper {
+  background: var(--card-bg, #ffffff);
+  padding: 30px;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+}
+
+.treeHeader {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 40px;
+}
+
+.viewToggle {
+  background: #f1f5f9;
+  padding: 5px;
+  border-radius: 12px;
+  display: flex;
+  gap: 5px;
+}
+
+.viewToggle button {
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-weight: 600;
+  color: #64748b;
+  transition: all 0.3s ease;
+}
+
+.viewToggle button.activeView {
+  background: white;
+  color: #1e293b;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+/* Pyramid Layout */
+.pyramidLayout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.rootBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.nodeAvatarMain {
+  width: 70px;
+  height: 70px;
+  background: var(--primary, #2563eb);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  font-weight: 800;
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+}
+
+.idBadge {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  background: #f8fafc;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.connectorLine {
+  width: 2px;
+  height: 40px;
+  background: #e2e8f0;
+  margin: 10px 0;
+}
+
+.levelOne {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  width: 100%;
+}
+
+.branchWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  width: 160px;
+}
+
+.branchWrapper::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  width: 2px;
+  height: 10px;
+  background: #e2e8f0;
+}
+
+.legLabel {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  color: #94a3b8;
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+
+.nodeCard {
+  background: white;
+  border: 1px solid #e2e8f0;
+  padding: 15px;
+  border-radius: 12px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  transition: transform 0.3s ease;
+}
+
+.nodeCard:hover {
+  transform: translateY(-5px);
+  border-color: var(--primary, #2563eb);
+}
+
+.miniAvatar {
+  width: 40px;
+  height: 40px;
+  background: #f1f5f9;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.verified { color: #10b981; font-size: 0.75rem; font-weight: 700; }
+.pending { color: #f59e0b; font-size: 0.75rem; font-weight: 700; }
+
+.emptyNode {
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  padding: 15px;
+  border-radius: 12px;
+  width: 100%;
+  color: #94a3b8;
+}
+
+.plusIcon {
+  font-size: 1.5rem;
+  margin-bottom: 5px;
+}
+
+.emptyNode button {
+  background: white;
+  border: 1px solid #e2e8f0;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.moreIndicator {
+  margin-top: 40px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #64748b;
+  font-size: 0.85rem;
+  background: #f1f5f9;
+  padding: 8px 20px;
+  border-radius: 20px;
+}
+
+/* List Layout */
+.listLayout {
+  animation: fadeIn 0.4s ease;
+}
+
+.listGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.listItem {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px 20px;
+  background: #fcfcfc;
+  border: 1px solid #f1f5f9;
+  border-radius: 12px;
+  transition: all 0.2s;
+}
+
+.listItem:hover {
+  background: white;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+  border-color: #e2e8f0;
+}
+
+.listIndex {
+  width: 24px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #94a3b8;
+}
+
+.listUser {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex: 1;
+}
+
+.listAvatar {
+  width: 40px;
+  height: 40px;
+  background: #e2e8f0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+.listUser strong { display: block; font-size: 0.95rem; }
+.listUser p { font-size: 0.8rem; color: #64748b; margin: 0; }
+
+.listStats {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+}
+
+.listStats div { text-align: right; }
+.listStats span { display: block; font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; }
+.listStats strong { font-size: 0.9rem; }
+
+.statusV { color: #10b981; font-weight: 700; font-size: 0.8rem; }
+.statusP { color: #f59e0b; font-weight: 700; font-size: 0.8rem; }
+
+.noData {
+  padding: 60px;
+  text-align: center;
+  color: #94a3b8;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

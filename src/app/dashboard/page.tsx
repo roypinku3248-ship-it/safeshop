@@ -346,12 +346,8 @@ export default function UserDashboard() {
                       <div className={styles.treeActions}>
                         {!isAddingMember && (
                           <div className={styles.actionRow}>
-                            <button className={styles.addMemberBtn} onClick={() => setIsAddingMember(true)}>
+                            <button className={styles.addMemberBtn} onClick={() => handleAddMemberClick()}>
                               <PlusCircle size={20} /> Add New Direct Member
-                            </button>
-                            <button className={styles.focusActionBtn} onClick={() => setIsFullScreen(!isFullScreen)}>
-                              {isFullScreen ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
-                              {isFullScreen ? "Close Focus Mode" : "View Full Pyramid"}
                             </button>
                           </div>
                         )}

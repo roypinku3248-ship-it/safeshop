@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { User, Users, ChevronRight, Share2, TrendingUp, PlusCircle } from 'lucide-react';
+import { User, Users, ChevronRight, Share2, TrendingUp, PlusCircle, Maximize2, Minimize2 } from 'lucide-react';
 import styles from './NetworkTree.module.css';
 
 interface Referral {
@@ -37,6 +37,7 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
   const [currentRootId, setCurrentRootId] = React.useState(rootUser.id);
   const [navigationStack, setNavigationStack] = React.useState<string[]>([]);
   const [zoom, setZoom] = React.useState(0.8);
+  const [isFullScreen, setIsFullScreen] = React.useState(false);
   
   // Find the current user being viewed
   const currentRoot = fullTeam.find(u => u.id === currentRootId) || rootUser;
@@ -165,22 +166,33 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
   };
 
   return (
-    <div className={styles.treeWrapper}>
+    <div className={`${styles.treeWrapper} ${isFullScreen ? styles.fullScreenMode : ''}`}>
       <div className={styles.treeHeader}>
-        <div className={styles.viewToggle}>
-          <button 
-            className={viewType === 'pyramid' ? styles.activeView : ''} 
-            onClick={() => { setViewType('pyramid'); setCurrentRootId(rootUser.id); setNavigationStack([]); }}
-          >
-            Business Structure
-          </button>
-          <button 
-            className={viewType === 'list' ? styles.activeView : ''} 
-            onClick={() => setViewType('list')}
-          >
-            Direct List
-          </button>
+        <div className={styles.headerLeft}>
+          <div className={styles.viewToggle}>
+            <button 
+              className={viewType === 'pyramid' ? styles.activeView : ''} 
+              onClick={() => { setViewType('pyramid'); setCurrentRootId(rootUser.id); setNavigationStack([]); }}
+            >
+              Business Structure
+            </button>
+            <button 
+              className={viewType === 'list' ? styles.activeView : ''} 
+              onClick={() => setViewType('list')}
+            >
+              Direct List
+            </button>
+          </div>
         </div>
+
+        <button 
+          className={styles.focusBtn} 
+          onClick={() => setIsFullScreen(!isFullScreen)}
+          title={isFullScreen ? "Exit Focus Mode" : "Focus on Pyramid"}
+        >
+          {isFullScreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
+          <span>{isFullScreen ? "Close Focus" : "Focus Mode"}</span>
+        </button>
         
         {viewType === 'pyramid' && (
           <div className={styles.floatingZoom}>

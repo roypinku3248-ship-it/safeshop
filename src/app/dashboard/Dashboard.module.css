@@ -925,3 +925,44 @@
   cursor: not-allowed;
   transform: none;
 }
+
+.fileUploadGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+}
+
+@media (max-width: 600px) {
+  .fileUploadGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.fileBox {
+  background: white;
+  border: 1px dashed #cbd5e1;
+  padding: 15px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.fileBox:hover {
+  border-color: var(--primary);
+  background: #f0f7ff;
+}
+
+.fileBox span {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+}
+
+.fileBox input {
+  font-size: 0.75rem;
+  width: 100%;
+}

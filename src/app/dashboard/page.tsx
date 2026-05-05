@@ -374,7 +374,7 @@ export default function UserDashboard() {
                                 <h3>Quick Register Member</h3>
                                 <p>Join your organization and start earning.</p>
                               </div>
-                              <div className={styles.miniFormGrid}>
+                              <div className={styles. miniFormGrid}>
                                 <div className={styles.formItem}>
                                   <label>Full Name</label>
                                   <input type="text" required value={newMemberData.name} onChange={e => setNewMemberData({...newMemberData, name: e.target.value})} />
@@ -387,12 +387,46 @@ export default function UserDashboard() {
                                   <label>Phone</label>
                                   <input type="tel" required value={newMemberData.phone} onChange={e => setNewMemberData({...newMemberData, phone: e.target.value})} />
                                 </div>
+                                <div className={styles.formItem}>
+                                  <label>City/Village</label>
+                                  <input type="text" value={newMemberData.city} onChange={e => setNewMemberData({...newMemberData, city: e.target.value})} />
+                                </div>
+                                <div className={styles.formItem}>
+                                  <label>Police Station (PS)</label>
+                                  <input type="text" value={newMemberData.ps} onChange={e => setNewMemberData({...newMemberData, ps: e.target.value})} />
+                                </div>
+                                <div className={styles.formItem}>
+                                  <label>Post Office (PO)</label>
+                                  <input type="text" value={newMemberData.po} onChange={e => setNewMemberData({...newMemberData, po: e.target.value})} />
+                                </div>
                               </div>
+
                               <div className={styles.kycSection}>
-                                <h4>KYC (Optional)</h4>
+                                <h4>KYC & Documents</h4>
                                 <div className={styles.miniFormGrid}>
-                                  <div className={styles.formItem}><label>Aadhar</label><input type="text" value={newMemberData.aadhar} onChange={e => setNewMemberData({...newMemberData, aadhar: e.target.value})} /></div>
-                                  <div className={styles.formItem}><label>PAN</label><input type="text" value={newMemberData.pan} onChange={e => setNewMemberData({...newMemberData, pan: e.target.value})} /></div>
+                                  <div className={styles.formItem}>
+                                    <label>Aadhar Number</label>
+                                    <input type="text" value={newMemberData.aadhar} onChange={e => setNewMemberData({...newMemberData, aadhar: e.target.value})} />
+                                  </div>
+                                  <div className={styles.formItem}>
+                                    <label>PAN Number</label>
+                                    <input type="text" value={newMemberData.pan} onChange={e => setNewMemberData({...newMemberData, pan: e.target.value})} />
+                                  </div>
+                                </div>
+
+                                <div className={styles.fileUploadGrid} style={{ marginTop: '20px' }}>
+                                  <div className={styles.fileBox}>
+                                    <span>Aadhar Front</span>
+                                    <input type="file" accept="image/*" />
+                                  </div>
+                                  <div className={styles.fileBox}>
+                                    <span>Aadhar Back</span>
+                                    <input type="file" accept="image/*" />
+                                  </div>
+                                  <div className={styles.fileBox}>
+                                    <span>PAN Card</span>
+                                    <input type="file" accept="image/*" />
+                                  </div>
                                 </div>
                               </div>
                               <div className={styles.modalFooter}>

@@ -302,9 +302,18 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20px;
+  padding: 40px;
   overflow-x: auto;
   min-width: 100%;
+  position: relative;
+}
+
+.levelContainer {
+  display: flex;
+  justify-content: center;
+  min-width: fit-content;
+  gap: 80px;
+  padding: 60px 40px;
 }
 
 .nodeInfo {

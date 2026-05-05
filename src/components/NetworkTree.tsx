@@ -325,12 +325,12 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
                     <div className={styles.listAvatar}>{user.avatar || user.name[0]}</div>
                     <div>
                       <strong>{user.name}</strong>
-                      <p>{user.email}</p>
+                      <p>{user.email} | <span style={{ fontWeight: 'bold', color: '#64748b' }}>R-{user.id?.toString().slice(-6).toUpperCase()}</span></p>
                     </div>
                   </div>
                   <div className={styles.listStats}>
-                    <div className={user.status === 'verified' ? styles.statusV : styles.statusP}>
-                      {user.status}
+                    <div className={user.status?.toLowerCase() === 'verified' ? styles.statusV : styles.statusP}>
+                      {user.status || 'Pending'}
                     </div>
                   </div>
                 </div>

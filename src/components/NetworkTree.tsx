@@ -86,29 +86,28 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
   };
 
   const renderNode = (user: any, parentId: string, legIdx: number, depth: number = 0) => {
+    // Hyper-Resilient matching for children
     const children = user ? getSubTree(user.id) : [];
     
-    // Depth limiter to prevent UI overflow, but allows drilling
     if (depth > 2) return null; 
 
     return (
-      <div className={styles.nodeWrapper} key={user?.id || `empty-${legIdx}`}>
-        {depth === 0 && <div className={styles.legLabel}>Leg {legIdx + 1}</div>}
+      <div className={styles.nodeWrapper} key={user?.id || `empty-${parentId}-${legIdx}`}>
+        {depth === 0 && <div className={styles.legLabel}>Slot {legIdx + 1}</div>}
         
         {user ? (
           <div className={styles.nodeGroup}>
             <div className={depth === 0 ? styles.nodeCard : styles.legCard} onClick={() => handleDrillDown(user.id)}>
               <div className={styles.miniAvatar}>{user.name ? user.name[0] : '?'}</div>
               <div className={styles.nodeInfo}>
-                <strong>{user.name}</strong>
-                <span className={styles.nodeId} style={{ fontSize: '0.6rem', color: '#94a3b8', display: 'block' }}>ID: {user.id.slice(-6)}</span>
+                <strong style={{ fontSize: '0.8rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100px' }}>{user.name}</strong>
+                <span style={{ fontSize: '0.55rem', color: '#94a3b8' }}>ID: {user.id?.toString().slice(-6)}</span>
                 <span className={user.status === 'verified' ? styles.verified : styles.pending}>
                   {user.status || 'Pending'}
                 </span>
               </div>
             </div>
             
-            {/* Recursive Children Rendering */}
             <div className={styles.subLevel}>
               {[0, 1, 2].map((idx) => (
                 renderNode(children[idx], user.id, idx, depth + 1)
@@ -120,6 +119,7 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
              <div className={`${styles.emptyNode} ${styles.activeJoinNode}`} onClick={() => onAddMember?.(parentId, legIdx)}>
                 <PlusCircle size={20} />
                 <span>Join</span>
+                <span style={{ fontSize: '0.5rem', opacity: 0.5, marginTop: '4px' }}>to {parentId?.toString().slice(-6)}</span>
              </div>
           </div>
         )}

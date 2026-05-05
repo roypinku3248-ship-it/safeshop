@@ -8,6 +8,7 @@ import { Package, ShieldCheck, MapPin, Settings, Heart, LogOut, Clock, Truck, Lo
 import { NetworkTree } from '@/components/NetworkTree';
 import { supabase } from '@/lib/supabase';
 import styles from './Dashboard.module.css';
+import { toast } from 'react-hot-toast';
 
 export default function UserDashboard() {
   const { user, isAuthenticated, loading, logout, refreshUser } = useAuth();
@@ -318,31 +319,33 @@ export default function UserDashboard() {
                       {isAddingMember && (
                         <form className={styles.addMemberForm} style={{ marginTop: '40px' }} onSubmit={async (e) => {
                           e.preventDefault();
-                          console.log('Starting Registration...');
+                          console.log('🚀 Registration Attempt Started');
                           
-                          if (!newMemberData.email || !newMemberData.name) {
-                            alert('⚠️ Error: Please enter both Name and Email.');
+                          if (!newMemberData.email || !newMemberData.name || !newMemberData.phone) {
+                            toast.error('Please fill all required fields: Name, Email, and Phone.');
                             return;
                           }
 
+                          if (fullTeam.length === 0) {
+                            toast.loading('Network data still loading. Please wait a moment...', { id: 'network-load' });
+                            return;
+                          }
+
+                          const toastId = toast.loading('Registering new member...');
                           setRegistering(true);
+
                           try {
-                            // 1. Check if user is authenticated
                             if (!user || !user.id) {
-                              throw new Error('User session not found. Please log in again.');
+                              throw new Error('Your session expired. Please log in again.');
                             }
 
-                            // 2. Smart Spillover Logic
+                            // 1. Smart Spillover Logic
                             const findSpilloverSlot = (rootId: string, team: any[]) => {
-                              console.log('Calculating Spillover for team root:', rootId);
                               const queue = [rootId];
                               while (queue.length > 0) {
                                 const currentId = queue.shift()!;
                                 const children = team.filter(u => u.referred_by === currentId);
-                                
-                                if (children.length < 3) {
-                                  return currentId;
-                                }
+                                if (children.length < 3) return currentId;
                                 children.forEach(child => queue.push(child.id));
                               }
                               return rootId;
@@ -350,13 +353,13 @@ export default function UserDashboard() {
 
                             const parentId = findSpilloverSlot(user.id, fullTeam);
 
-                            // 3. Insert New User
+                            // 2. Prepare User Object
                             const newUserId = `SS-USR-${Math.floor(Math.random() * 100000)}`;
                             const newRef = {
                               id: newUserId,
                               name: newMemberData.name,
                               email: newMemberData.email,
-                              password: 'password123', // Default password
+                              password: 'password123',
                               role: 'associate',
                               status: 'pending',
                               referred_by: parentId,
@@ -365,26 +368,30 @@ export default function UserDashboard() {
                               city: newMemberData.city,
                               ps: newMemberData.ps,
                               po: newMemberData.po,
+                              // KYC Details
+                              aadhar_no: newMemberData.aadhar,
+                              pan_no: newMemberData.pan,
+                              bank_acc: newMemberData.bankAcc,
+                              bank_ifsc: newMemberData.ifsc,
                               joined_at: new Date().toISOString()
                             };
                             
-                            console.log('Inserting user into DB:', newRef);
+                            console.log('Inserting into Supabase:', newRef);
                             const { error: insertError } = await supabase
                               .from('users')
                               .insert([newRef]);
 
-                            if (insertError) {
-                              console.error('Supabase Insert Error:', insertError);
-                              throw new Error(insertError.message);
-                            }
+                            if (insertError) throw insertError;
 
-                            alert(`✅ SUCCESS! ${newMemberData.name} has been registered successfully.`);
+                            toast.success(`🎉 SUCCESS! ${newMemberData.name} is now in your team!`, { id: toastId });
                             setIsAddingMember(false);
-                            setNewMemberData({ name: '', email: '', phone: '', city: '', ps: '', po: '', aadhar: '', pan: '', bankAcc: '', ifsc: '' }); // Reset all fields
-                            window.location.reload(); 
+                            setNewMemberData({ name: '', email: '', phone: '', city: '', ps: '', po: '', aadhar: '', pan: '', bankAcc: '', ifsc: '' });
+                            
+                            // Reload data without full page refresh if possible, or just reload
+                            setTimeout(() => window.location.reload(), 1500);
                           } catch (err: any) {
-                            console.error('Registration error:', err);
-                            alert('❌ Registration Failed: ' + err.message);
+                            console.error('Registration Error:', err);
+                            toast.error('Registration Failed: ' + (err.message || 'Check your internet connection'), { id: toastId });
                           } finally {
                             setRegistering(false);
                           }

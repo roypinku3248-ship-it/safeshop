@@ -323,27 +323,20 @@ export default function UserDashboard() {
 
                           setRegistering(true);
                           try {
-                            // 1. Get current user's DB ID
-                            const { data: currentUser, error: userError } = await supabase
-                              .from('users')
-                              .select('id')
-                              .eq('email', user.email)
-                              .single();
-
-                            if (userError || !currentUser) {
-                              throw new Error('Please refresh your page and try again.');
+                            // 1. Check if user is authenticated
+                            if (!user || !user.id) {
+                              throw new Error('User session not found. Please log in again.');
                             }
 
                             // 2. Smart Spillover Logic
                             const findSpilloverSlot = (rootId: string, team: any[]) => {
-                              console.log('Calculating Spillover for team size:', team.length);
+                              console.log('Calculating Spillover for team root:', rootId);
                               const queue = [rootId];
                               while (queue.length > 0) {
                                 const currentId = queue.shift()!;
                                 const children = team.filter(u => u.referred_by === currentId);
                                 
                                 if (children.length < 3) {
-                                  console.log('Slot found under Parent ID:', currentId);
                                   return currentId;
                                 }
                                 children.forEach(child => queue.push(child.id));
@@ -351,7 +344,7 @@ export default function UserDashboard() {
                               return rootId;
                             };
 
-                            const parentId = findSpilloverSlot(currentUser.id, fullTeam);
+                            const parentId = findSpilloverSlot(user.id, fullTeam);
 
                             // 3. Insert New User
                             const newUserId = `SS-USR-${Math.floor(Math.random() * 100000)}`;
@@ -359,11 +352,11 @@ export default function UserDashboard() {
                               id: newUserId,
                               name: newMemberData.name,
                               email: newMemberData.email,
-                              password: 'password123',
+                              password: 'password123', // Default password
                               role: 'associate',
                               status: 'pending',
                               referred_by: parentId,
-                              sponsor_id: currentUser.id,
+                              sponsor_id: user.id,
                               phone: newMemberData.phone,
                               city: newMemberData.city,
                               ps: newMemberData.ps,
@@ -376,10 +369,14 @@ export default function UserDashboard() {
                               .from('users')
                               .insert([newRef]);
 
-                            if (insertError) throw insertError;
+                            if (insertError) {
+                              console.error('Supabase Insert Error:', insertError);
+                              throw new Error(insertError.message);
+                            }
 
                             alert(`✅ SUCCESS! ${newMemberData.name} has been registered successfully.`);
                             setIsAddingMember(false);
+                            setNewMemberData({ name: '', email: '', phone: '', city: '', ps: '', po: '' }); // Reset form
                             window.location.reload(); 
                           } catch (err: any) {
                             console.error('Registration error:', err);

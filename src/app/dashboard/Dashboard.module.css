@@ -265,9 +265,41 @@
 @media (max-width: 1024px) {
   .layout {
     grid-template-columns: 1fr;
+    gap: 20px;
   }
   
   .sidebar {
+    position: fixed;
+    top: 0;
+    left: -100%;
+    width: 280px;
+    height: 100vh;
+    z-index: 1000;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 20px 0 50px rgba(0,0,0,0.1);
+    display: block; /* Override none */
+  }
+
+  .sidebarOpen {
+    left: 0;
+  }
+
+  .mobileToggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: white;
+    padding: 15px 25px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    margin-bottom: 20px;
+    font-weight: 700;
+    color: var(--primary);
+  }
+}
+
+@media (min-width: 1025px) {
+  .mobileToggle {
     display: none;
   }
 }

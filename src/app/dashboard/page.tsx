@@ -68,6 +68,7 @@ export default function UserDashboard() {
   const { user, isAuthenticated, loading, logout, refreshUser } = useAuth();
   const router = useRouter();
   const [activeTab, setActiveTab] = React.useState<'orders' | 'earnings'>('orders');
+  const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
   const [orders, setOrders] = React.useState<any[]>([]);
   
   // MLM Logic States
@@ -170,8 +171,17 @@ export default function UserDashboard() {
     <div className={styles.dashboard}>
       <div className="container">
         <div className={styles.layout}>
+          {/* Mobile Menu Toggle */}
+          <button 
+            className={styles.mobileToggle} 
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          >
+            {isSidebarOpen ? <X size={24} /> : <List size={24} />}
+            <span>{isSidebarOpen ? 'Close Menu' : 'Dashboard Menu'}</span>
+          </button>
+
           {/* Sidebar */}
-          <aside className={styles.sidebar}>
+          <aside className={`${styles.sidebar} ${isSidebarOpen ? styles.sidebarOpen : ''}`}>
             <div className={styles.userCard}>
               {user.avatar ? (
                 <img src={user.avatar} alt={user.name} className={styles.avatarImg} />
@@ -188,25 +198,25 @@ export default function UserDashboard() {
             </div>
             
             <nav className={styles.nav}>
-              <button className={activeTab === 'orders' ? styles.active : ''} onClick={() => setActiveTab('orders')}><Package size={20} /> My Orders</button>
+              <button className={activeTab === 'orders' ? styles.active : ''} onClick={() => { setActiveTab('orders'); setIsSidebarOpen(false); }}><Package size={20} /> My Orders</button>
               {(user.role !== 'user') && (
-                <button className={activeTab === 'earnings' ? styles.active : ''} onClick={() => setActiveTab('earnings')}><Award size={20} color="var(--secondary)" /> Earnings & Network</button>
+                <button className={activeTab === 'earnings' ? styles.active : ''} onClick={() => { setActiveTab('earnings'); setIsSidebarOpen(false); }}><Award size={20} color="var(--secondary)" /> Earnings & Network</button>
               )}
-              <button><ShieldCheck size={20} /> Buyer Protection</button>
+              <button onClick={() => setIsSidebarOpen(false)}><ShieldCheck size={20} /> Buyer Protection</button>
               {user.role === 'user' && (
-                <button className={styles.joinBtn} onClick={() => router.push('/register')}><Plus size={20} color="var(--primary)" /> Join SafeShop Business</button>
+                <button className={styles.joinBtn} onClick={() => { router.push('/register'); setIsSidebarOpen(false); }}><Plus size={20} color="var(--primary)" /> Join SafeShop Business</button>
               )}
               {user.role === 'associate' && (
-                <button onClick={() => router.push('/kyc')} className={styles.pendingBtn}><ShieldCheck size={20} color="var(--warning)" /> ID Verification Pending</button>
+                <button onClick={() => { router.push('/kyc'); setIsSidebarOpen(false); }} className={styles.pendingBtn}><ShieldCheck size={20} color="var(--warning)" /> ID Verification Pending</button>
               )}
               {user.role === 'seller' && (
-                <button className={styles.verifiedBtn}><ShieldCheck size={20} color="var(--primary)" /> ID Verified Seller</button>
+                <button className={styles.verifiedBtn} onClick={() => setIsSidebarOpen(false)}><ShieldCheck size={20} color="var(--primary)" /> ID Verified Seller</button>
               )}
-              <button><Heart size={20} /> Wishlist</button>
-              <button><MapPin size={20} /> Saved Addresses</button>
-              <button><Settings size={20} /> Account Settings</button>
+              <button onClick={() => setIsSidebarOpen(false)}><Heart size={20} /> Wishlist</button>
+              <button onClick={() => setIsSidebarOpen(false)}><MapPin size={20} /> Saved Addresses</button>
+              <button onClick={() => setIsSidebarOpen(false)}><Settings size={20} /> Account Settings</button>
               <div className={styles.divider} />
-              <button className={styles.logout} onClick={logout}><LogOut size={20} /> Logout</button>
+              <button className={styles.logout} onClick={() => { logout(); setIsSidebarOpen(false); }}><LogOut size={20} /> Logout</button>
             </nav>
           </aside>
 

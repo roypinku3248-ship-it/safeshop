@@ -153,6 +153,9 @@ export default function UserDashboard() {
 
           {/* Main Content */}
           <div className={styles.main}>
+            {/* Fix: Check if user is in database */}
+            <SyncAccountNotice user={user} />
+
             {/* ID Verification Alert Banner */}
             {user.role !== 'seller' && user.role !== 'admin' && (
               <div className={styles.kycAlertBanner}>
@@ -460,6 +463,60 @@ export default function UserDashboard() {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function SyncAccountNotice({ user }: { user: any }) {
+  const [isSyncing, setIsSyncing] = React.useState(false);
+  const [showSync, setShowSync] = React.useState(false);
+
+  React.useEffect(() => {
+    const checkUser = async () => {
+      if (!user?.email) return;
+      const { data } = await supabase.from('users').select('id').eq('email', user.email).single();
+      if (!data) setShowSync(true);
+    };
+    checkUser();
+  }, [user?.email]);
+
+  if (!showSync) return null;
+
+  return (
+    <div style={{ background: '#fff9e6', border: '1px solid #ffeeba', padding: '15px', borderRadius: '12px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', animation: 'fadeIn 0.4s' }}>
+      <p style={{ margin: 0, color: '#856404', fontSize: '0.9rem' }}>
+        ⚠️ <strong>Database Sync Required:</strong> Click the button to register your account in the system.
+      </p>
+      <button 
+        className="gradient-primary"
+        disabled={isSyncing}
+        style={{ padding: '8px 16px', borderRadius: '8px', fontSize: '0.8rem', color: 'white', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}
+        onClick={async () => {
+          setIsSyncing(true);
+          try {
+            const newUser = {
+              id: user.id || `USR-${Math.random().toString(36).substr(2, 9)}`,
+              name: user.name,
+              email: user.email,
+              password: 'password123',
+              role: user.role || 'user',
+              status: 'verified',
+              joined_at: new Date().toISOString()
+            };
+            const { error } = await supabase.from('users').insert([newUser]);
+            if (error) throw error;
+            alert('✅ Success! Your account is now synced. You can now register members.');
+            setShowSync(false);
+            window.location.reload();
+          } catch (err: any) {
+            alert('Sync failed: ' + err.message);
+          } finally {
+            setIsSyncing(false);
+          }
+        }}
+      >
+        {isSyncing ? 'Syncing...' : 'Sync Account Now'}
+      </button>
     </div>
   );
 }

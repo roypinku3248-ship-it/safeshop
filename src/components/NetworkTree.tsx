@@ -117,24 +117,23 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
         ) : (
           <div className={styles.emptyNodeSlot}>
              {(() => {
-               // Hierarchical Locking Logic:
-               // 1. Root's children (depth 0) require the PREVIOUS sibling to have 3 members.
-               // 2. Everyone else (depth > 0) only requires the PREVIOUS sibling to be occupied.
+               // Full Branch Completion Locking Logic:
+               // We check the SIBLINGS (other children of the parentId)
+               const siblings = getSubTree(parentId);
                
                let isLocked = false;
                let lockReason = "";
 
                if (legIdx > 0) {
-                 const prevMember = children[legIdx - 1];
+                 const prevMember = siblings[legIdx - 1];
                  if (!prevMember) {
                    isLocked = true;
                    lockReason = `Fill Slot ${legIdx} first`;
-                 } else if (depth === 0) {
-                   // Only the top level (D, E, F) requires full team completion
+                 } else {
                    const prevMemberSubTeam = getSubTree(prevMember.id);
                    if (prevMemberSubTeam.length < 3) {
                      isLocked = true;
-                     lockReason = `Complete ${prevMember.name}'s team (3 members) to unlock this branch`;
+                     lockReason = `Complete ${prevMember.name}'s team (3 members) first`;
                    }
                  }
                }
@@ -144,7 +143,7 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
                    <div className={`${styles.emptyNode} ${styles.lockedNode}`}>
                       <ShieldCheck size={20} opacity={0.3} />
                       <span>Locked</span>
-                      <p style={{ fontSize: '0.45rem', opacity: 0.5, textAlign: 'center', padding: '0 5px', lineHeight: '1.2' }}>{lockReason}</p>
+                      <p style={{ fontSize: '0.5rem', opacity: 0.5, textAlign: 'center', padding: '0 10px' }}>{lockReason}</p>
                    </div>
                  );
                }

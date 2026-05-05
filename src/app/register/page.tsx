@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import { UserPlus, ArrowLeft, Mail } from 'lucide-react';
+import { UserPlus, ArrowLeft, Mail, RefreshCw, CheckCircle2, AlertCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import styles from './Register.module.css';
 
@@ -23,13 +23,54 @@ export default function RegisterPage() {
   const [step, setStep] = React.useState(1); // 1: Form, 2: OTP
   const [otp, setOtp] = React.useState('');
   const [isVerifying, setIsVerifying] = React.useState(false);
+  const [otpStatus, setOtpStatus] = React.useState<'idle' | 'sent' | 'error'>('idle');
+  const [statusMsg, setStatusMsg] = React.useState('');
+  const [resendCooldown, setResendCooldown] = React.useState(0);
+
+  // Countdown timer for resend cooldown
+  React.useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = setTimeout(() => setResendCooldown(c => c - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [resendCooldown]);
+
+  // Core OTP send — standalone function, no event needed
+  const sendOtp = async () => {
+    setIsVerifying(true);
+    setOtpStatus('idle');
+    setStatusMsg('');
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email: formData.email,
+        options: { shouldCreateUser: false }
+      });
+
+      if (error) {
+        // Supabase dev limiter or SMTP not configured
+        if (error.message.includes('rate') || error.message.includes('limit')) {
+          throw new Error('Too many OTP requests. Please wait 60 seconds before retrying.');
+        }
+        throw error;
+      }
+
+      setOtpStatus('sent');
+      setStatusMsg(`OTP sent to ${formData.email}. Check your inbox and spam folder.`);
+      setResendCooldown(60);
+      setStep(2);
+    } catch (err: any) {
+      setOtpStatus('error');
+      setStatusMsg(err.message || 'Failed to send OTP. Please try again.');
+    } finally {
+      setIsVerifying(false);
+    }
+  };
 
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsVerifying(true);
 
+    // Check if email already registered
+    setIsVerifying(true);
     try {
-      // 1. Check if email already exists in custom users table
       const { data: existingUser } = await supabase
         .from('users')
         .select('email')
@@ -37,23 +78,20 @@ export default function RegisterPage() {
         .single();
 
       if (existingUser) {
-        throw new Error('This email is already registered. Please login instead.');
+        setOtpStatus('error');
+        setStatusMsg('This email is already registered. Please login instead.');
+        return;
       }
-
-      // 2. Send OTP via Supabase Auth
-      const { error } = await supabase.auth.signInWithOtp({
-        email: formData.email
-      });
-
-      if (error) throw error;
-
-      alert(`✅ OTP sent to ${formData.email}. Please check your inbox (and Spam folder).`);
-      setStep(2);
-    } catch (error: any) {
-      alert('Error: ' + error.message);
+    } catch (_) {
+      // no match is fine — proceed
     } finally {
       setIsVerifying(false);
     }
+
+    await sendOtp();
+  };
+
+
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -165,6 +203,22 @@ export default function RegisterPage() {
           ) : (
             <form className={styles.form} onSubmit={handleSubmit}>
               <div className={styles.otpSection}>
+                {/* Status Banner */}
+                {statusMsg && (
+                  <div style={{
+                    display: 'flex', alignItems: 'center', gap: '8px',
+                    padding: '12px 16px', borderRadius: '10px', marginBottom: '16px',
+                    background: otpStatus === 'sent' ? '#ecfdf5' : '#fef2f2',
+                    color: otpStatus === 'sent' ? '#065f46' : '#991b1b',
+                    fontSize: '0.875rem', fontWeight: 600
+                  }}>
+                    {otpStatus === 'sent'
+                      ? <CheckCircle2 size={16} />
+                      : <AlertCircle size={16} />}
+                    {statusMsg}
+                  </div>
+                )}
+
                 <label>Verification Code</label>
                 <input 
                   type="text" 
@@ -177,7 +231,17 @@ export default function RegisterPage() {
                   autoFocus
                 />
                 <p className={styles.resendText}>
-                  Didn't receive it? <button type="button" onClick={handleSendOtp} className={styles.linkBtn}>Resend OTP</button>
+                  Didn't receive it?{' '}
+                  <button
+                    type="button"
+                    onClick={sendOtp}
+                    disabled={resendCooldown > 0 || isVerifying}
+                    className={styles.linkBtn}
+                    style={{ opacity: resendCooldown > 0 ? 0.5 : 1 }}
+                  >
+                    <RefreshCw size={12} style={{ display: 'inline', marginRight: 4 }} />
+                    {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend OTP'}
+                  </button>
                 </p>
               </div>
 

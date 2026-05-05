@@ -141,6 +141,25 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
     scrollRef.current.scrollTop = scrollTop - walkY;
   };
 
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (!scrollRef.current) return;
+    setIsDragging(true);
+    setStartX(e.touches[0].pageX - scrollRef.current.offsetLeft);
+    setStartY(e.touches[0].pageY - scrollRef.current.offsetTop);
+    setScrollLeft(scrollRef.current.scrollLeft);
+    setScrollTop(scrollRef.current.scrollTop);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging || !scrollRef.current) return;
+    const x = e.touches[0].pageX - scrollRef.current.offsetLeft;
+    const y = e.touches[0].pageY - scrollRef.current.offsetTop;
+    const walkX = (x - startX) * 1.5;
+    const walkY = (y - startY) * 1.5;
+    scrollRef.current.scrollLeft = scrollLeft - walkX;
+    scrollRef.current.scrollTop = scrollTop - walkY;
+  };
+
   const stopDragging = () => {
     setIsDragging(false);
   };
@@ -186,6 +205,9 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
           onMouseMove={handleMouseMove}
           onMouseUp={stopDragging}
           onMouseLeave={stopDragging}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={stopDragging}
         >
           <div className={styles.pyramidLayout} style={{ transform: `scale(${zoom})`, transformOrigin: 'top center' }}>
             <div className={styles.mainRoot}>

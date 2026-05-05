@@ -135,8 +135,8 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
     e.preventDefault();
     const x = e.pageX - scrollRef.current.offsetLeft;
     const y = e.pageY - scrollRef.current.offsetTop;
-    const walkX = (x - startX) * 1.5;
-    const walkY = (y - startY) * 1.5;
+    const walkX = (x - startX) * 2;
+    const walkY = (y - startY) * 2;
     scrollRef.current.scrollLeft = scrollLeft - walkX;
     scrollRef.current.scrollTop = scrollTop - walkY;
   };
@@ -154,8 +154,8 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
     if (!isDragging || !scrollRef.current) return;
     const x = e.touches[0].pageX - scrollRef.current.offsetLeft;
     const y = e.touches[0].pageY - scrollRef.current.offsetTop;
-    const walkX = (x - startX) * 1.5;
-    const walkY = (y - startY) * 1.5;
+    const walkX = (x - startX) * 2;
+    const walkY = (y - startY) * 2;
     scrollRef.current.scrollLeft = scrollLeft - walkX;
     scrollRef.current.scrollTop = scrollTop - walkY;
   };

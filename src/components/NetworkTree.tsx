@@ -117,8 +117,9 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
         ) : (
           <div className={styles.emptyNodeSlot}>
              {(() => {
-               // Full Branch Completion Locking Logic:
-               // Slot N+1 unlocks ONLY IF Slot N is occupied AND Slot N has 3 members.
+               // Hierarchical Locking Logic:
+               // 1. Root's children (depth 0) require the PREVIOUS sibling to have 3 members.
+               // 2. Everyone else (depth > 0) only requires the PREVIOUS sibling to be occupied.
                
                let isLocked = false;
                let lockReason = "";
@@ -128,11 +129,12 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
                  if (!prevMember) {
                    isLocked = true;
                    lockReason = `Fill Slot ${legIdx} first`;
-                 } else {
+                 } else if (depth === 0) {
+                   // Only the top level (D, E, F) requires full team completion
                    const prevMemberSubTeam = getSubTree(prevMember.id);
                    if (prevMemberSubTeam.length < 3) {
                      isLocked = true;
-                     lockReason = `Complete ${prevMember.name}'s team (3 members) first`;
+                     lockReason = `Complete ${prevMember.name}'s team (3 members) to unlock this branch`;
                    }
                  }
                }
@@ -142,7 +144,7 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
                    <div className={`${styles.emptyNode} ${styles.lockedNode}`}>
                       <ShieldCheck size={20} opacity={0.3} />
                       <span>Locked</span>
-                      <p style={{ fontSize: '0.5rem', opacity: 0.5, textAlign: 'center', padding: '0 10px' }}>{lockReason}</p>
+                      <p style={{ fontSize: '0.45rem', opacity: 0.5, textAlign: 'center', padding: '0 5px', lineHeight: '1.2' }}>{lockReason}</p>
                    </div>
                  );
                }

@@ -59,41 +59,50 @@ export default function UserDashboard() {
 
     // Load dynamic referrals from Supabase
     const loadReferrals = async () => {
-      // 1. Fetch Direct Referrals (For the List)
-      const { data: directs, error: directError } = await supabase
-        .from('users')
-        .select('*')
-        .eq('referred_by', user?.id);
-      
-      let formattedDirects: any[] = [];
-      if (!directError && directs) {
-        formattedDirects = directs.map(u => ({
-          id: u.id,
-          name: u.name,
-          avatar: u.name[0],
-          sales: u.total_sales || 0,
-          status: u.status,
-          email: u.email
-        }));
-        setReferrals(formattedDirects);
-      }
+      try {
+        // 1. Fetch Direct Referrals
+        const { data: directs, error: directError } = await supabase
+          .from('users')
+          .select('*')
+          .eq('referred_by', user?.id);
+        
+        if (directError) throw directError;
 
-      // 2. Fetch ALL users (For the Pyramid - so we can see depth)
-      const { data: allUsers, error: teamError } = await supabase
-        .from('users')
-        .select('*');
-      
-      if (!teamError && allUsers) {
-        setFullTeam(allUsers || []);
+        let formattedDirects: any[] = [];
+        if (directs) {
+          formattedDirects = directs.map(u => ({
+            id: u.id,
+            name: u.name,
+            avatar: u.name[0],
+            sales: u.total_sales || 0,
+            status: u.status,
+            email: u.email
+          }));
+          setReferrals(formattedDirects);
+        }
 
-        // Calculate Commissions based on Directs
-        const directComm = formattedDirects.reduce((acc: number, ref: any) => acc + (ref.sales * 0.10), 0);
-        setStats(prev => ({
-          ...prev,
-          directCommission: directComm,
-          referralsCount: formattedDirects.length,
-          totalCommission: directComm + prev.indirectCommission
-        }));
+        // 2. Fetch ALL users
+        const { data: allUsers, error: teamError } = await supabase
+          .from('users')
+          .select('*');
+        
+        if (teamError) throw teamError;
+
+        if (allUsers) {
+          setFullTeam(allUsers || []);
+
+          // Calculate Commissions
+          const directComm = formattedDirects.reduce((acc: number, ref: any) => acc + (ref.sales * 0.10), 0);
+          setStats(prev => ({
+            ...prev,
+            directCommission: directComm,
+            referralsCount: formattedDirects.length,
+            totalCommission: directComm + prev.indirectCommission
+          }));
+        }
+      } catch (err: any) {
+        console.error('Fetch Error:', err);
+        // Don't toast on every background fetch to avoid spam, but log it
       }
     };
 

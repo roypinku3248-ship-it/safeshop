@@ -4,7 +4,7 @@ import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
-import { Package, ShieldCheck, MapPin, Settings, Heart, LogOut, Clock, Truck, Loader2, IndianRupee, TrendingUp, Users as UsersIcon, Award, Plus, ShieldAlert, PlusCircle, Maximize2, Minimize2 } from 'lucide-react';
+import { Package, ShieldCheck, MapPin, Settings, Heart, LogOut, Clock, Truck, Loader2, IndianRupee, TrendingUp, Users as UsersIcon, Award, Plus, ShieldAlert, PlusCircle, Maximize2, Minimize2, X } from 'lucide-react';
 import { NetworkTree } from '@/components/NetworkTree';
 import { supabase } from '@/lib/supabase';
 import styles from './Dashboard.module.css';
@@ -338,163 +338,106 @@ export default function UserDashboard() {
                       </div>
 
                       {isAddingMember && (
-                        <form className={styles.addMemberForm} style={{ marginTop: '40px' }} onSubmit={async (e) => {
-                          e.preventDefault();
-                          console.log('🚀 Registration Attempt Started');
-                          
-                          if (!newMemberData.email || !newMemberData.name || !newMemberData.phone) {
-                            toast.error('Please fill all required fields: Name, Email, and Phone.');
-                            return;
-                          }
+                        <div className={styles.modalOverlay}>
+                          <div className={styles.modalContent}>
+                            <button className={styles.closeModal} onClick={() => setIsAddingMember(false)}>
+                              <X size={24} />
+                            </button>
 
-                          if (fullTeam.length === 0) {
-                            toast.loading('Network data still loading. Please wait a moment...', { id: 'network-load' });
-                            return;
-                          }
+                            <form className={styles.addMemberForm} onSubmit={async (e) => {
+                              e.preventDefault();
+                              const toastId = toast.loading('Registering new member...');
+                              setRegistering(true);
 
-                          const toastId = toast.loading('Registering new member...');
-                          setRegistering(true);
+                              try {
+                                if (!user || !user.id) throw new Error('Session expired');
+                                
+                                const findSpilloverSlot = (rootId: string, team: any[]) => {
+                                  const queue = [rootId];
+                                  while (queue.length > 0) {
+                                    const currentId = queue.shift()!;
+                                    const children = team.filter(u => u.referred_by === currentId);
+                                    if (children.length < 3) return currentId;
+                                    children.forEach(child => queue.push(child.id));
+                                  }
+                                  return rootId;
+                                };
 
-                          try {
-                            if (!user || !user.id) {
-                              throw new Error('Your session expired. Please log in again.');
-                            }
+                                const parentId = findSpilloverSlot(user.id, fullTeam);
+                                const newUserId = `SS-USR-${Math.floor(Math.random() * 100000)}`;
+                                
+                                const { error: insertError } = await supabase
+                                  .from('users')
+                                  .insert([{
+                                    id: newUserId,
+                                    name: newMemberData.name,
+                                    email: newMemberData.email,
+                                    password: 'password123',
+                                    role: 'associate',
+                                    status: 'pending',
+                                    referred_by: parentId,
+                                    phone: newMemberData.phone,
+                                    joined_at: new Date().toISOString()
+                                  }]);
 
-                            // 1. Smart Spillover Logic
-                            const findSpilloverSlot = (rootId: string, team: any[]) => {
-                              const queue = [rootId];
-                              while (queue.length > 0) {
-                                const currentId = queue.shift()!;
-                                const children = team.filter(u => u.referred_by === currentId);
-                                if (children.length < 3) return currentId;
-                                children.forEach(child => queue.push(child.id));
+                                if (insertError) throw insertError;
+
+                                toast.success('🎉 Member registered successfully!', { id: toastId });
+                                setIsAddingMember(false);
+                                setTimeout(() => window.location.reload(), 1500);
+                              } catch (err: any) {
+                                toast.error(err.message || 'Failed to register', { id: toastId });
+                              } finally {
+                                setRegistering(false);
                               }
-                              return rootId;
-                            };
-
-                            const parentId = findSpilloverSlot(user.id, fullTeam);
-
-                            // 2. Prepare User Object
-                            const newUserId = `SS-USR-${Math.floor(Math.random() * 100000)}`;
-                            const newRef = {
-                              id: newUserId,
-                              name: newMemberData.name,
-                              email: newMemberData.email,
-                              password: 'password123',
-                              role: 'associate',
-                              status: 'pending',
-                              referred_by: parentId,
-                              phone: newMemberData.phone,
-                              city: newMemberData.city,
-                              ps: newMemberData.ps,
-                              po: newMemberData.po,
-                              joined_at: new Date().toISOString()
-                            };
-                            
-                            console.log('Inserting into Supabase:', newRef);
-                            const { error: insertError } = await supabase
-                              .from('users')
-                              .insert([newRef]);
-
-                            if (insertError) throw insertError;
-
-                            toast.success(`🎉 SUCCESS! ${newMemberData.name} is now in your team!`, { id: toastId });
-                            setIsAddingMember(false);
-                            setNewMemberData({ name: '', email: '', phone: '', city: '', ps: '', po: '', aadhar: '', pan: '', bankAcc: '', ifsc: '' });
-                            
-                            // Reload data without full page refresh if possible, or just reload
-                            setTimeout(() => window.location.reload(), 1500);
-                          } catch (err: any) {
-                            console.error('Registration Error:', err);
-                            let friendlyMsg = 'Registration Failed. Please try again.';
-                            
-                            if (err.message?.includes('users_email_key')) {
-                              friendlyMsg = 'This email is already registered in the system.';
-                            } else if (err.message?.includes('users_phone_key')) {
-                              friendlyMsg = 'This phone number is already registered.';
-                            } else if (err.message?.includes('check your internet')) {
-                              friendlyMsg = 'Connection error. Please check your internet.';
-                            } else {
-                              friendlyMsg = err.message || friendlyMsg;
-                            }
-
-                            toast.error(friendlyMsg, { id: toastId });
-                          } finally {
-                            setRegistering(false);
-                          }
-                        }}>
-                          <h4>Quick Register Member (KYC Enabled)</h4>
-                          <div className={styles.miniFormGrid}>
-                            <div className={styles.formItem}>
-                              <label>Full Name</label>
-                              <input type="text" placeholder="Full Name" required value={newMemberData.name} onChange={(e) => setNewMemberData({...newMemberData, name: e.target.value})} />
-                            </div>
-                            <div className={styles.formItem}>
-                              <label>Email Address</label>
-                              <input type="email" placeholder="Email" required value={newMemberData.email} onChange={(e) => setNewMemberData({...newMemberData, email: e.target.value})} />
-                            </div>
-                            <div className={styles.formItem}>
-                              <label>Phone Number</label>
-                              <input type="tel" placeholder="Phone" required value={newMemberData.phone} onChange={(e) => setNewMemberData({...newMemberData, phone: e.target.value})} />
-                            </div>
-                          </div>
-
-                          <div style={{ background: '#f8fafc', padding: '20px', borderRadius: '12px', border: '1px solid var(--border)', marginTop: '25px' }}>
-                            <h4 style={{ color: 'var(--primary)', marginBottom: '15px' }}>KYC Information</h4>
-                            <div className={styles.miniFormGrid}>
-                              <div className={styles.formItem}>
-                                <label>Aadhar Number</label>
-                                <input type="text" placeholder="12-digit Aadhar" value={newMemberData.aadhar} onChange={(e) => setNewMemberData({...newMemberData, aadhar: e.target.value})} />
+                            }}>
+                              <div className={styles.modalHeader}>
+                                <h3>Quick Register Member</h3>
+                                <p>Join your organization and start earning.</p>
                               </div>
-                              <div className={styles.formItem}>
-                                <label>PAN Number</label>
-                                <input type="text" placeholder="PAN Card No" value={newMemberData.pan} onChange={(e) => setNewMemberData({...newMemberData, pan: e.target.value})} />
+
+                              <div className={styles.miniFormGrid}>
+                                <div className={styles.formItem}>
+                                  <label>Full Name</label>
+                                  <input type="text" placeholder="Full Name" required value={newMemberData.name} onChange={(e) => setNewMemberData({...newMemberData, name: e.target.value})} />
+                                </div>
+                                <div className={styles.formItem}>
+                                  <label>Email Address</label>
+                                  <input type="email" placeholder="Email" required value={newMemberData.email} onChange={(e) => setNewMemberData({...newMemberData, email: e.target.value})} />
+                                </div>
+                                <div className={styles.formItem}>
+                                  <label>Phone Number</label>
+                                  <input type="tel" placeholder="Phone" required value={newMemberData.phone} onChange={(e) => setNewMemberData({...newMemberData, phone: e.target.value})} />
+                                </div>
                               </div>
-                            </div>
-                          </div>
 
-                          <h4 style={{ marginTop: '25px', color: 'var(--primary)' }}>Address Details</h4>
-                          <div className={styles.miniFormGrid}>
-                            <div className={styles.formItem}>
-                              <label>City/Village</label>
-                              <input type="text" placeholder="City" value={newMemberData.city} onChange={(e) => setNewMemberData({...newMemberData, city: e.target.value})} />
-                            </div>
-                            <div className={styles.formItem}>
-                              <label>Police Station (PS)</label>
-                              <input type="text" placeholder="PS" value={newMemberData.ps} onChange={(e) => setNewMemberData({...newMemberData, ps: e.target.value})} />
-                            </div>
-                            <div className={styles.formItem}>
-                              <label>Post Office (PO)</label>
-                              <input type="text" placeholder="PO" value={newMemberData.po} onChange={(e) => setNewMemberData({...newMemberData, po: e.target.value})} />
-                            </div>
-                          </div>
+                              <div className={styles.kycSection}>
+                                <h4>KYC Information (Optional)</h4>
+                                <div className={styles.miniFormGrid}>
+                                  <div className={styles.formItem}>
+                                    <label>Aadhar Number</label>
+                                    <input type="text" placeholder="12-digit Aadhar" value={newMemberData.aadhar} onChange={(e) => setNewMemberData({...newMemberData, aadhar: e.target.value})} />
+                                  </div>
+                                  <div className={styles.formItem}>
+                                    <label>PAN Number</label>
+                                    <input type="text" placeholder="10-digit PAN" value={newMemberData.pan} onChange={(e) => setNewMemberData({...newMemberData, pan: e.target.value})} />
+                                  </div>
+                                </div>
+                              </div>
 
-                          <h4 style={{ marginTop: '25px', color: 'var(--primary)' }}>Document Uploads (Images)</h4>
-                          <div className={styles.fileUploadGrid}>
-                            <div className={styles.fileBox}>
-                              <span>Aadhar Front</span>
-                              <input type="file" accept="image/*" />
-                            </div>
-                            <div className={styles.fileBox}>
-                              <span>Aadhar Back</span>
-                              <input type="file" accept="image/*" />
-                            </div>
-                            <div className={styles.fileBox}>
-                              <span>PAN Card</span>
-                              <input type="file" accept="image/*" />
-                            </div>
+                              <div className={styles.modalFooter}>
+                                <button type="button" className={styles.cancelBtn} onClick={() => setIsAddingMember(false)}>Cancel</button>
+                                <button type="submit" className={styles.submitBtn} disabled={registering}>
+                                  {registering ? "Registering..." : "Complete Registration"}
+                                </button>
+                              </div>
+                            </form>
                           </div>
-                          
-                          <button 
-                            type="submit"
-                            className="gradient-primary" 
-                            disabled={registering}
-                            style={{ marginTop: '20px', padding: '14px 24px', borderRadius: '12px', color: 'white', fontWeight: 'bold', width: '100%', cursor: 'pointer' }}
-                          >
-                            {registering ? 'Processing...' : 'Confirm & Register Member'}
-                          </button>
-                        </form>
+                        </div>
                       )}
+
+                      <div className={styles.treeActions}>
+
 
                     </div>
                   )}

@@ -385,7 +385,19 @@ export default function UserDashboard() {
                             setTimeout(() => window.location.reload(), 1500);
                           } catch (err: any) {
                             console.error('Registration Error:', err);
-                            toast.error('Registration Failed: ' + (err.message || 'Check your internet connection'), { id: toastId });
+                            let friendlyMsg = 'Registration Failed. Please try again.';
+                            
+                            if (err.message?.includes('users_email_key')) {
+                              friendlyMsg = 'This email is already registered in the system.';
+                            } else if (err.message?.includes('users_phone_key')) {
+                              friendlyMsg = 'This phone number is already registered.';
+                            } else if (err.message?.includes('check your internet')) {
+                              friendlyMsg = 'Connection error. Please check your internet.';
+                            } else {
+                              friendlyMsg = err.message || friendlyMsg;
+                            }
+
+                            toast.error(friendlyMsg, { id: toastId });
                           } finally {
                             setRegistering(false);
                           }

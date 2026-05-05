@@ -83,11 +83,19 @@ export default function UserDashboard() {
   });
 
   const [isAddingMember, setIsAddingMember] = React.useState(false);
+  const [selectedParentId, setSelectedParentId] = React.useState<string | null>(null);
+  const [selectedLegIdx, setSelectedLegIdx] = React.useState<number | null>(null);
   const [isFullScreen, setIsFullScreen] = React.useState(false);
   const [registering, setRegistering] = React.useState(false);
   const [newMemberData, setNewMemberData] = React.useState({
     name: '', email: '', phone: '', city: '', ps: '', po: '', aadhar: '', pan: '', bankAcc: '', ifsc: ''
   });
+
+  const handleAddMemberClick = (parentId?: string, legIdx?: number) => {
+    setSelectedParentId(parentId || user?.id || null);
+    setSelectedLegIdx(legIdx ?? null);
+    setIsAddingMember(true);
+  };
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
@@ -329,7 +337,7 @@ export default function UserDashboard() {
                           rootUser={{ name: user.name, id: user.id }}
                           directReferrals={referrals}
                           fullTeam={fullTeam}
-                          onAddMember={() => setIsAddingMember(true)}
+                          onAddMember={handleAddMemberClick}
                           isFullScreen={isFullScreen}
                           setIsFullScreen={setIsFullScreen}
                         />
@@ -403,47 +411,38 @@ export default function UserDashboard() {
                                 if (fetchError) throw fetchError;
                                 const team = freshTeam || [];
                                 
-                                const findSpilloverSlot = (rootId: string, teamData: any[]) => {
-                                  const queue = [rootId];
-                                  while (queue.length > 0) {
-                                    const currentId = queue.shift()!;
-                                    const children = teamData.filter(u => u.referred_by === currentId);
-                                    if (children.length < 3) return currentId;
-                                    children.forEach(child => queue.push(child.id));
-                                  }
-                                  return rootId;
-                                };
+                                  const parentId = selectedParentId || user.id;
+                                  console.log('📍 Placing user under parent:', parentId);
 
-                                const parentId = findSpilloverSlot(user.id, team);
-                                console.log('📍 Placing user under parent:', parentId);
+                                  const { error } = await supabase.from('users').insert([{
+                                    id: `SS-USR-${Math.floor(Math.random() * 100000)}`,
+                                    name: newMemberData.name,
+                                    email: newMemberData.email,
+                                    phone: newMemberData.phone,
+                                    password: 'password123',
+                                    role: 'associate',
+                                    status: 'pending',
+                                    referred_by: parentId,
+                                    city: newMemberData.city,
+                                    ps: newMemberData.ps,
+                                    po: newMemberData.po,
+                                    aadhar: newMemberData.aadhar,
+                                    pan: newMemberData.pan,
+                                    joined_at: new Date().toISOString()
+                                  }]);
 
-                                const { error } = await supabase.from('users').insert([{
-                                  id: `SS-USR-${Math.floor(Math.random() * 100000)}`,
-                                  name: newMemberData.name,
-                                  email: newMemberData.email,
-                                  phone: newMemberData.phone,
-                                  password: 'password123',
-                                  role: 'associate',
-                                  status: 'pending',
-                                  referred_by: parentId,
-                                  city: newMemberData.city,
-                                  ps: newMemberData.ps,
-                                  po: newMemberData.po,
-                                  aadhar: newMemberData.aadhar,
-                                  pan: newMemberData.pan,
-                                  joined_at: new Date().toISOString()
-                                }]);
-
-                                if (error) throw error;
-                                toast.success('🎉 Member registered successfully in your network!', { id: toastId });
-                                setIsAddingMember(false);
-                                setTimeout(() => window.location.reload(), 1500);
-                              } catch (err: any) {
-                                toast.error(err.message || 'Failed to register', { id: toastId });
-                              } finally { 
-                                setRegistering(false); 
-                              }
-                            }}>
+                                  if (error) throw error;
+                                  toast.success('🎉 Member registered successfully in your network!', { id: toastId });
+                                  setIsAddingMember(false);
+                                  setSelectedParentId(null);
+                                  setSelectedLegIdx(null);
+                                  setTimeout(() => window.location.reload(), 1500);
+                                } catch (err: any) {
+                                  toast.error(err.message || 'Failed to register', { id: toastId });
+                                } finally { 
+                                  setRegistering(false); 
+                                }
+                              }}>
                               <div className={styles.modalHeader}>
                                 <h3>Quick Register Member</h3>
                                 <p>Join your organization and start earning.</p>

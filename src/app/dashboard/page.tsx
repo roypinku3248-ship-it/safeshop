@@ -337,20 +337,33 @@ export default function UserDashboard() {
                             <button className={styles.closeModal} onClick={() => setIsAddingMember(false)}><X size={24} /></button>
                             <form className={styles.addMemberForm} onSubmit={async (e) => {
                               e.preventDefault();
-                              const toastId = toast.loading('Registering member...');
+                              const toastId = toast.loading('Syncing network and registering member...');
                               setRegistering(true);
                               try {
-                                const findSpilloverSlot = (rootId: string, team: any[]) => {
+                                if (!user || !user.id) throw new Error('Session expired');
+
+                                // Fetch FRESH team data right before registration to ensure spillover is accurate
+                                const { data: freshTeam, error: fetchError } = await supabase
+                                  .from('users')
+                                  .select('*');
+                                
+                                if (fetchError) throw fetchError;
+                                const team = freshTeam || [];
+                                
+                                const findSpilloverSlot = (rootId: string, teamData: any[]) => {
                                   const queue = [rootId];
                                   while (queue.length > 0) {
                                     const currentId = queue.shift()!;
-                                    const children = team.filter(u => u.referred_by === currentId);
+                                    const children = teamData.filter(u => u.referred_by === currentId);
                                     if (children.length < 3) return currentId;
                                     children.forEach(child => queue.push(child.id));
                                   }
                                   return rootId;
                                 };
-                                const parentId = findSpilloverSlot(user.id, fullTeam);
+
+                                const parentId = findSpilloverSlot(user.id, team);
+                                console.log('📍 Placing user under parent:', parentId);
+
                                 const { error } = await supabase.from('users').insert([{
                                   id: `SS-USR-${Math.floor(Math.random() * 100000)}`,
                                   name: newMemberData.name,
@@ -360,31 +373,39 @@ export default function UserDashboard() {
                                   role: 'associate',
                                   status: 'pending',
                                   referred_by: parentId,
+                                  city: newMemberData.city,
+                                  ps: newMemberData.ps,
+                                  po: newMemberData.po,
+                                  aadhar: newMemberData.aadhar,
+                                  pan: newMemberData.pan,
                                   joined_at: new Date().toISOString()
                                 }]);
+
                                 if (error) throw error;
-                                toast.success('🎉 Member registered!', { id: toastId });
+                                toast.success('🎉 Member registered successfully in your network!', { id: toastId });
                                 setIsAddingMember(false);
                                 setTimeout(() => window.location.reload(), 1500);
                               } catch (err: any) {
-                                toast.error(err.message, { id: toastId });
-                              } finally { setRegistering(false); }
+                                toast.error(err.message || 'Failed to register', { id: toastId });
+                              } finally { 
+                                setRegistering(false); 
+                              }
                             }}>
                               <div className={styles.modalHeader}>
                                 <h3>Quick Register Member</h3>
                                 <p>Join your organization and start earning.</p>
                               </div>
-                              <div className={styles. miniFormGrid}>
+                              <div className={styles.miniFormGrid}>
                                 <div className={styles.formItem}>
                                   <label>Full Name</label>
                                   <input type="text" required value={newMemberData.name} onChange={e => setNewMemberData({...newMemberData, name: e.target.value})} />
                                 </div>
                                 <div className={styles.formItem}>
-                                  <label>Email</label>
+                                  <label>Email Address</label>
                                   <input type="email" required value={newMemberData.email} onChange={e => setNewMemberData({...newMemberData, email: e.target.value})} />
                                 </div>
                                 <div className={styles.formItem}>
-                                  <label>Phone</label>
+                                  <label>Phone Number</label>
                                   <input type="tel" required value={newMemberData.phone} onChange={e => setNewMemberData({...newMemberData, phone: e.target.value})} />
                                 </div>
                                 <div className={styles.formItem}>

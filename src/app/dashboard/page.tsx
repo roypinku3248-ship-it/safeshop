@@ -368,11 +368,6 @@ export default function UserDashboard() {
                               city: newMemberData.city,
                               ps: newMemberData.ps,
                               po: newMemberData.po,
-                              // KYC Details
-                              aadhar_no: newMemberData.aadhar,
-                              pan_no: newMemberData.pan,
-                              bank_acc: newMemberData.bankAcc,
-                              bank_ifsc: newMemberData.ifsc,
                               joined_at: new Date().toISOString()
                             };
                             

@@ -132,18 +132,20 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!scrollRef.current) return;
+    const rect = scrollRef.current.getBoundingClientRect();
     setIsDragging(true);
-    setStartX(e.pageX - scrollRef.current.offsetLeft);
-    setStartY(e.pageY - scrollRef.current.offsetTop);
+    setStartX(e.pageX - rect.left);
+    setStartY(e.pageY - rect.top);
     setScrollLeft(scrollRef.current.scrollLeft);
     setScrollTop(scrollRef.current.scrollTop);
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!isDragging || !scrollRef.current) return;
+    const rect = scrollRef.current.getBoundingClientRect();
     e.preventDefault();
-    const x = e.pageX - scrollRef.current.offsetLeft;
-    const y = e.pageY - scrollRef.current.offsetTop;
+    const x = e.pageX - rect.left;
+    const y = e.pageY - rect.top;
     const walkX = (x - startX) * 2;
     const walkY = (y - startY) * 2;
     scrollRef.current.scrollLeft = scrollLeft - walkX;
@@ -152,17 +154,19 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
 
   const handleTouchStart = (e: React.TouchEvent) => {
     if (!scrollRef.current) return;
+    const rect = scrollRef.current.getBoundingClientRect();
     setIsDragging(true);
-    setStartX(e.touches[0].pageX - scrollRef.current.offsetLeft);
-    setStartY(e.touches[0].pageY - scrollRef.current.offsetTop);
+    setStartX(e.touches[0].pageX - rect.left);
+    setStartY(e.touches[0].pageY - rect.top);
     setScrollLeft(scrollRef.current.scrollLeft);
     setScrollTop(scrollRef.current.scrollTop);
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
     if (!isDragging || !scrollRef.current) return;
-    const x = e.touches[0].pageX - scrollRef.current.offsetLeft;
-    const y = e.touches[0].pageY - scrollRef.current.offsetTop;
+    const rect = scrollRef.current.getBoundingClientRect();
+    const x = e.touches[0].pageX - rect.left;
+    const y = e.touches[0].pageY - rect.top;
     const walkX = (x - startX) * 2;
     const walkY = (y - startY) * 2;
     scrollRef.current.scrollLeft = scrollLeft - walkX;

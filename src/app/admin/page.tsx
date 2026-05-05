@@ -6,7 +6,7 @@ import { sellers, products } from '@/data/mockData';
 import { NetworkTree } from '@/components/NetworkTree';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabase';
-import { Users as UsersIcon, Package, AlertTriangle, BarChart3, CheckCircle, XCircle, Search, ChevronDown, ChevronRight, UserCheck, Loader2, Trash2 } from 'lucide-react';
+import { Users as UsersIcon, Package, AlertTriangle, BarChart3, CheckCircle, XCircle, Search, ChevronDown, ChevronRight, UserCheck, Loader2, Trash2, ShieldCheck } from 'lucide-react';
 import styles from './Admin.module.css';
 
 export default function AdminPage() {
@@ -36,6 +36,7 @@ export default function AdminPage() {
   const [showDeleteModal, setShowDeleteModal] = React.useState(false);
   const [userToDelete, setUserToDelete] = React.useState<any>(null);
   const [adminPassword, setAdminPassword] = React.useState('');
+  const [pendingVerificationId, setPendingVerificationId] = React.useState<string | null>(null);
 
   const loadData = async () => {
     setDataLoading(true);

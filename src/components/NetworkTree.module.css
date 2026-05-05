@@ -409,22 +409,6 @@
   touch-action: none;
 }
 
-.miniSlotPlaceholder {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 10px;
-  width: 120px;
-}
-
-.slotDot {
-  width: 6px;
-  height: 6px;
-  background: #cbd5e1;
-  border-radius: 50%;
-  opacity: 0.5;
-}
-
 .grabbing {
   cursor: grabbing !important;
 }
@@ -551,6 +535,19 @@
 .activeJoinNode:hover {
   background: var(--primary-light, #eff6ff) !important;
   transform: scale(1.05);
+}
+
+.lockedNode {
+  background: rgba(241, 245, 249, 0.5) !important;
+  border: 2px dashed #e2e8f0 !important;
+  color: #cbd5e1 !important;
+  cursor: not-allowed !important;
+  opacity: 0.6;
+}
+
+.lockedNode:hover {
+  transform: none !important;
+  background: rgba(241, 245, 249, 0.5) !important;
 }
 
 .activeJoinNode button {

@@ -116,11 +116,31 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
           </div>
         ) : (
           <div className={styles.emptyNodeSlot}>
-             <div className={`${styles.emptyNode} ${styles.activeJoinNode}`} onClick={() => onAddMember?.(parentId, legIdx)}>
-                <PlusCircle size={20} />
-                <span>Join</span>
-                <span style={{ fontSize: '0.5rem', opacity: 0.5, marginTop: '4px' }}>to {parentId?.toString().slice(-6)}</span>
-             </div>
+             {(() => {
+               // Sequential Locking Logic:
+               // Slot 1 (idx 0) is always unlocked.
+               // Slot 2 (idx 1) is unlocked ONLY if Slot 1 has a user.
+               // Slot 3 (idx 2) is unlocked ONLY if Slot 2 has a user.
+               const isLocked = legIdx > 0 && !children[legIdx - 1];
+               
+               if (isLocked) {
+                 return (
+                   <div className={`${styles.emptyNode} ${styles.lockedNode}`}>
+                      <ShieldCheck size={20} opacity={0.3} />
+                      <span>Locked</span>
+                      <p style={{ fontSize: '0.5rem', opacity: 0.5 }}>Fill Slot {legIdx} first</p>
+                   </div>
+                 );
+               }
+
+               return (
+                 <div className={`${styles.emptyNode} ${styles.activeJoinNode}`} onClick={() => onAddMember?.(parentId, legIdx)}>
+                    <PlusCircle size={20} />
+                    <span>Join</span>
+                    <span style={{ fontSize: '0.5rem', opacity: 0.5, marginTop: '4px' }}>to {parentId?.toString().slice(-6)}</span>
+                 </div>
+               );
+             })()}
           </div>
         )}
       </div>

@@ -363,7 +363,6 @@ export default function UserDashboard() {
                               role: 'associate',
                               status: 'pending',
                               referred_by: parentId,
-                              sponsor_id: user.id,
                               phone: newMemberData.phone,
                               city: newMemberData.city,
                               ps: newMemberData.ps,

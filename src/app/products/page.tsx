@@ -20,7 +20,11 @@ export default function ProductsPage() {
         .eq('status', 'live');
       
       if (!error && data) {
-        setLiveProducts(data);
+        // Combine Supabase products with our 55+ demo products
+        setLiveProducts([...data, ...products]);
+      } else {
+        // Fallback to demo products if Supabase fails or is empty
+        setLiveProducts(products);
       }
     };
     fetchProducts();

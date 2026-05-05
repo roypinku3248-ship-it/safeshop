@@ -369,10 +369,12 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 100px;
+  padding: 80px;
+  width: fit-content;
   min-width: 100%;
   min-height: 100%;
   transition: transform 0.1s ease-out;
+  margin: 0 auto;
 }
 
 .levelContainer {

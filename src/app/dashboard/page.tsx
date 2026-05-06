@@ -131,10 +131,19 @@ export default function UserDashboard() {
           items: o.items || []
         }));
 
-        setOrders([...formattedDbOrders, ...localOrders]);
+        const combinedOrders = [...formattedDbOrders, ...localOrders];
+        setOrders(combinedOrders);
+
+        // Calculate Personal BV from all orders
+        const personalBv = combinedOrders.reduce((acc: number, order: any) => {
+          return acc + (order.items || []).reduce((sum: number, item: any) => sum + (item.bv * item.quantity), 0);
+        }, 0);
+        setStats(prev => ({ ...prev, totalBv: personalBv }));
+
       } catch (err) {
         console.error('Error loading orders:', err);
-        setOrders(JSON.parse(localStorage.getItem('safeshop-orders') || '[]'));
+        const localOrders = JSON.parse(localStorage.getItem('safeshop-orders') || '[]');
+        setOrders(localOrders);
       }
     };
 
@@ -211,12 +220,6 @@ export default function UserDashboard() {
     if (user?.id) {
       loadReferrals();
     }
-
-    const personalBv = savedOrders.reduce((acc: number, order: any) => {
-      return acc + order.items.reduce((sum: number, item: any) => sum + (item.bv * item.quantity), 0);
-    }, 0);
-
-    setStats(prev => ({ ...prev, totalBv: personalBv }));
 
   }, [isAuthenticated, loading, router, user?.id]);
 

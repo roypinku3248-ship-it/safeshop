@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
-import { ShieldCheck, ShieldAlert, Lock, CreditCard, Landmark, Wallet, CheckCircle2, Loader2, ArrowRight } from 'lucide-react';
+import { ShieldCheck, ShieldAlert, Lock, CreditCard, Landmark, Wallet, CheckCircle2, Loader2, ArrowRight, Truck } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import styles from './Checkout.module.css';
 

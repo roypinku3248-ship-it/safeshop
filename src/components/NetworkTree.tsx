@@ -131,8 +131,8 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                   <span style={{ fontSize: '0.55rem', color: '#94a3b8', fontWeight: 'bold' }}>R-{user.id?.toString().slice(-6).toUpperCase()}</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '2px', background: user.status?.toLowerCase() === 'verified' ? '#fff9e6' : '#f1f5f9', padding: '1px 5px', borderRadius: '10px', border: user.status?.toLowerCase() === 'verified' ? '1px solid #ffeeba' : '1px solid #e2e8f0' }}>
-                    <span style={{ fontSize: '9px', color: user.status?.toLowerCase() === 'verified' ? '#856404' : '#64748b', fontWeight: '900', whiteSpace: 'nowrap' }}>
-                      {user.referred_by === rootUser.id ? 'Direct 🪙 100' : 'Team 🪙 100'}
+                    <span style={{ fontSize: '10px', color: user.status?.toLowerCase() === 'verified' ? '#856404' : '#64748b', fontWeight: '900' }}>
+                      🪙 {user.status?.toLowerCase() === 'verified' ? '100' : '0'}
                     </span>
                   </div>
                 </div>
@@ -339,8 +339,15 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
                     </div>
                   </div>
                   <div className={styles.listStats}>
-                    <div className={user.status?.toLowerCase() === 'verified' ? styles.statusV : styles.statusP}>
-                      {user.status || 'Pending'}
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '5px' }}>
+                      <div className={user.status?.toLowerCase() === 'verified' ? styles.statusV : styles.statusP}>
+                        {user.status || 'Pending'}
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: user.status?.toLowerCase() === 'verified' ? '#fff9e6' : '#f1f5f9', padding: '2px 8px', borderRadius: '12px', border: user.status?.toLowerCase() === 'verified' ? '1px solid #ffeeba' : '1px solid #e2e8f0' }}>
+                        <span style={{ fontSize: '11px', color: user.status?.toLowerCase() === 'verified' ? '#856404' : '#64748b', fontWeight: '800' }}>
+                          🪙 {user.status?.toLowerCase() === 'verified' ? '100' : '0'}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>

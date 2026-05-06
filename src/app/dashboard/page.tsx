@@ -110,8 +110,37 @@ export default function UserDashboard() {
       refreshUser();
     }
     
-    const savedOrders = JSON.parse(localStorage.getItem('safeshop-orders') || '[]');
-    setOrders(savedOrders);
+    const loadOrders = async () => {
+      try {
+        const { data: dbOrders, error } = await supabase
+          .from('orders')
+          .select('*')
+          .eq('user_id', user?.id);
+        
+        if (error) throw error;
+
+        const localOrders = JSON.parse(localStorage.getItem('safeshop-orders') || '[]');
+        
+        // Format DB orders to match UI expectations
+        const formattedDbOrders = (dbOrders || []).map(o => ({
+          id: o.id.toString().slice(0, 8).toUpperCase(),
+          date: new Date(o.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }),
+          status: o.status,
+          seller: o.seller_name || 'SafeShop Official',
+          total: o.total_amount,
+          items: o.items || []
+        }));
+
+        setOrders([...formattedDbOrders, ...localOrders]);
+      } catch (err) {
+        console.error('Error loading orders:', err);
+        setOrders(JSON.parse(localStorage.getItem('safeshop-orders') || '[]'));
+      }
+    };
+
+    if (user?.id) {
+      loadOrders();
+    }
 
     const loadReferrals = async () => {
       try {

@@ -130,8 +130,10 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                   <span style={{ fontSize: '0.55rem', color: '#94a3b8', fontWeight: 'bold' }}>R-{user.id?.toString().slice(-6).toUpperCase()}</span>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '2px', background: '#fff9e6', padding: '1px 5px', borderRadius: '10px', border: '1px solid #ffeeba' }}>
-                    <span style={{ fontSize: '10px', color: '#856404', fontWeight: '900' }}>🪙 100</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '2px', background: user.status?.toLowerCase() === 'verified' ? '#fff9e6' : '#f1f5f9', padding: '1px 5px', borderRadius: '10px', border: user.status?.toLowerCase() === 'verified' ? '1px solid #ffeeba' : '1px solid #e2e8f0' }}>
+                    <span style={{ fontSize: '10px', color: user.status?.toLowerCase() === 'verified' ? '#856404' : '#64748b', fontWeight: '900' }}>
+                      🪙 {user.status?.toLowerCase() === 'verified' ? '100' : '0'}
+                    </span>
                   </div>
                 </div>
                 <span className={user.status?.toLowerCase() === 'verified' ? styles.verified : styles.pending}>
@@ -295,7 +297,7 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
               <div className={styles.rootAvatar}>{(currentRoot.name || 'U')[0]}</div>
               <h3>{currentRoot.name}</h3>
               <div style={{ margin: '10px 0', background: 'var(--primary)', color: 'white', padding: '5px 15px', borderRadius: '20px', display: 'inline-flex', alignItems: 'center', gap: '8px', fontWeight: 'bold', fontSize: '0.9rem', boxShadow: '0 4px 12px rgba(0,82,204,0.3)' }}>
-                🪙 Total Level Coins: {getSubTree(currentRoot.id).length * 100}
+                🪙 Total Level Coins: {getSubTree(currentRoot.id).filter(u => u.status?.toLowerCase() === 'verified').length * 100}
               </div>
               <p>{navigationStack.length === 0 ? 'Master Account' : 'Team Overview'}</p>
             </div>

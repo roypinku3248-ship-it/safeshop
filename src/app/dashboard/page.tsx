@@ -568,7 +568,6 @@ export default function UserDashboard() {
                             // 3. RECORD THE SALE as "Awaiting Payment"
                             const { error: orderError } = await supabase.from('orders').insert([{
                               user_id: targetUserId,
-                              seller_name: user.name,
                               status: 'Awaiting Payment',
                               total_amount: selectedPkg.price,
                               items: [{ 

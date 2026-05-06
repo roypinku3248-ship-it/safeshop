@@ -8,7 +8,7 @@ import { ShieldCheck, ShieldAlert, Lock, CreditCard, Landmark, Wallet, CheckCirc
 import { supabase } from '@/lib/supabase';
 import styles from './Checkout.module.css';
 
-type PaymentMethod = 'upi' | 'card' | 'netbanking';
+type PaymentMethod = 'upi' | 'card' | 'netbanking' | 'cod';
 
 export default function CheckoutPage() {
   const { cart, totalPrice, clearCart } = useCart();
@@ -40,9 +40,13 @@ export default function CheckoutPage() {
 
     setStep('processing');
     
-    const orderId = `#SS-${Math.floor(100000 + Math.random() * 900000)}`;
-    const newOrder = {
-      id: orderId,
+    const pendingOrderId = localStorage.getItem('safeshop-pending-order-id');
+    const isActivation = !!pendingOrderId;
+    
+    const orderId = isActivation ? pendingOrderId : `#SS-${Math.floor(100000 + Math.random() * 900000)}`;
+    const finalStatus = paymentMethod === 'cod' ? 'Awaiting Verification (COD)' : 'In Transit (Escrow Active)';
+
+    const orderData = {
       user_id: user?.id || 'anonymous',
       customer_name: user?.name || 'Guest',
       items: cart.map(item => ({
@@ -53,29 +57,39 @@ export default function CheckoutPage() {
         quantity: item.quantity,
         bv: (item as any).bv || 100
       })),
-      total_amount: totalPrice, // Using DB column name
-      status: 'In Transit (Escrow Active)',
+      total_amount: totalPrice,
+      status: finalStatus,
       seller_name: cart[0]?.seller?.name || 'SafeShop Official'
     };
 
     try {
-      const { error } = await supabase
-        .from('orders')
-        .insert([newOrder]);
+      if (isActivation) {
+        // Update existing order
+        const { error } = await supabase
+          .from('orders')
+          .update(orderData)
+          .eq('id', pendingOrderId);
+        if (error) throw error;
+      } else {
+        // Insert new order
+        const { error } = await supabase
+          .from('orders')
+          .insert([{ id: orderId, ...orderData }]);
+        if (error) throw error;
+      }
 
-      if (error) throw error;
-
-      // Update user's total sales (optional, but keep for consistency)
-      const { data: userData } = await supabase.from('users').select('total_sales').eq('id', user.id).single();
-      await supabase.from('users').update({ total_sales: (userData?.total_sales || 0) + totalPrice }).eq('id', user.id);
-
-      // Mock payment processing delay
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      // If online payment, wait for mock processing
+      if (paymentMethod !== 'cod') {
+        await new Promise(resolve => setTimeout(resolve, 3000));
+      } else {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
       
       setStep('success');
       clearCart();
+      localStorage.removeItem('safeshop-pending-order-id');
     } catch (err: any) {
-      alert('Error placing order: ' + err.message);
+      alert('Error processing order: ' + err.message);
       setStep('payment');
     }
   };
@@ -98,7 +112,7 @@ export default function CheckoutPage() {
             </div>
             <div className={styles.escrowNotice}>
               <ShieldCheck size={20} />
-              <span>Reminder: We only release funds to the seller after you confirm receiving the correct items in the dashboard.</span>
+              <span>{paymentMethod === 'cod' ? 'Our agent will contact you for cash collection and verification.' : 'Reminder: We only release funds to the seller after you confirm receiving the correct items.'}</span>
             </div>
             <button onClick={() => router.push('/dashboard')} className="gradient-primary">
               Go to Dashboard
@@ -185,6 +199,13 @@ export default function CheckoutPage() {
                     <Landmark size={24} />
                     <span>Net Banking</span>
                   </div>
+                  <div 
+                    className={`${styles.method} ${paymentMethod === 'cod' ? styles.activeMethod : ''}`}
+                    onClick={() => setPaymentMethod('cod')}
+                  >
+                    <Truck size={24} />
+                    <span>Cash on Delivery (COD)</span>
+                  </div>
                 </div>
 
                 <div className={styles.paymentDetails}>
@@ -200,6 +221,15 @@ export default function CheckoutPage() {
                       <div className={styles.inputRow}>
                         <input type="text" placeholder="MM/YY" />
                         <input type="password" placeholder="CVV" />
+                      </div>
+                    </div>
+                  )}
+                  {paymentMethod === 'cod' && (
+                    <div className={styles.upiForm}>
+                      <p>Pay with cash upon delivery of your welcome kit.</p>
+                      <div style={{ display: 'flex', gap: '10px', alignItems: 'center', color: '#059669', background: '#ecfdf5', padding: '10px', borderRadius: '8px', fontSize: '0.9rem' }}>
+                        <CheckCircle2 size={16} />
+                        <span>COD available for this business package</span>
                       </div>
                     </div>
                   )}

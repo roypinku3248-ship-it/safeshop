@@ -348,7 +348,7 @@ export default function UserDashboard() {
             )}
 
             {/* HIGH-VISIBILITY PAYMENT ALERT */}
-            {orders.some(o => o.status?.toLowerCase().includes('awaiting')) && (
+            {orders.some(o => o.status?.toLowerCase() === 'awaiting payment') && (
               <div style={{ 
                 background: 'linear-gradient(135deg, #fffbeb, #fef3c7)', 
                 border: '1px solid #fcd34d', 
@@ -374,7 +374,7 @@ export default function UserDashboard() {
                   className="gradient-primary" 
                   style={{ padding: '10px 25px', borderRadius: '10px', color: 'white', fontWeight: '800', border: 'none', cursor: 'pointer', boxShadow: '0 4px 12px rgba(37, 99, 235, 0.2)' }}
                   onClick={() => {
-                    const pendingOrder = orders.find(o => o.status?.toLowerCase().includes('awaiting'));
+                    const pendingOrder = orders.find(o => o.status?.toLowerCase() === 'awaiting payment');
                     if (pendingOrder) {
                       localStorage.setItem('safeshop-cart', JSON.stringify(pendingOrder.items));
                       localStorage.setItem('safeshop-pending-order-id', pendingOrder.dbId);
@@ -443,7 +443,7 @@ export default function UserDashboard() {
                             </div>
                             {idx === 0 && (
                               <div className={styles.orderActions}>
-                                {order.status?.toLowerCase().includes('awaiting') ? (
+                                {order.status?.toLowerCase() === 'awaiting payment' ? (
                                   <button 
                                     className="gradient-primary" 
                                     style={{ padding: '8px 20px', borderRadius: '8px', border: 'none', color: 'white', fontWeight: 'bold', cursor: 'pointer' }}

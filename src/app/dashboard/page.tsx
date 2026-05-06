@@ -67,7 +67,7 @@ function SyncAccountNotice({ user }: { user: any }) {
 export default function UserDashboard() {
   const { user, isAuthenticated, loading, logout, refreshUser } = useAuth();
   const router = useRouter();
-  const [activeTab, setActiveTab] = React.useState<'orders' | 'earnings'>('orders');
+  const [activeTab, setActiveTab] = React.useState<'orders' | 'earnings' | 'protection' | 'wishlist' | 'addresses' | 'settings'>('orders');
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
   const [orders, setOrders] = React.useState<any[]>([]);
   
@@ -279,7 +279,7 @@ export default function UserDashboard() {
               {(user.role !== 'user') && (
                 <button className={activeTab === 'earnings' ? styles.active : ''} onClick={() => { setActiveTab('earnings'); setIsSidebarOpen(false); }}><Award size={20} color="var(--secondary)" /> Earnings & Network</button>
               )}
-              <button onClick={() => setIsSidebarOpen(false)}><ShieldCheck size={20} /> Buyer Protection</button>
+              <button className={activeTab === 'protection' ? styles.active : ''} onClick={() => { setActiveTab('protection'); setIsSidebarOpen(false); }}><ShieldCheck size={20} /> Buyer Protection</button>
               {user.role === 'user' && (
                 <button className={styles.joinBtn} onClick={() => { router.push('/register'); setIsSidebarOpen(false); }}><Plus size={20} color="var(--primary)" /> Join SafeShop Business</button>
               )}
@@ -287,11 +287,11 @@ export default function UserDashboard() {
                 <button onClick={() => { router.push('/kyc'); setIsSidebarOpen(false); }} className={styles.pendingBtn}><ShieldCheck size={20} color="var(--warning)" /> ID Verification Pending</button>
               )}
               {user.role === 'seller' && (
-                <button className={styles.verifiedBtn} onClick={() => setIsSidebarOpen(false)}><ShieldCheck size={20} color="var(--primary)" /> ID Verified Seller</button>
+                <button className={styles.verifiedBtn} onClick={() => { router.push('/kyc'); setIsSidebarOpen(false); }}><ShieldCheck size={20} color="var(--primary)" /> ID Verified Seller</button>
               )}
-              <button onClick={() => setIsSidebarOpen(false)}><Heart size={20} /> Wishlist</button>
-              <button onClick={() => setIsSidebarOpen(false)}><MapPin size={20} /> Saved Addresses</button>
-              <button onClick={() => setIsSidebarOpen(false)}><Settings size={20} /> Account Settings</button>
+              <button className={activeTab === 'wishlist' ? styles.active : ''} onClick={() => { setActiveTab('wishlist'); setIsSidebarOpen(false); }}><Heart size={20} /> Wishlist</button>
+              <button className={activeTab === 'addresses' ? styles.active : ''} onClick={() => { setActiveTab('addresses'); setIsSidebarOpen(false); }}><MapPin size={20} /> Saved Addresses</button>
+              <button className={activeTab === 'settings' ? styles.active : ''} onClick={() => { setActiveTab('settings'); setIsSidebarOpen(false); }}><Settings size={20} /> Account Settings</button>
               <div className={styles.divider} />
               <button className={styles.logout} onClick={() => { logout(); setIsSidebarOpen(false); }}><LogOut size={20} /> Logout</button>
             </nav>
@@ -557,6 +557,97 @@ export default function UserDashboard() {
                       </div>
                     </div>
                   </div>
+                </div>
+              </div>
+            )}
+            {activeTab === 'protection' && (
+              <div className={styles.tabContent}>
+                <div className={styles.header}>
+                  <h1>Buyer Protection</h1>
+                  <p>Secure shopping and hassle-free returns.</p>
+                </div>
+                <div className={styles.protectionGrid}>
+                  <div className={styles.protectionCard}>
+                    <ShieldCheck size={40} color="var(--primary)" />
+                    <h3>Secure Payments</h3>
+                    <p>Your payment information is always encrypted and never shared with sellers.</p>
+                  </div>
+                  <div className={styles.protectionCard}>
+                    <Truck size={40} color="var(--secondary)" />
+                    <h3>On-Time Delivery</h3>
+                    <p>Get a full refund if your order doesn't arrive by the scheduled date.</p>
+                  </div>
+                  <div className={styles.protectionCard}>
+                    <Package size={40} color="#8e24aa" />
+                    <h3>Refund Guarantee</h3>
+                    <p>Money-back guarantee for products that don't match their description.</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'wishlist' && (
+              <div className={styles.tabContent}>
+                <div className={styles.header}>
+                  <h1>My Wishlist</h1>
+                  <p>Items you've saved for later.</p>
+                </div>
+                <div className={styles.emptyState}>
+                  <Heart size={64} color="#f44336" />
+                  <h3>Your wishlist is empty</h3>
+                  <p>Save items you like to see them here.</p>
+                  <button className="gradient-primary" onClick={() => router.push('/products')}>Browse Products</button>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'addresses' && (
+              <div className={styles.tabContent}>
+                <div className={styles.header}>
+                  <h1>Saved Addresses</h1>
+                  <p>Manage your delivery locations.</p>
+                </div>
+                <div className={styles.addressList}>
+                  <div className={styles.addressCard}>
+                    <div className={styles.addressHeader}>
+                      <MapPin size={20} />
+                      <strong>Home Address</strong>
+                    </div>
+                    <p>{user.name}<br />{user.city || 'Kolkata'}, West Bengal<br />Phone: {user.phone || '+91 9876543210'}</p>
+                    <div className={styles.addressActions}>
+                      <button className={styles.editBtn}>Edit</button>
+                      <button className={styles.deleteBtn}>Remove</button>
+                    </div>
+                  </div>
+                  <button className={styles.addAddressBtn}><Plus size={20} /> Add New Address</button>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'settings' && (
+              <div className={styles.tabContent}>
+                <div className={styles.header}>
+                  <h1>Account Settings</h1>
+                  <p>Update your profile and security preferences.</p>
+                </div>
+                <div className={styles.settingsForm}>
+                  <div className={styles.formGroup}>
+                    <label>Full Name</label>
+                    <input type="text" defaultValue={user.name} />
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label>Email Address</label>
+                    <input type="email" defaultValue={user.email} disabled />
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label>Phone Number</label>
+                    <input type="tel" defaultValue={user.phone} />
+                  </div>
+                  <button className="gradient-primary" onClick={() => toast.success('Profile updated!')}>Save Changes</button>
+                  <div className={styles.divider} />
+                  <h3>Security</h3>
+                  <button className={styles.outlineBtn}>Change Password</button>
+                  <button className={styles.outlineBtn} style={{ color: '#f44336', borderColor: '#f44336' }}>Delete Account</button>
                 </div>
               </div>
             )}

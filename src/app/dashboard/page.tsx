@@ -74,6 +74,7 @@ export default function UserDashboard() {
   // MLM Logic States
   const [referrals, setReferrals] = React.useState<any[]>([]);
   const [fullTeam, setFullTeam] = React.useState<any[]>([]);
+  const [teamMembers, setTeamMembers] = React.useState<any[]>([]);
 
   const [stats, setStats] = React.useState({
     totalBv: 0,
@@ -182,11 +183,7 @@ export default function UserDashboard() {
         if (allUsers) {
           setFullTeam(allUsers || []);
           
-          // Calculate Coin Logic
-          const verifiedDirects = formattedDirects.filter(d => d.status?.toLowerCase() === 'verified');
-          const directSellCoins = verifiedDirects.length * 100;
-          
-          // Helper to find all descendants for pyramid coins
+          // Helper to find all descendants
           const getDescendants = (userId: string, team: any[]): any[] => {
             const children = team.filter(u => u.referred_by === userId);
             let descendants = [...children];
@@ -197,6 +194,12 @@ export default function UserDashboard() {
           };
 
           const myTeam = getDescendants(user?.id || '', allUsers);
+          setTeamMembers(myTeam); // New state to hold ONLY my team
+
+          // Calculate Coin Logic
+          const verifiedDirects = formattedDirects.filter(d => d.status?.toLowerCase() === 'verified');
+          const directSellCoins = verifiedDirects.length * 100;
+          
           const verifiedTeamMembers = myTeam.filter(m => m.status?.toLowerCase() === 'verified');
           const pendingTeamMembers = myTeam.filter(m => m.status?.toLowerCase() === 'pending');
           const pyramidCoins = verifiedTeamMembers.length * 100;
@@ -395,7 +398,7 @@ export default function UserDashboard() {
                     <div style={{ background: 'rgba(0, 135, 90, 0.1)', color: 'var(--secondary)', padding: '8px', borderRadius: '8px' }}><TrendingUp size={20} /></div>
                     <div>
                       <span style={{ fontSize: '0.8rem', color: '#64748b', display: 'block' }}>Total Team Size</span>
-                      <strong style={{ fontSize: '1.1rem' }}>{fullTeam.length}</strong>
+                      <strong style={{ fontSize: '1.1rem' }}>{teamMembers.length}</strong>
                     </div>
                   </div>
                   <div style={{ width: '1px', height: '30px', background: '#e2e8f0' }} />

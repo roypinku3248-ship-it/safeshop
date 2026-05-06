@@ -87,13 +87,19 @@ export default function UserDashboard() {
     pendingVerifications: 0
   });
 
+  const packages = [
+    { id: 'starter', name: 'Starter Pack', price: 2000, bv: 100 },
+    { id: 'silver', name: 'Silver Pack', price: 5000, bv: 250 },
+    { id: 'gold', name: 'Gold Pack', price: 10000, bv: 500 },
+  ];
+
   const [isAddingMember, setIsAddingMember] = React.useState(false);
   const [selectedParentId, setSelectedParentId] = React.useState<string | null>(null);
   const [selectedLegIdx, setSelectedLegIdx] = React.useState<number | null>(null);
   const [isFullScreen, setIsFullScreen] = React.useState(false);
   const [registering, setRegistering] = React.useState(false);
   const [newMemberData, setNewMemberData] = React.useState({
-    name: '', email: '', phone: '', city: '', ps: '', po: '', aadhar: '', pan: '', bankAcc: '', ifsc: ''
+    name: '', email: '', phone: '', city: '', ps: '', po: '', aadhar: '', pan: '', bankAcc: '', ifsc: '', packageId: 'starter'
   });
 
   const handleAddMemberClick = (parentId?: string, legIdx?: number) => {
@@ -428,13 +434,16 @@ export default function UserDashboard() {
 
                   {isAddingMember && (
                     <div className={styles.modalOverlay}>
-                      <div className={styles.modal} style={{ maxWidth: '600px' }}>
-                        <form onSubmit={async (e) => {
+                      <div className={styles.modalContent}>
+                        <button className={styles.closeModal} onClick={() => setIsAddingMember(false)}><X size={20} /></button>
+                        <form className={styles.addMemberForm} onSubmit={async (e) => {
                           e.preventDefault();
                           setRegistering(true);
                           const toastId = toast.loading('Registering member & recording sale...');
                           try {
+                            const selectedPkg = packages.find(p => p.id === newMemberData.packageId) || packages[0];
                             const newUserId = `SS-USR-${Math.floor(100000 + Math.random() * 900000)}`;
+                            
                             const { error } = await supabase.from('users').insert([{
                               id: newUserId,
                               name: newMemberData.name,
@@ -453,16 +462,22 @@ export default function UserDashboard() {
                             
                             if (error) throw error;
                             
-                            // RECORD THE SALE (The 2000 package purchase)
+                            // RECORD THE SALE (The selected package purchase)
                             await supabase.from('orders').insert([{
                               user_id: newUserId,
                               seller_name: user.name,
                               status: 'Pending Verification',
-                              total_amount: 2000,
-                              items: [{ name: 'SafeShop Business Package', price: 2000, quantity: 1, image: '/package.jpg', bv: 100 }]
+                              total_amount: selectedPkg.price,
+                              items: [{ 
+                                name: selectedPkg.name, 
+                                price: selectedPkg.price, 
+                                quantity: 1, 
+                                image: '/package.jpg', 
+                                bv: selectedPkg.bv 
+                              }]
                             }]);
 
-                            toast.success('Member registered & Package sold!', { id: toastId });
+                            toast.success(`Member registered with ${selectedPkg.name}!`, { id: toastId });
                             setIsAddingMember(false);
                             window.location.reload();
                           } catch (err: any) {
@@ -470,73 +485,80 @@ export default function UserDashboard() {
                           } finally { setRegistering(false); }
                         }}>
                           <div className={styles.modalHeader}>
-                            <h3>Register New Business Member</h3>
-                            <p>Complete onboarding including KYC and Package Sale.</p>
+                            <h3>Register Business Member</h3>
+                            <p>Complete onboarding with KYC and Package Selection.</p>
                           </div>
-                          <div className={styles.miniFormGrid} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+
+                          <div className={styles.miniFormGrid}>
                             <div className={styles.formItem}>
                               <label>Full Name</label>
-                              <input type="text" required value={newMemberData.name} onChange={e => setNewMemberData({...newMemberData, name: e.target.value})} />
+                              <input type="text" placeholder="Enter full name" required value={newMemberData.name} onChange={e => setNewMemberData({...newMemberData, name: e.target.value})} />
                             </div>
                             <div className={styles.formItem}>
                               <label>Email Address</label>
-                              <input type="email" required value={newMemberData.email} onChange={e => setNewMemberData({...newMemberData, email: e.target.value})} />
+                              <input type="email" placeholder="email@example.com" required value={newMemberData.email} onChange={e => setNewMemberData({...newMemberData, email: e.target.value})} />
                             </div>
                             <div className={styles.formItem}>
                               <label>Phone Number</label>
-                              <input type="tel" required value={newMemberData.phone} onChange={e => setNewMemberData({...newMemberData, phone: e.target.value})} />
+                              <input type="tel" placeholder="10-digit mobile" required value={newMemberData.phone} onChange={e => setNewMemberData({...newMemberData, phone: e.target.value})} />
                             </div>
                             <div className={styles.formItem}>
                               <label>City / Village</label>
-                              <input type="text" required value={newMemberData.city} onChange={e => setNewMemberData({...newMemberData, city: e.target.value})} />
+                              <input type="text" placeholder="Enter city" required value={newMemberData.city} onChange={e => setNewMemberData({...newMemberData, city: e.target.value})} />
                             </div>
                             <div className={styles.formItem}>
                               <label>Police Station (PS)</label>
-                              <input type="text" required value={newMemberData.ps} onChange={e => setNewMemberData({...newMemberData, ps: e.target.value})} />
+                              <input type="text" placeholder="Enter PS" required value={newMemberData.ps} onChange={e => setNewMemberData({...newMemberData, ps: e.target.value})} />
                             </div>
                             <div className={styles.formItem}>
                               <label>Post Office (PO)</label>
-                              <input type="text" required value={newMemberData.po} onChange={e => setNewMemberData({...newMemberData, po: e.target.value})} />
+                              <input type="text" placeholder="Enter PO" required value={newMemberData.po} onChange={e => setNewMemberData({...newMemberData, po: e.target.value})} />
                             </div>
-                            <div className={styles.formItem}>
-                              <label>Aadhar Number</label>
-                              <input type="text" placeholder="12-digit Aadhar" required value={newMemberData.aadhar} onChange={e => setNewMemberData({...newMemberData, aadhar: e.target.value})} />
-                            </div>
-                            <div className={styles.formItem}>
-                              <label>Aadhar Photo</label>
-                              <div className={styles.filePlaceholder}>
-                                <PlusCircle size={16} /> Upload Photo
-                                <input type="file" accept="image/*" className={styles.hiddenFile} />
+                          </div>
+
+                          <div className={styles.kycSection}>
+                            <h4>KYC Documents</h4>
+                            <div className={styles.miniFormGrid}>
+                              <div className={styles.formItem}>
+                                <label>Aadhar Number</label>
+                                <input type="text" placeholder="12-digit Aadhar" required value={newMemberData.aadhar} onChange={e => setNewMemberData({...newMemberData, aadhar: e.target.value})} />
                               </div>
-                            </div>
-                            <div className={styles.formItem}>
-                              <label>PAN Number</label>
-                              <input type="text" placeholder="ABCDE1234F" required value={newMemberData.pan} onChange={e => setNewMemberData({...newMemberData, pan: e.target.value})} />
-                            </div>
-                            <div className={styles.formItem}>
-                              <label>PAN Photo</label>
-                              <div className={styles.filePlaceholder}>
-                                <PlusCircle size={16} /> Upload Photo
-                                <input type="file" accept="image/*" className={styles.hiddenFile} />
+                              <div className={styles.formItem}>
+                                <label>PAN Number</label>
+                                <input type="text" placeholder="ABCDE1234F" required value={newMemberData.pan} onChange={e => setNewMemberData({...newMemberData, pan: e.target.value})} />
                               </div>
                             </div>
                           </div>
                           
-                          <div className={styles.packageSelection} style={{ marginTop: '20px', padding: '15px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-                            <h4 style={{ marginBottom: '10px' }}>Selected Package</h4>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                              <div>
-                                <strong>SafeShop Starter Business Package</strong>
-                                <p style={{ fontSize: '0.8rem', color: '#64748b' }}>Includes 100 BV and Business License</p>
-                              </div>
-                              <span style={{ fontWeight: 'bold', color: 'var(--primary)', fontSize: '1.2rem' }}>₹2,000</span>
+                          <div className={styles.packageSection} style={{ marginBottom: '30px' }}>
+                            <h4 style={{ color: 'var(--primary)', marginBottom: '15px', fontWeight: '800' }}>Choose Business Package</h4>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px' }}>
+                              {packages.map(pkg => (
+                                <div 
+                                  key={pkg.id}
+                                  onClick={() => setNewMemberData({...newMemberData, packageId: pkg.id})}
+                                  style={{
+                                    padding: '15px',
+                                    borderRadius: '16px',
+                                    border: `2px solid ${newMemberData.packageId === pkg.id ? 'var(--primary)' : '#e2e8f0'}`,
+                                    background: newMemberData.packageId === pkg.id ? 'rgba(37, 99, 235, 0.05)' : 'white',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s',
+                                    textAlign: 'center'
+                                  }}
+                                >
+                                  <div style={{ fontWeight: '800', color: '#1e293b', marginBottom: '4px' }}>{pkg.name}</div>
+                                  <div style={{ fontSize: '1.2rem', fontWeight: '800', color: 'var(--primary)' }}>₹{pkg.price.toLocaleString()}</div>
+                                  <div style={{ fontSize: '0.75rem', fontWeight: '700', color: '#64748b', marginTop: '4px' }}>{pkg.bv} BV</div>
+                                </div>
+                              ))}
                             </div>
                           </div>
 
-                          <div className={styles.modalActions} style={{ marginTop: '25px' }}>
+                          <div className={styles.modalFooter}>
                             <button type="button" className={styles.cancelBtn} onClick={() => setIsAddingMember(false)}>Cancel</button>
-                            <button type="submit" className={`${styles.submitBtn} gradient-primary`} disabled={registering}>
-                              {registering ? 'Processing...' : 'Complete Registration & Sale'}
+                            <button type="submit" className={styles.submitBtn} disabled={registering}>
+                              {registering ? 'Processing Registration...' : 'Complete Registration & Sale'}
                             </button>
                           </div>
                         </form>

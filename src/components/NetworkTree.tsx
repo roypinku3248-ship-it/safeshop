@@ -132,6 +132,19 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
         isLocked = true;
       }
     }
+
+    // Rule D: L3 Slots (depth > 1) only unlock after ALL L1 members complete their 3 sub-slots.
+    // This means ALL of root's direct children must each have 3 L2 members before L3 opens.
+    if (!isLocked && depth > 1) {
+      const rootL1 = getSubTree(rootUser.id);
+      for (const l1member of rootL1) {
+        const l2children = getSubTree(l1member.id);
+        if (l2children.length < 3) {
+          isLocked = true; // An L1 member hasn't filled their 3 L2 slots yet
+          break;
+        }
+      }
+    }
     
     if (depth > 2) return null; 
 

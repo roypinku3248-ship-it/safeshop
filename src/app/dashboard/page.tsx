@@ -382,356 +382,180 @@ export default function UserDashboard() {
               <div className={styles.earningsView}>
                 <div className={styles.header}>
                   <h1>Seller Compensation Dashboard</h1>
-                  <p>Track your recruitment rewards and indirect sales commissions.</p>
-                </div>
-
-                <div className={styles.networkOverview} style={{ background: 'white', padding: '15px 25px', borderRadius: '12px', border: '1px solid #e2e8f0', marginBottom: '25px', display: 'flex', gap: '30px', alignItems: 'center' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div style={{ background: 'rgba(37, 99, 235, 0.1)', color: 'var(--primary)', padding: '8px', borderRadius: '8px' }}><Users size={20} /></div>
-                    <div>
-                      <span style={{ fontSize: '0.8rem', color: '#64748b', display: 'block' }}>Direct Referrals</span>
-                      <strong style={{ fontSize: '1.1rem' }}>{referrals.length}</strong>
-                    </div>
-                  </div>
-                  <div style={{ width: '1px', height: '30px', background: '#e2e8f0' }} />
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div style={{ background: 'rgba(0, 135, 90, 0.1)', color: 'var(--secondary)', padding: '8px', borderRadius: '8px' }}><TrendingUp size={20} /></div>
-                    <div>
-                      <span style={{ fontSize: '0.8rem', color: '#64748b', display: 'block' }}>Total Team Size</span>
-                      <strong style={{ fontSize: '1.1rem' }}>{teamMembers.length}</strong>
-                    </div>
-                  </div>
-                  <div style={{ width: '1px', height: '30px', background: '#e2e8f0' }} />
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div style={{ background: 'rgba(255, 171, 0, 0.1)', color: 'var(--warning)', padding: '8px', borderRadius: '8px' }}><ShieldAlert size={20} /></div>
-                    <div>
-                      <span style={{ fontSize: '0.8rem', color: '#64748b', display: 'block' }}>Pending Verifications</span>
-                      <strong style={{ fontSize: '1.1rem', color: 'var(--warning)' }}>{stats.pendingVerifications}</strong>
-                    </div>
-                  </div>
-                </div>
-
-                <div className={styles.mlmStats}>
-                  <div className={styles.mlmCard} style={{ background: 'linear-gradient(135deg, #fff9e6, #fffde7)' }}>
-                    <div className={styles.mlmIcon} style={{ background: '#fbc02d', color: 'white' }}>🪙</div>
-                    <div className={styles.mlmInfo}>
-                      <span style={{ color: '#856404' }}>{stats.directSellCoins.toLocaleString()}</span>
-                      <p>Direct Join Coins</p>
-                    </div>
-                  </div>
-                  <div className={styles.mlmCard} style={{ background: 'linear-gradient(135deg, #e3f2fd, #e1f5fe)' }}>
-                    <div className={styles.mlmIcon} style={{ background: '#1976d2', color: 'white' }}>💎</div>
-                    <div className={styles.mlmInfo}>
-                      <span style={{ color: '#0d47a1' }}>{stats.pyramidCoins.toLocaleString()}</span>
-                      <p>Pyramid Earn Coins</p>
-                    </div>
-                  </div>
-                  <div className={styles.mlmCard} style={{ background: 'linear-gradient(135deg, #f3e5f5, #fce4ec)' }}>
-                    <div className={styles.mlmIcon} style={{ background: '#8e24aa', color: 'white' }}>💰</div>
-                    <div className={styles.mlmInfo}>
-                      <span style={{ color: '#4a148c' }}>₹{stats.totalCommission.toLocaleString()}</span>
-                      <p>Cash Commission</p>
-                    </div>
-                  </div>
-                </div>
-
-                {(user.role === 'seller' || user.role === 'admin') && (
-                  <div className={styles.networkGroups}>
-                    <h2>Your Referral Network (Ternary Tree)</h2>
-                    <p className={styles.subtext}>Visual representation of your direct sales team (C, D, E).</p>
-                    
-                    <div className={styles.visualTreeSection}>
-                      <div className={styles.treeHeader}>
-                        <h3>Pyramid Business Structure</h3>
+                  <div className={styles.statsRow}>
+                    <div className={styles.statCard}>
+                      <div className={styles.statIcon} style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6' }}><Award size={24} /></div>
+                      <div className={styles.statInfo}>
+                        <span>Direct Sell Coins</span>
+                        <strong>🪙 {stats.directSellCoins}</strong>
                       </div>
-
-                      <div className={styles.treeContainer}>
-                        <NetworkTree 
-                          rootUser={{ name: user.name, id: user.id }}
-                          directReferrals={referrals}
-                          fullTeam={fullTeam}
-                          onAddMember={handleAddMemberClick}
-                          isFullScreen={isFullScreen}
-                          setIsFullScreen={setIsFullScreen}
-                        />
+                    </div>
+                    <div className={styles.statCard}>
+                      <div className={styles.statIcon} style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981' }}><TrendingUp size={24} /></div>
+                      <div className={styles.statInfo}>
+                        <span>Pyramid Earn Coins</span>
+                        <strong>🪙 {stats.pyramidCoins}</strong>
                       </div>
+                    </div>
+                    <div className={styles.statCard}>
+                      <div className={styles.statIcon} style={{ background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b' }}><ShieldCheck size={24} /></div>
+                      <div className={styles.statInfo}>
+                        <span>Pending Verify</span>
+                        <strong>{stats.pendingVerifications}</strong>
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
-                      <div className={styles.treeActions}>
-                        {!isAddingMember && (
-                          <div className={styles.actionRow}>
-                            <button className={styles.addMemberBtn} onClick={() => handleAddMemberClick()}>
-                              <PlusCircle size={20} /> Add New Direct Member
+                <div className={styles.networkSection} style={{ marginTop: '30px' }}>
+                  <div className={styles.sectionHeader}>
+                    <h2>Your Recruitment Network</h2>
+                    <button className="gradient-primary" onClick={() => setIsAddingMember(true)}>
+                      <Plus size={18} /> Add New Member
+                    </button>
+                  </div>
+                  
+                  <div className={styles.treeContainer}>
+                    <NetworkTree 
+                      currentUser={user} 
+                      fullTeam={fullTeam} 
+                      isFullScreen={isFullScreen}
+                      onCloseFocus={() => setIsFullScreen(false)}
+                    />
+                  </div>
+
+                  {isAddingMember && (
+                    <div className={styles.modalOverlay}>
+                      <div className={styles.modal}>
+                        <form onSubmit={async (e) => {
+                          e.preventDefault();
+                          setRegistering(true);
+                          const toastId = toast.loading('Registering member...');
+                          try {
+                            const newUserId = `SS-USR-${Math.floor(100000 + Math.random() * 900000)}`;
+                            const { error } = await supabase.from('users').insert([{
+                              id: newUserId,
+                              name: newMemberData.name,
+                              email: newMemberData.email,
+                              phone: newMemberData.phone,
+                              role: 'user',
+                              status: 'pending',
+                              referred_by: user.id,
+                              joined_at: new Date().toISOString()
+                            }]);
+                            if (error) throw error;
+                            toast.success('Member added!', { id: toastId });
+                            setIsAddingMember(false);
+                            window.location.reload();
+                          } catch (err: any) {
+                            toast.error(err.message, { id: toastId });
+                          } finally { setRegistering(false); }
+                        }}>
+                          <div className={styles.modalHeader}>
+                            <h3>Quick Register Member</h3>
+                            <p>Join your organization and start earning.</p>
+                          </div>
+                          <div className={styles.miniFormGrid}>
+                            <div className={styles.formItem}>
+                              <label>Full Name</label>
+                              <input type="text" required value={newMemberData.name} onChange={e => setNewMemberData({...newMemberData, name: e.target.value})} />
+                            </div>
+                            <div className={styles.formItem}>
+                              <label>Email Address</label>
+                              <input type="email" required value={newMemberData.email} onChange={e => setNewMemberData({...newMemberData, email: e.target.value})} />
+                            </div>
+                            <div className={styles.formItem}>
+                              <label>Phone Number</label>
+                              <input type="tel" required value={newMemberData.phone} onChange={e => setNewMemberData({...newMemberData, phone: e.target.value})} />
+                            </div>
+                          </div>
+                          <div className={styles.modalActions}>
+                            <button type="button" className={styles.cancelBtn} onClick={() => setIsAddingMember(false)}>Cancel</button>
+                            <button type="submit" className={`${styles.submitBtn} gradient-primary`} disabled={registering}>
+                              {registering ? 'Adding...' : 'Register Member'}
                             </button>
                           </div>
-                        )}
+                        </form>
                       </div>
+                    </div>
+                  )}
+                </div>
 
-                      {/* Flat Team List for Debugging */}
-                      <div className={styles.flatTeamList} style={{ marginTop: '40px', textAlign: 'left', background: 'white', padding: '25px', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
-                        <h4 style={{ marginBottom: '15px', color: '#1e293b' }}>All Registered Team Members ({fullTeam.length})</h4>
-                        <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
-                            <thead style={{ background: '#f8fafc', position: 'sticky', top: 0 }}>
-                              <tr>
-                                <th style={{ padding: '10px', textAlign: 'left', borderBottom: '1px solid #e2e8f0' }}>Name</th>
-                                <th style={{ padding: '10px', textAlign: 'left', borderBottom: '1px solid #e2e8f0' }}>ID (Suffix)</th>
-                                <th style={{ padding: '10px', textAlign: 'left', borderBottom: '1px solid #e2e8f0' }}>Sponsor ID</th>
-                                <th style={{ padding: '10px', textAlign: 'left', borderBottom: '1px solid #e2e8f0' }}>Status</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {fullTeam.length === 0 ? (
-                                <tr><td colSpan={4} style={{ padding: '20px', textAlign: 'center', color: '#64748b' }}>No members found in database</td></tr>
-                              ) : (
-                                fullTeam.map((m: any) => (
-                                  <tr key={m.id}>
-                                    <td style={{ padding: '10px', borderBottom: '1px solid #f1f5f9' }}>{m.name}</td>
-                                    <td style={{ padding: '10px', borderBottom: '1px solid #f1f5f9' }}>...{m.id.slice(-6)}</td>
-                                    <td style={{ padding: '10px', borderBottom: '1px solid #f1f5f9' }}>{m.referred_by ? `...${m.referred_by.slice(-6)}` : 'None (Root)'}</td>
-                                    <td style={{ padding: '10px', borderBottom: '1px solid #f1f5f9' }}>
-                                      <span style={{ padding: '2px 8px', borderRadius: '10px', fontSize: '0.7rem', background: m.status === 'verified' ? '#e8f5e9' : '#fff3e0', color: m.status === 'verified' ? '#2e7d32' : '#af5200' }}>
-                                        {m.status}
-                                      </span>
-                                    </td>
-                                  </tr>
-                                ))
-                              )}
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-
-                      {isAddingMember && (
-                        <div className={styles.modalOverlay}>
-                          <div className={styles.modalContent}>
-                            <button className={styles.closeModal} onClick={() => setIsAddingMember(false)}><X size={24} /></button>
-                            <form className={styles.addMemberForm} onSubmit={async (e) => {
-                              e.preventDefault();
-                              const toastId = toast.loading('Syncing network and registering member...');
-                              setRegistering(true);
-                              try {
-                                if (!user || !user.id) throw new Error('Session expired');
-
-                                // Fetch FRESH team data right before registration to ensure spillover is accurate
-                                const { data: freshTeam, error: fetchError } = await supabase
-                                  .from('users')
-                                  .select('*');
-                                
-                                if (fetchError) throw fetchError;
-                                const team = freshTeam || [];
-                                
-                                  const parentId = selectedParentId || user.id;
-                                  console.log('📍 Placing user under parent:', parentId);
-
-                                  const { error } = await supabase.from('users').insert([{
-                                    id: `SS-USR-${Math.floor(Math.random() * 100000)}`,
-                                    name: newMemberData.name,
-                                    email: newMemberData.email,
-                                    phone: newMemberData.phone,
-                                    password: 'password123',
-                                    role: 'associate',
-                                    status: 'pending',
-                                    referred_by: parentId,
-                                    city: newMemberData.city,
-                                    ps: newMemberData.ps,
-                                    po: newMemberData.po,
-                                    aadhar: newMemberData.aadhar,
-                                    pan: newMemberData.pan,
-                                    joined_at: new Date().toISOString()
-                                  }]);
-
-                                  if (error) throw error;
-                                  toast.success('🎉 Member registered successfully in your network!', { id: toastId });
-                                  setIsAddingMember(false);
-                                  setSelectedParentId(null);
-                                  setSelectedLegIdx(null);
-                                  setTimeout(() => window.location.reload(), 1500);
-                                } catch (err: any) {
-                                  toast.error(err.message || 'Failed to register', { id: toastId });
-                                } finally { 
-                                  setRegistering(false); 
-                                }
-                              }}>
-                              <div className={styles.modalHeader}>
-                                <h3>Quick Register Member</h3>
-                                <p>Join your organization and start earning.</p>
-                              </div>
-                              <div className={styles.miniFormGrid}>
-                                <div className={styles.formItem}>
-                                  <label>Full Name</label>
-                                  <input type="text" required value={newMemberData.name} onChange={e => setNewMemberData({...newMemberData, name: e.target.value})} />
-                                </div>
-                                <div className={styles.formItem}>
-                                  <label>Email Address</label>
-                                  <input type="email" required value={newMemberData.email} onChange={e => setNewMemberData({...newMemberData, email: e.target.value})} />
-                                </div>
-                                <div className={styles.formItem}>
-                                  <label>Phone Number</label>
-                                  <input type="tel" required value={newMemberData.phone} onChange={e => setNewMemberData({...newMemberData, phone: e.target.value})} />
-                                </div>
-                                <div className={styles.formItem}>
-                                  <label>City/Village</label>
-                                  <input type="text" value={newMemberData.city} onChange={e => setNewMemberData({...newMemberData, city: e.target.value})} />
-                                </div>
-                                <div className={styles.formItem}>
-                                  <label>Police Station (PS)</label>
-                                  <input type="text" value={newMemberData.ps} onChange={e => setNewMemberData({...newMemberData, ps: e.target.value})} />
-                                </div>
-                                <div className={styles.formItem}>
-                                  <label>Post Office (PO)</label>
-                                  <input type="text" value={newMemberData.po} onChange={e => setNewMemberData({...newMemberData, po: e.target.value})} />
-                                </div>
-                                           <div className={styles.kycSection}>
-                                <h4>KYC & Documents</h4>
-                                <div className={styles.miniFormGrid}>
-                                  <div className={styles.formItem}>
-                                    <label>Aadhar Number</label>
-                                    <input type="text" value={newMemberData.aadhar} onChange={e => setNewMemberData({...newMemberData, aadhar: e.target.value})} />
-                                  </div>
-                                  <div className={styles.formItem}>
-                                    <label>PAN Number</label>
-                                    <input type="text" value={newMemberData.pan} onChange={e => setNewMemberData({...newMemberData, pan: e.target.value})} />
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div className={styles.modalActions}>
-                              <button type="button" className={styles.cancelBtn} onClick={() => setIsAddingMember(false)}>Cancel</button>
-                              <button type="submit" className={`${styles.submitBtn} gradient-primary`} disabled={registering}>
-                                {registering ? 'Adding...' : 'Register Member'}
-                              </button>
-                            </div>
-                          </form>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className={styles.salesHistory} style={{ marginTop: '30px' }}>
-                    <h3 style={{ marginBottom: '15px', color: '#1e293b' }}>Sales & Commission History</h3>
-                    <div style={{ background: 'white', borderRadius: '12px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
-                      <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-                        <thead style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+                <div className={styles.salesHistory} style={{ marginTop: '30px' }}>
+                  <h3 style={{ marginBottom: '15px', color: '#1e293b' }}>Sales & Commission History</h3>
+                  <div style={{ background: 'white', borderRadius: '12px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                      <thead style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+                        <tr>
+                          <th style={{ padding: '12px 15px', fontSize: '0.85rem', color: '#64748b' }}>Date</th>
+                          <th style={{ padding: '12px 15px', fontSize: '0.85rem', color: '#64748b' }}>Sold To (Referral)</th>
+                          <th style={{ padding: '12px 15px', fontSize: '0.85rem', color: '#64748b' }}>Amount</th>
+                          <th style={{ padding: '12px 15px', fontSize: '0.85rem', color: '#64748b' }}>Commission</th>
+                          <th style={{ padding: '12px 15px', fontSize: '0.85rem', color: '#64748b' }}>Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {referrals.length === 0 ? (
                           <tr>
-                            <th style={{ padding: '12px 15px', fontSize: '0.85rem', color: '#64748b' }}>Date</th>
-                            <th style={{ padding: '12px 15px', fontSize: '0.85rem', color: '#64748b' }}>Sold To (Referral)</th>
-                            <th style={{ padding: '12px 15px', fontSize: '0.85rem', color: '#64748b' }}>Amount</th>
-                            <th style={{ padding: '12px 15px', fontSize: '0.85rem', color: '#64748b' }}>Commission</th>
-                            <th style={{ padding: '12px 15px', fontSize: '0.85rem', color: '#64748b' }}>Status</th>
+                            <td colSpan={5} style={{ padding: '30px', textAlign: 'center', color: '#94a3b8', fontSize: '0.9rem' }}>
+                              No sales recorded yet. Join new members to start selling packages.
+                            </td>
                           </tr>
-                        </thead>
-                        <tbody>
-                          {referrals.length === 0 ? (
-                            <tr>
-                              <td colSpan={5} style={{ padding: '30px', textAlign: 'center', color: '#94a3b8', fontSize: '0.9rem' }}>
-                                No sales recorded yet. Join new members to start selling packages.
+                        ) : (
+                          referrals.map((ref, idx) => (
+                            <tr key={idx} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                              <td style={{ padding: '12px 15px', fontSize: '0.9rem' }}>6 May 2026</td>
+                              <td style={{ padding: '12px 15px' }}>
+                                <div style={{ fontWeight: '600', color: '#1e293b' }}>{ref.name}</div>
+                                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{ref.email}</div>
+                              </td>
+                              <td style={{ padding: '12px 15px', fontWeight: 'bold' }}>₹2,000</td>
+                              <td style={{ padding: '12px 15px' }}>
+                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: ref.status?.toLowerCase() === 'verified' ? '#fff9e6' : '#f1f5f9', padding: '2px 8px', borderRadius: '10px', border: ref.status?.toLowerCase() === 'verified' ? '1px solid #ffeeba' : '1px solid #e2e8f0' }}>
+                                  <span style={{ fontSize: '11px', color: ref.status?.toLowerCase() === 'verified' ? '#856404' : '#64748b', fontWeight: '700' }}>
+                                    🪙 {ref.status?.toLowerCase() === 'verified' ? '100' : '0'}
+                                  </span>
+                                </div>
+                              </td>
+                              <td style={{ padding: '12px 15px' }}>
+                                <span className={ref.status?.toLowerCase() === 'verified' ? styles.statusV : styles.statusP} style={{ fontSize: '0.75rem', padding: '2px 8px' }}>
+                                  {ref.status || 'Pending'}
+                                </span>
                               </td>
                             </tr>
-                          ) : (
-                            referrals.map((ref, idx) => (
-                              <tr key={idx} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                                <td style={{ padding: '12px 15px', fontSize: '0.9rem' }}>6 May 2026</td>
-                                <td style={{ padding: '12px 15px' }}>
-                                  <div style={{ fontWeight: '600', color: '#1e293b' }}>{ref.name}</div>
-                                  <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{ref.email}</div>
-                                </td>
-                                <td style={{ padding: '12px 15px', fontWeight: 'bold' }}>₹2,000</td>
-                                <td style={{ padding: '12px 15px' }}>
-                                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: ref.status?.toLowerCase() === 'verified' ? '#fff9e6' : '#f1f5f9', padding: '2px 8px', borderRadius: '10px', border: ref.status?.toLowerCase() === 'verified' ? '1px solid #ffeeba' : '1px solid #e2e8f0' }}>
-                                    <span style={{ fontSize: '11px', color: ref.status?.toLowerCase() === 'verified' ? '#856404' : '#64748b', fontWeight: '700' }}>
-                                      🪙 {ref.status?.toLowerCase() === 'verified' ? '100' : '0'}
-                                    </span>
-                                  </div>
-                                </td>
-                                <td style={{ padding: '12px 15px' }}>
-                                  <span className={ref.status?.toLowerCase() === 'verified' ? styles.statusV : styles.statusP} style={{ fontSize: '0.75rem', padding: '2px 8px' }}>
-                                    {ref.status || 'Pending'}
-                                  </span>
-                                </td>
-                              </tr>
-                            ))
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
                   </div>
-</div>
                 </div>
-                                    <span>Aadhar Back</span>
-                                    <input type="file" accept="image/*" />
-                                  </div>
-                                  <div className={styles.fileBox}>
-                                    <span>PAN Card</span>
-                                    <input type="file" accept="image/*" />
-                                  </div>
-                                </div>
-                              </div>
-                              <div className={styles.modalFooter}>
-                                <button type="button" className={styles.cancelBtn} onClick={() => setIsAddingMember(false)}>Cancel</button>
-                                <button type="submit" className={styles.submitBtn} disabled={registering}>{registering ? "Registering..." : "Complete"}</button>
-                              </div>
-                            </form>
-                          </div>
-                        </div>
-                      )}
-                    </div>
 
-                    <div className={styles.commissionExplanation}>
-                      <h3>How your earnings are calculated:</h3>
-                      <div className={styles.explGrid}>
-                        <div className={styles.explCard}>
-                          <div className={styles.explIcon}><Award size={20} /></div>
-                          <div><strong>Direct Commission (10%)</strong><p>Earn ₹200 for every ₹2000 product sold to your direct recruits.</p></div>
-                        </div>
-                        <div className={styles.explCard}>
-                          <div className={styles.explIcon}><TrendingUp size={20} /></div>
-                          <div><strong>Indirect Commission (2%)</strong><p>Earn 2% from sales made by your team recruits.</p></div>
-                        </div>
-                      </div>
+                <div className={styles.commissionExplanation}>
+                  <h3>How your earnings are calculated:</h3>
+                  <div className={styles.explGrid}>
+                    <div className={styles.explCard}>
+                      <div className={styles.explIcon}><Award size={20} /></div>
+                      <div><strong>Direct Join Coins</strong><p>Earn 100 coins for every ₹2,000 package sold to direct verified recruits.</p></div>
                     </div>
+                    <div className={styles.explCard}>
+                      <div className={styles.explIcon}><TrendingUp size={20} /></div>
+                      <div><strong>Pyramid Earn Coins</strong><p>Earn 100 coins for every verified member in your downline network.</p></div>
+                    </div>
+                  </div>
+                </div>
 
-                    <div className={styles.referralSection}>
-                      <div className={styles.referCard}>
-                        <div className={styles.referText}>
-                          <h3>Expand Your Pyramid</h3>
-                          <p>Share your unique referral link to grow your network.</p>
-                          <div className={styles.linkBox}>
-                            <code>safeshop.in/join?ref={user.id}</code>
-                            <button className={styles.copyBtn}>Copy Link</button>
-                          </div>
-                        </div>
-                        <div className={styles.referStats}>
-                          <div className={styles.rStat}>
-                            <strong>{stats.referralsCount}</strong>
-                            <span>Direct Team</span>
-                          </div>
-                          <div className={styles.rStat} style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                            <button className="gradient-secondary" style={{ padding: '8px 12px', fontSize: '0.8rem', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                              <List size={14} /> Direct List
-                            </button>
-                            <button 
-                              className={styles.focusActionBtn}
-                              onClick={() => setIsFullScreen(!isFullScreen)}
-                              style={{ padding: '8px 12px', fontSize: '0.8rem', borderRadius: '8px' }}
-                            >
-                              {isFullScreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
-                              {isFullScreen ? "Close Focus" : "Full Pyramid"}
-                            </button>
-                          </div>
-                        </div>
+                <div className={styles.referralSection}>
+                  <div className={styles.referCard}>
+                    <div className={styles.referText}>
+                      <h3>Expand Your Network</h3>
+                      <p>Share your unique referral link to grow your network.</p>
+                      <div className={styles.linkBox}>
+                        <code>safeshop.in/join?ref={user.id}</code>
+                        <button className={styles.copyBtn}>Copy Link</button>
                       </div>
                     </div>
                   </div>
-                )}
-
-                {user.role === 'associate' && (
-                  <div className={styles.lockedSection}>
-                    <ShieldAlert size={48} color="var(--warning)" />
-                    <h3>Business Dashboard Locked</h3>
-                    <p>Your ID verification is pending. Only verified sellers can access recruitment tools.</p>
-                    <button className="gradient-primary" onClick={() => router.push('/kyc')}>Check Status</button>
-                  </div>
-                )}
+                </div>
               </div>
             )}
           </div>

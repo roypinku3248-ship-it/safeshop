@@ -75,6 +75,7 @@ export default function UserDashboard() {
   const [referrals, setReferrals] = React.useState<any[]>([]);
   const [fullTeam, setFullTeam] = React.useState<any[]>([]);
   const [teamMembers, setTeamMembers] = React.useState<any[]>([]);
+  const [referralOrders, setReferralOrders] = React.useState<any[]>([]); // Orders from referred users
 
   const [stats, setStats] = React.useState({
     totalBv: 0,
@@ -196,15 +197,32 @@ export default function UserDashboard() {
 
         let formattedDirects: any[] = [];
         if (directs) {
-          formattedDirects = directs.map(u => ({
-            id: u.id,
-            name: u.name,
-            avatar: u.name[0],
-            sales: u.total_sales || 0,
-            status: u.status,
-            email: u.email
-          }));
+          // Fetch orders for each direct referral to get payment status
+          const ordersPromises = directs.map(u =>
+            supabase.from('orders').select('*').eq('user_id', u.id).order('created_at', { ascending: false }).limit(1)
+          );
+          const ordersResults = await Promise.all(ordersPromises);
+          const allRefOrders: any[] = [];
+
+          formattedDirects = directs.map((u, idx) => {
+            const latestOrder = ordersResults[idx]?.data?.[0];
+            if (latestOrder) allRefOrders.push({ ...latestOrder, memberName: u.name, memberEmail: u.email });
+            const isPaid = latestOrder && !latestOrder.status?.toLowerCase().includes('awaiting payment');
+            return {
+              id: u.id,
+              name: u.name,
+              avatar: u.name[0],
+              sales: u.total_sales || 0,
+              status: u.status,
+              email: u.email,
+              paymentStatus: latestOrder ? latestOrder.status : 'No Order',
+              orderAmount: latestOrder ? latestOrder.total_amount : 0,
+              orderDate: latestOrder ? new Date(latestOrder.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '-',
+              isPaid: isPaid
+            };
+          });
           setReferrals(formattedDirects);
+          setReferralOrders(allRefOrders);
         }
 
         const { data: allUsers, error: teamError } = await supabase
@@ -677,10 +695,24 @@ export default function UserDashboard() {
                       </div>
                     </div>
                   )}
-                </div>
+                        <div className={styles.salesHistory} style={{ marginTop: '30px' }}>
+                  <h3 style={{ marginBottom: '15px', color: '#1e293b' }}>Sales &amp; Commission History</h3>
 
-                <div className={styles.salesHistory} style={{ marginTop: '30px' }}>
-                  <h3 style={{ marginBottom: '15px', color: '#1e293b' }}>Sales & Commission History</h3>
+                  {/* NEW PAID SALES NOTIFICATION */}
+                  {referrals.some(r => r.isPaid) && (
+                    <div style={{ background: 'linear-gradient(135deg, #ecfdf5, #d1fae5)', border: '1px solid #6ee7b7', padding: '15px 20px', borderRadius: '12px', marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <div style={{ background: '#10b981', color: 'white', padding: '8px', borderRadius: '10px', flexShrink: 0 }}>
+                        <ShieldCheck size={20} />
+                      </div>
+                      <div>
+                        <strong style={{ color: '#065f46' }}>💰 Payment Received!</strong>
+                        <p style={{ margin: '2px 0 0', color: '#047857', fontSize: '0.85rem' }}>
+                          {referrals.filter(r => r.isPaid).map(r => r.name).join(', ')} {referrals.filter(r => r.isPaid).length === 1 ? 'has' : 'have'} completed payment.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
                   <div style={{ background: 'white', borderRadius: '12px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                       <thead style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
@@ -689,7 +721,7 @@ export default function UserDashboard() {
                           <th style={{ padding: '12px 15px', fontSize: '0.85rem', color: '#64748b' }}>Sold To (Referral)</th>
                           <th style={{ padding: '12px 15px', fontSize: '0.85rem', color: '#64748b' }}>Amount</th>
                           <th style={{ padding: '12px 15px', fontSize: '0.85rem', color: '#64748b' }}>Commission</th>
-                          <th style={{ padding: '12px 15px', fontSize: '0.85rem', color: '#64748b' }}>Status</th>
+                          <th style={{ padding: '12px 15px', fontSize: '0.85rem', color: '#64748b' }}>Payment Status</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -702,22 +734,28 @@ export default function UserDashboard() {
                         ) : (
                           referrals.map((ref, idx) => (
                             <tr key={idx} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                              <td style={{ padding: '12px 15px', fontSize: '0.9rem' }}>6 May 2026</td>
+                              <td style={{ padding: '12px 15px', fontSize: '0.9rem' }}>{ref.orderDate || '-'}</td>
                               <td style={{ padding: '12px 15px' }}>
                                 <div style={{ fontWeight: '600', color: '#1e293b' }}>{ref.name}</div>
                                 <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{ref.email}</div>
                               </td>
-                              <td style={{ padding: '12px 15px', fontWeight: 'bold' }}>₹2,000</td>
+                              <td style={{ padding: '12px 15px', fontWeight: 'bold' }}>
+                                {ref.orderAmount ? `₹${ref.orderAmount.toLocaleString('en-IN')}` : <span style={{ color: '#94a3b8' }}>—</span>}
+                              </td>
                               <td style={{ padding: '12px 15px' }}>
-                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: ref.status?.toLowerCase() === 'verified' ? '#fff9e6' : '#f1f5f9', padding: '2px 8px', borderRadius: '10px', border: ref.status?.toLowerCase() === 'verified' ? '1px solid #ffeeba' : '1px solid #e2e8f0' }}>
-                                  <span style={{ fontSize: '11px', color: ref.status?.toLowerCase() === 'verified' ? '#856404' : '#64748b', fontWeight: '700' }}>
-                                    🪙 {ref.status?.toLowerCase() === 'verified' ? '100' : '0'}
+                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: ref.isPaid ? '#fff9e6' : '#f1f5f9', padding: '2px 8px', borderRadius: '10px', border: ref.isPaid ? '1px solid #ffeeba' : '1px solid #e2e8f0' }}>
+                                  <span style={{ fontSize: '11px', color: ref.isPaid ? '#856404' : '#64748b', fontWeight: '700' }}>
+                                    🪙 {ref.isPaid ? '100' : '0'}
                                   </span>
                                 </div>
                               </td>
                               <td style={{ padding: '12px 15px' }}>
-                                <span className={ref.status?.toLowerCase() === 'verified' ? styles.statusV : styles.statusP} style={{ fontSize: '0.75rem', padding: '2px 8px' }}>
-                                  {ref.status || 'Pending'}
+                                <span style={{ 
+                                  fontSize: '0.75rem', padding: '3px 10px', borderRadius: '20px', fontWeight: '700',
+                                  background: ref.isPaid ? '#dcfce7' : (ref.paymentStatus === 'No Order' ? '#f1f5f9' : '#fef9c3'),
+                                  color: ref.isPaid ? '#166534' : (ref.paymentStatus === 'No Order' ? '#94a3b8' : '#92400e')
+                                }}>
+                                  {ref.isPaid ? '✅ Paid' : (ref.paymentStatus === 'No Order' ? 'No Order Yet' : '⏳ ' + ref.paymentStatus)}
                                 </span>
                               </td>
                             </tr>
@@ -726,7 +764,7 @@ export default function UserDashboard() {
                       </tbody>
                     </table>
                   </div>
-                </div>
+                </div>               </div>
 
                 <div className={styles.commissionExplanation}>
                   <h3>How your earnings are calculated:</h3>

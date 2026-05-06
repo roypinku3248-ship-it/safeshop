@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
-import { ShieldCheck, Lock, CreditCard, Landmark, Wallet, CheckCircle2, Loader2, ArrowRight } from 'lucide-react';
+import { ShieldCheck, ShieldAlert, Lock, CreditCard, Landmark, Wallet, CheckCircle2, Loader2, ArrowRight } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import styles from './Checkout.module.css';
 
@@ -30,6 +30,14 @@ export default function CheckoutPage() {
 
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Check if user is verified before allowing purchase
+    if (user?.status?.toLowerCase() !== 'verified') {
+      alert('Verification Required: You must complete your KYC and get verified before you can purchase a business package.');
+      router.push('/kyc');
+      return;
+    }
+
     setStep('processing');
     
     const orderId = `#SS-${Math.floor(100000 + Math.random() * 900000)}`;
@@ -45,9 +53,9 @@ export default function CheckoutPage() {
         quantity: item.quantity,
         bv: (item as any).bv || 100
       })),
-      total: totalPrice,
+      total_amount: totalPrice, // Using DB column name
       status: 'In Transit (Escrow Active)',
-      seller_name: cart[0].seller.name
+      seller_name: cart[0]?.seller?.name || 'SafeShop Official'
     };
 
     try {
@@ -56,6 +64,10 @@ export default function CheckoutPage() {
         .insert([newOrder]);
 
       if (error) throw error;
+
+      // Update user's total sales (optional, but keep for consistency)
+      const { data: userData } = await supabase.from('users').select('total_sales').eq('id', user.id).single();
+      await supabase.from('users').update({ total_sales: (userData?.total_sales || 0) + totalPrice }).eq('id', user.id);
 
       // Mock payment processing delay
       await new Promise(resolve => setTimeout(resolve, 3000));
@@ -102,6 +114,17 @@ export default function CheckoutPage() {
       <div className="container">
         <div className={styles.layout}>
           <div className={styles.main}>
+            {user?.status?.toLowerCase() !== 'verified' && (
+              <div style={{ background: '#fff9e6', border: '1px solid #ffeeba', padding: '15px', borderRadius: '12px', marginBottom: '20px', display: 'flex', gap: '15px', alignItems: 'center' }}>
+                <ShieldAlert size={32} color="#856404" />
+                <div>
+                  <h4 style={{ color: '#856404', margin: 0 }}>ID Verification Required</h4>
+                  <p style={{ color: '#856404', margin: '4px 0 0 0', fontSize: '0.9rem' }}>You must verify your ID to purchase business packages and earn commissions.</p>
+                </div>
+                <button onClick={() => router.push('/kyc')} style={{ marginLeft: 'auto', background: '#856404', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '6px', cursor: 'pointer', fontSize: '0.9rem' }}>Verify Now</button>
+              </div>
+            )}
+
             {step === 'details' && (
               <div className={styles.section}>
                 <h2>1. Shipping Details</h2>

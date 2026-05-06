@@ -630,7 +630,7 @@ export default function UserDashboard() {
                                 pan: newMemberData.pan,
                                 role: 'associate',
                                 status: 'pending',
-                                referred_by: user.id,
+                                referred_by: selectedParentId || user.id,
                                 joined_at: new Date().toISOString()
                               }]);
                               if (userError) throw userError;
@@ -639,7 +639,7 @@ export default function UserDashboard() {
                               // 2b. If user exists, ensure they are linked to the recruiter if not already
                               const { error: updateError } = await supabase
                                 .from('users')
-                                .update({ referred_by: user.id })
+                                .update({ referred_by: selectedParentId || user.id })
                                 .eq('id', existingUser.id);
                               if (updateError) console.error('Failed to update referral link:', updateError);
                             }

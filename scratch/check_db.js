@@ -6,29 +6,11 @@ const supabase = createClient(
 );
 
 async function check() {
-  console.log('=== ALL ORDERS ===');
-  const { data: orders } = await supabase.from('orders').select('*').order('created_at', { ascending: false }).limit(10);
-  orders.forEach(o => console.log(`  ID: ${o.id}, user_id: ${o.user_id}, status: ${o.status}, amount: ${o.total_amount}`));
+  const { data: biku } = await supabase.from('users').select('id').eq('email', 'biku@gmail.com').single();
+  console.log('Biku ID:', biku?.id);
 
-  console.log('\n=== BILLU ===');
-  const { data: billu } = await supabase.from('users').select('*').eq('email', 'billu@gmail.com').single();
-  if (billu) console.log(`  ID: ${billu.id}, referred_by: ${billu.referred_by}, status: ${billu.status}`);
-
-  console.log('\n=== BIKU ===');
-  const { data: biku } = await supabase.from('users').select('*').eq('email', 'biku@gmail.com').single();
-  if (biku) console.log(`  ID: ${biku.id}, status: ${biku.status}`);
-
-  console.log('\n=== BIKU REFERRED USERS ===');
-  if (biku) {
-    const { data: referrals } = await supabase.from('users').select('*').eq('referred_by', biku.id);
-    referrals.forEach(r => console.log(`  ${r.name} (${r.email}) - status: ${r.status}`));
-    
-    console.log('\n=== ORDERS FOR BIKU REFERRALS ===');
-    for (const ref of referrals) {
-      const { data: refOrders } = await supabase.from('orders').select('*').eq('user_id', ref.id);
-      refOrders.forEach(o => console.log(`  ${ref.name}'s order - status: ${o.status}, amount: ${o.total_amount}`));
-    }
-  }
+  const { data: referrals } = await supabase.from('users').select('id,name,email,status,referred_by').eq('referred_by', biku?.id);
+  console.log('\nBiku direct referrals:');
+  referrals?.forEach(r => console.log(` - ${r.name} | status: ${r.status} | referred_by: ${r.referred_by}`));
 }
-
 check();

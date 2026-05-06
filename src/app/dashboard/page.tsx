@@ -80,7 +80,10 @@ export default function UserDashboard() {
     directCommission: 0,
     indirectCommission: 0,
     totalCommission: 0,
-    referralsCount: 0
+    referralsCount: 0,
+    directSellCoins: 0,
+    pyramidCoins: 0,
+    pendingVerifications: 0
   });
 
   const [isAddingMember, setIsAddingMember] = React.useState(false);
@@ -140,12 +143,35 @@ export default function UserDashboard() {
 
         if (allUsers) {
           setFullTeam(allUsers || []);
+          
+          // Calculate Coin Logic
+          const verifiedDirects = formattedDirects.filter(d => d.status?.toLowerCase() === 'verified');
+          const directSellCoins = verifiedDirects.length * 100;
+          
+          // Helper to find all descendants for pyramid coins
+          const getDescendants = (userId: string, team: any[]): any[] => {
+            const children = team.filter(u => u.referred_by === userId);
+            let descendants = [...children];
+            children.forEach(child => {
+              descendants = [...descendants, ...getDescendants(child.id, team)];
+            });
+            return descendants;
+          };
+
+          const myTeam = getDescendants(user?.id || '', allUsers);
+          const verifiedTeamMembers = myTeam.filter(m => m.status?.toLowerCase() === 'verified');
+          const pendingTeamMembers = myTeam.filter(m => m.status?.toLowerCase() === 'pending');
+          const pyramidCoins = verifiedTeamMembers.length * 100;
+
           const directComm = formattedDirects.reduce((acc: number, ref: any) => acc + (ref.sales * 0.10), 0);
           setStats(prev => ({
             ...prev,
             directCommission: directComm,
             referralsCount: formattedDirects.length,
-            totalCommission: directComm + prev.indirectCommission
+            totalCommission: directComm + prev.indirectCommission,
+            directSellCoins: directSellCoins,
+            pyramidCoins: pyramidCoins,
+            pendingVerifications: pendingTeamMembers.length
           }));
         }
       } catch (err: any) {
@@ -309,28 +335,36 @@ export default function UserDashboard() {
                       <strong style={{ fontSize: '1.1rem' }}>{fullTeam.length}</strong>
                     </div>
                   </div>
+                  <div style={{ width: '1px', height: '30px', background: '#e2e8f0' }} />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{ background: 'rgba(255, 171, 0, 0.1)', color: 'var(--warning)', padding: '8px', borderRadius: '8px' }}><ShieldAlert size={20} /></div>
+                    <div>
+                      <span style={{ fontSize: '0.8rem', color: '#64748b', display: 'block' }}>Pending Verifications</span>
+                      <strong style={{ fontSize: '1.1rem', color: 'var(--warning)' }}>{stats.pendingVerifications}</strong>
+                    </div>
+                  </div>
                 </div>
 
                 <div className={styles.mlmStats}>
-                  <div className={styles.mlmCard}>
-                    <div className={styles.mlmIcon} style={{ background: '#e3f2fd', color: '#1976d2' }}><TrendingUp size={24} /></div>
+                  <div className={styles.mlmCard} style={{ background: 'linear-gradient(135deg, #fff9e6, #fffde7)' }}>
+                    <div className={styles.mlmIcon} style={{ background: '#fbc02d', color: 'white' }}>🪙</div>
                     <div className={styles.mlmInfo}>
-                      <span>₹{stats.directCommission.toLocaleString()}</span>
-                      <p>Direct Sales (10%)</p>
+                      <span style={{ color: '#856404' }}>{stats.directSellCoins.toLocaleString()}</span>
+                      <p>Direct Join Coins</p>
                     </div>
                   </div>
-                  <div className={styles.mlmCard}>
-                    <div className={styles.mlmIcon} style={{ background: '#e8f5e9', color: '#2e7d32' }}><IndianRupee size={24} /></div>
+                  <div className={styles.mlmCard} style={{ background: 'linear-gradient(135deg, #e3f2fd, #e1f5fe)' }}>
+                    <div className={styles.mlmIcon} style={{ background: '#1976d2', color: 'white' }}>💎</div>
                     <div className={styles.mlmInfo}>
-                      <span>₹{stats.indirectCommission.toLocaleString()}</span>
-                      <p>Indirect (2% Level 2+)</p>
+                      <span style={{ color: '#0d47a1' }}>{stats.pyramidCoins.toLocaleString()}</span>
+                      <p>Pyramid Earn Coins</p>
                     </div>
                   </div>
-                  <div className={styles.mlmCard}>
-                    <div className={styles.mlmIcon} style={{ background: '#fff3e0', color: '#ef6c00' }}><UsersIcon size={24} /></div>
+                  <div className={styles.mlmCard} style={{ background: 'linear-gradient(135deg, #f3e5f5, #fce4ec)' }}>
+                    <div className={styles.mlmIcon} style={{ background: '#8e24aa', color: 'white' }}>💰</div>
                     <div className={styles.mlmInfo}>
-                      <span>₹{stats.totalCommission.toLocaleString()}</span>
-                      <p>Total Payout</p>
+                      <span style={{ color: '#4a148c' }}>₹{stats.totalCommission.toLocaleString()}</span>
+                      <p>Cash Commission</p>
                     </div>
                   </div>
                 </div>

@@ -16,6 +16,7 @@
   border: 1px solid var(--border);
   overflow: hidden;
   height: fit-content;
+  box-shadow: 0 4px 25px rgba(0, 0, 0, 0.04);
 }
 
 .userCard {
@@ -51,32 +52,50 @@
 }
 
 .nav {
-  padding: 20px 0;
+  padding: 20px 15px;
   display: flex;
   flex-direction: column;
+  gap: 4px;
 }
 
 .nav button {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 14px 30px;
+  padding: 14px 20px;
   width: 100%;
   text-align: left;
   font-weight: 600;
   color: var(--muted);
-  transition: all 0.2s;
+  border-radius: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: none;
+  background: transparent;
+  cursor: pointer;
 }
 
 .nav button:hover {
-  background: var(--background);
+  background: #f8fafc;
   color: var(--primary);
+  transform: translateX(4px);
 }
 
 .nav .active {
-  background: rgba(0, 82, 204, 0.05);
+  background: linear-gradient(to right, rgba(37, 99, 235, 0.08), rgba(37, 99, 235, 0.01));
   color: var(--primary);
-  border-right: 4px solid var(--primary);
+  position: relative;
+}
+
+.nav .active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 60%;
+  width: 4px;
+  background: var(--primary);
+  border-radius: 0 4px 4px 0;
 }
 
 .divider {
@@ -305,7 +324,89 @@
 }
 
 .earningsView {
-  animation: fadeIn 0.3s ease-in-out;
+  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.statsRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-top: 25px;
+}
+
+.statCard {
+  background: white;
+  padding: 24px;
+  border-radius: 20px;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.statCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(255,255,255,0.4), rgba(255,255,255,0));
+  pointer-events: none;
+}
+
+.statCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.1);
+  border-color: rgba(37, 99, 235, 0.2);
+}
+
+.statIcon {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.5);
+}
+
+.statInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.statInfo span {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.statInfo strong {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #1e293b;
+  line-height: 1.2;
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.sectionHeader h2 {
+  font-size: 1.4rem;
+  color: #1e293b;
+  font-weight: 800;
 }
 
 .mlmStats {

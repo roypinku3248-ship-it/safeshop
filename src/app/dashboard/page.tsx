@@ -378,7 +378,7 @@ export default function UserDashboard() {
                     if (pendingOrder) {
                       localStorage.setItem('safeshop-cart', JSON.stringify(pendingOrder.items));
                       localStorage.setItem('safeshop-pending-order-id', pendingOrder.dbId);
-                      router.push('/checkout');
+                      window.location.href = '/checkout';
                     }
                   }}
                 >
@@ -451,7 +451,7 @@ export default function UserDashboard() {
                                       // Save this order's items to cart for checkout
                                       localStorage.setItem('safeshop-cart', JSON.stringify(order.items));
                                       localStorage.setItem('safeshop-pending-order-id', order.dbId);
-                                      router.push('/checkout');
+                                      window.location.href = '/checkout';
                                     }}
                                   >
                                     Pay Now to Activate

@@ -563,6 +563,13 @@ export default function UserDashboard() {
                               }]);
                               if (userError) throw userError;
                               targetUserId = newUserId;
+                            } else {
+                              // 2b. If user exists, ensure they are linked to the recruiter if not already
+                              const { error: updateError } = await supabase
+                                .from('users')
+                                .update({ referred_by: user.id })
+                                .eq('id', existingUser.id);
+                              if (updateError) console.error('Failed to update referral link:', updateError);
                             }
                             
                             // 3. RECORD THE SALE as "Awaiting Payment"

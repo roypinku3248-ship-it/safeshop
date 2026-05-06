@@ -387,7 +387,7 @@ export default function UserDashboard() {
 
                 <div className={styles.networkOverview} style={{ background: 'white', padding: '15px 25px', borderRadius: '12px', border: '1px solid #e2e8f0', marginBottom: '25px', display: 'flex', gap: '30px', alignItems: 'center' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div style={{ background: 'rgba(37, 99, 235, 0.1)', color: 'var(--primary)', padding: '8px', borderRadius: '8px' }}><UsersIcon size={20} /></div>
+                    <div style={{ background: 'rgba(37, 99, 235, 0.1)', color: 'var(--primary)', padding: '8px', borderRadius: '8px' }}><Users size={20} /></div>
                     <div>
                       <span style={{ fontSize: '0.8rem', color: '#64748b', display: 'block' }}>Direct Referrals</span>
                       <strong style={{ fontSize: '1.1rem' }}>{referrals.length}</strong>
@@ -581,9 +581,7 @@ export default function UserDashboard() {
                                   <label>Post Office (PO)</label>
                                   <input type="text" value={newMemberData.po} onChange={e => setNewMemberData({...newMemberData, po: e.target.value})} />
                                 </div>
-                              </div>
-
-                              <div className={styles.kycSection}>
+                                           <div className={styles.kycSection}>
                                 <h4>KYC & Documents</h4>
                                 <div className={styles.miniFormGrid}>
                                   <div className={styles.formItem}>
@@ -591,67 +589,74 @@ export default function UserDashboard() {
                                     <input type="text" value={newMemberData.aadhar} onChange={e => setNewMemberData({...newMemberData, aadhar: e.target.value})} />
                                   </div>
                                   <div className={styles.formItem}>
-                    <label>PAN Number</label>
+                                    <label>PAN Number</label>
                                     <input type="text" value={newMemberData.pan} onChange={e => setNewMemberData({...newMemberData, pan: e.target.value})} />
                                   </div>
                                 </div>
+                              </div>
+                            </div>
+                            <div className={styles.modalActions}>
+                              <button type="button" className={styles.cancelBtn} onClick={() => setIsAddingMember(false)}>Cancel</button>
+                              <button type="submit" className={`${styles.submitBtn} gradient-primary`} disabled={registering}>
+                                {registering ? 'Adding...' : 'Register Member'}
+                              </button>
+                            </div>
+                          </form>
+                        </div>
+                      </div>
+                    )}
+                  </div>
 
-                                <div className={styles.salesHistory} style={{ marginTop: '30px' }}>
-                  <h3 style={{ marginBottom: '15px', color: '#1e293b' }}>Sales & Commission History</h3>
-                  <div style={{ background: 'white', borderRadius: '12px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-                      <thead style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
-                        <tr>
-                          <th style={{ padding: '12px 15px', fontSize: '0.85rem', color: '#64748b' }}>Date</th>
-                          <th style={{ padding: '12px 15px', fontSize: '0.85rem', color: '#64748b' }}>Sold To (Referral)</th>
-                          <th style={{ padding: '12px 15px', fontSize: '0.85rem', color: '#64748b' }}>Amount</th>
-                          <th style={{ padding: '12px 15px', fontSize: '0.85rem', color: '#64748b' }}>Commission</th>
-                          <th style={{ padding: '12px 15px', fontSize: '0.85rem', color: '#64748b' }}>Status</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {referrals.length === 0 ? (
+                  <div className={styles.salesHistory} style={{ marginTop: '30px' }}>
+                    <h3 style={{ marginBottom: '15px', color: '#1e293b' }}>Sales & Commission History</h3>
+                    <div style={{ background: 'white', borderRadius: '12px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
+                      <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                        <thead style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
                           <tr>
-                            <td colSpan={5} style={{ padding: '30px', textAlign: 'center', color: '#94a3b8', fontSize: '0.9rem' }}>
-                              No sales recorded yet. Join new members to start selling packages.
-                            </td>
+                            <th style={{ padding: '12px 15px', fontSize: '0.85rem', color: '#64748b' }}>Date</th>
+                            <th style={{ padding: '12px 15px', fontSize: '0.85rem', color: '#64748b' }}>Sold To (Referral)</th>
+                            <th style={{ padding: '12px 15px', fontSize: '0.85rem', color: '#64748b' }}>Amount</th>
+                            <th style={{ padding: '12px 15px', fontSize: '0.85rem', color: '#64748b' }}>Commission</th>
+                            <th style={{ padding: '12px 15px', fontSize: '0.85rem', color: '#64748b' }}>Status</th>
                           </tr>
-                        ) : (
-                          referrals.map((ref, idx) => (
-                            <tr key={idx} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                              <td style={{ padding: '12px 15px', fontSize: '0.9rem' }}>6 May 2026</td>
-                              <td style={{ padding: '12px 15px' }}>
-                                <div style={{ fontWeight: '600', color: '#1e293b' }}>{ref.name}</div>
-                                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{ref.email}</div>
-                              </td>
-                              <td style={{ padding: '12px 15px', fontWeight: 'bold' }}>₹2,000</td>
-                              <td style={{ padding: '12px 15px' }}>
-                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: ref.status?.toLowerCase() === 'verified' ? '#fff9e6' : '#f1f5f9', padding: '2px 8px', borderRadius: '10px', border: ref.status?.toLowerCase() === 'verified' ? '1px solid #ffeeba' : '1px solid #e2e8f0' }}>
-                                  <span style={{ fontSize: '11px', color: ref.status?.toLowerCase() === 'verified' ? '#856404' : '#64748b', fontWeight: '700' }}>
-                                    🪙 {ref.status?.toLowerCase() === 'verified' ? '100' : '0'}
-                                  </span>
-                                </div>
-                              </td>
-                              <td style={{ padding: '12px 15px' }}>
-                                <span className={ref.status?.toLowerCase() === 'verified' ? styles.statusV : styles.statusP} style={{ fontSize: '0.75rem', padding: '2px 8px' }}>
-                                  {ref.status || 'Pending'}
-                                </span>
+                        </thead>
+                        <tbody>
+                          {referrals.length === 0 ? (
+                            <tr>
+                              <td colSpan={5} style={{ padding: '30px', textAlign: 'center', color: '#94a3b8', fontSize: '0.9rem' }}>
+                                No sales recorded yet. Join new members to start selling packages.
                               </td>
                             </tr>
-                          ))
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-
-                <div className={styles.networkSection} style={{ marginTop: '30px' }}>
-                                <div className={styles.fileUploadGrid} style={{ marginTop: '20px' }}>
-                                  <div className={styles.fileBox}>
-                                    <span>Aadhar Front</span>
-                                    <input type="file" accept="image/*" />
+                          ) : (
+                            referrals.map((ref, idx) => (
+                              <tr key={idx} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                                <td style={{ padding: '12px 15px', fontSize: '0.9rem' }}>6 May 2026</td>
+                                <td style={{ padding: '12px 15px' }}>
+                                  <div style={{ fontWeight: '600', color: '#1e293b' }}>{ref.name}</div>
+                                  <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{ref.email}</div>
+                                </td>
+                                <td style={{ padding: '12px 15px', fontWeight: 'bold' }}>₹2,000</td>
+                                <td style={{ padding: '12px 15px' }}>
+                                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: ref.status?.toLowerCase() === 'verified' ? '#fff9e6' : '#f1f5f9', padding: '2px 8px', borderRadius: '10px', border: ref.status?.toLowerCase() === 'verified' ? '1px solid #ffeeba' : '1px solid #e2e8f0' }}>
+                                    <span style={{ fontSize: '11px', color: ref.status?.toLowerCase() === 'verified' ? '#856404' : '#64748b', fontWeight: '700' }}>
+                                      🪙 {ref.status?.toLowerCase() === 'verified' ? '100' : '0'}
+                                    </span>
                                   </div>
-                                  <div className={styles.fileBox}>
+                                </td>
+                                <td style={{ padding: '12px 15px' }}>
+                                  <span className={ref.status?.toLowerCase() === 'verified' ? styles.statusV : styles.statusP} style={{ fontSize: '0.75rem', padding: '2px 8px' }}>
+                                    {ref.status || 'Pending'}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+</div>
+                </div>
                                     <span>Aadhar Back</span>
                                     <input type="file" accept="image/*" />
                                   </div>

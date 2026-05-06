@@ -131,7 +131,7 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                   <span style={{ fontSize: '0.55rem', color: '#94a3b8', fontWeight: 'bold' }}>R-{user.id?.toString().slice(-6).toUpperCase()}</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '2px', background: '#fff9e6', padding: '1px 5px', borderRadius: '10px', border: '1px solid #ffeeba' }}>
-                    <span style={{ fontSize: '10px', color: '#856404', fontWeight: '900' }}>🪙 {children.length * 100}</span>
+                    <span style={{ fontSize: '10px', color: '#856404', fontWeight: '900' }}>🪙 100</span>
                   </div>
                 </div>
                 <span className={user.status?.toLowerCase() === 'verified' ? styles.verified : styles.pending}>
@@ -294,6 +294,9 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
             <div className={styles.mainRoot}>
               <div className={styles.rootAvatar}>{(currentRoot.name || 'U')[0]}</div>
               <h3>{currentRoot.name}</h3>
+              <div style={{ margin: '10px 0', background: 'var(--primary)', color: 'white', padding: '5px 15px', borderRadius: '20px', display: 'inline-flex', alignItems: 'center', gap: '8px', fontWeight: 'bold', fontSize: '0.9rem', boxShadow: '0 4px 12px rgba(0,82,204,0.3)' }}>
+                🪙 Total Level Coins: {getSubTree(currentRoot.id).length * 100}
+              </div>
               <p>{navigationStack.length === 0 ? 'Master Account' : 'Team Overview'}</p>
             </div>
 

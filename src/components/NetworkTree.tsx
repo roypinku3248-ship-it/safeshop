@@ -128,7 +128,12 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
                     <span title="Level Complete" style={{ background: '#10b981', color: 'white', fontSize: '10px', padding: '1px 4px', borderRadius: '4px', fontWeight: 'bold' }}>FULL</span>
                   )}
                 </div>
-                <span style={{ fontSize: '0.55rem', color: '#94a3b8', fontWeight: 'bold' }}>R-{user.id?.toString().slice(-6).toUpperCase()}</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                  <span style={{ fontSize: '0.55rem', color: '#94a3b8', fontWeight: 'bold' }}>R-{user.id?.toString().slice(-6).toUpperCase()}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '2px', background: '#fff9e6', padding: '1px 5px', borderRadius: '10px', border: '1px solid #ffeeba' }}>
+                    <span style={{ fontSize: '10px', color: '#856404', fontWeight: '900' }}>🪙 {children.length * 100}</span>
+                  </div>
+                </div>
                 <span className={user.status?.toLowerCase() === 'verified' ? styles.verified : styles.pending}>
                   {isLocked ? 'Locked' : (user.status || 'Pending')}
                 </span>

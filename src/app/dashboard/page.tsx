@@ -223,6 +223,22 @@ export default function UserDashboard() {
 
   }, [isAuthenticated, loading, router, user?.id]);
 
+  const [orderStatusTab, setOrderStatusTab] = React.useState<'active' | 'completed' | 'returns'>('active');
+
+  const filteredOrders = orders.filter(order => {
+    const status = (order.status || '').toLowerCase();
+    if (orderStatusTab === 'active') {
+      return !status.includes('delivered') && !status.includes('completed') && !status.includes('returned') && !status.includes('refunded');
+    }
+    if (orderStatusTab === 'completed') {
+      return status.includes('delivered') || status.includes('completed');
+    }
+    if (orderStatusTab === 'returns') {
+      return status.includes('returned') || status.includes('refunded');
+    }
+    return true;
+  });
+
   if (loading || !user) return null;
 
   return (
@@ -300,20 +316,35 @@ export default function UserDashboard() {
                 <div className={styles.header}>
                   <h1>My Orders</h1>
                   <div className={styles.tabs}>
-                    <button className={styles.tabActive}>Active (2)</button>
-                    <button>Completed</button>
-                    <button>Returns</button>
+                    <button 
+                      className={orderStatusTab === 'active' ? styles.tabActive : ''} 
+                      onClick={() => setOrderStatusTab('active')}
+                    >
+                      Active ({orders.filter(o => !o.status?.toLowerCase().includes('delivered') && !o.status?.toLowerCase().includes('returned')).length})
+                    </button>
+                    <button 
+                      className={orderStatusTab === 'completed' ? styles.tabActive : ''} 
+                      onClick={() => setOrderStatusTab('completed')}
+                    >
+                      Completed
+                    </button>
+                    <button 
+                      className={orderStatusTab === 'returns' ? styles.tabActive : ''} 
+                      onClick={() => setOrderStatusTab('returns')}
+                    >
+                      Returns
+                    </button>
                   </div>
                 </div>
                 <div className={styles.orderList}>
-                  {orders.length === 0 ? (
+                  {filteredOrders.length === 0 ? (
                     <div className={styles.emptyOrders}>
                       <Package size={48} />
-                      <p>You haven't placed any orders yet.</p>
-                      <button onClick={() => router.push('/products')} className="gradient-primary">Start Shopping</button>
+                      <p>No {orderStatusTab} orders found.</p>
+                      {orderStatusTab === 'active' && <button onClick={() => router.push('/products')} className="gradient-primary">Start Shopping</button>}
                     </div>
                   ) : (
-                    orders.map((order) => (
+                    filteredOrders.map((order) => (
                       <div key={order.id} className={styles.orderCard}>
                         <div className={styles.orderHeader}>
                           <div className={styles.orderMeta}>

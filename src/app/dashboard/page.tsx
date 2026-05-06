@@ -417,10 +417,12 @@ export default function UserDashboard() {
                   
                   <div className={styles.treeContainer}>
                     <NetworkTree 
-                      currentUser={user} 
+                      rootUser={{ name: user.name, id: user.id }} 
+                      directReferrals={referrals}
                       fullTeam={fullTeam} 
                       isFullScreen={isFullScreen}
-                      onCloseFocus={() => setIsFullScreen(false)}
+                      setIsFullScreen={setIsFullScreen}
+                      onAddMember={handleAddMemberClick}
                     />
                   </div>
 

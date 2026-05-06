@@ -40,7 +40,7 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
   // Drill-down State
   const [currentRootId, setCurrentRootId] = React.useState(rootUser.id);
   const [navigationStack, setNavigationStack] = React.useState<string[]>([]);
-  const [zoom, setZoom] = React.useState(0.8);
+  const [zoom, setZoom] = React.useState(0.3);
   
   // Local state if props not provided
   const [localIsFullScreen, setLocalIsFullScreen] = React.useState(false);
@@ -89,25 +89,47 @@ export const NetworkTree: React.FC<NetworkTreeProps> = ({
     // 1. Get children of this node
     const children = user ? getSubTree(user.id) : [];
     
-    // 2. Sequential Leg Locking Logic:
-    // Only lock if the slot is EMPTY and the previous leg of the parent is not full.
-    // If a member has ALREADY joined, we never lock them.
+    // 2. Sequential & Level Locking Logic:
     let isLocked = false;
-    if (!user && depth === 1 && legIdx > 0) {
-      // Find the parent node in fullTeam
+
+    // Rule A: Level-1 Completion (For Grandchildren and below)
+    // No one in Level 2+ can start until the Root has all 3 direct legs (L1-L3)
+    if (depth > 0) {
+      const rootChildren = getSubTree(rootUser.id);
+      if (rootChildren.length < 3) {
+        isLocked = true;
+      }
+    }
+
+    // Rule B: Cross-Sibling Sequential Locking (Team-by-Team)
+    // A member's slots only unlock if all their older siblings have already filled their 3-member teams.
+    if (!isLocked && depth > 0) {
       const parentNode = fullTeam.find(u => u.id === parentId);
-      if (parentNode) {
-        const parentChildren = getSubTree(parentId);
-        // Look at the node in the previous slot
-        const previousLegNode = parentChildren[legIdx - 1];
-        if (!previousLegNode) {
-          isLocked = true; // Previous leg doesn't even have a root yet
-        } else {
-          const prevLegChildren = getSubTree(previousLegNode.id);
-          if (prevLegChildren.length < 3) {
-            isLocked = true; // Previous leg is not full yet (needs 3 members)
+      if (parentNode && parentNode.referred_by) {
+        const grandparentChildren = getSubTree(parentNode.referred_by);
+        const myParentLegIdx = grandparentChildren.findIndex(u => u.id === parentId);
+        
+        // If I am NOT the first sibling, check if all previous siblings are "Full" (3 members)
+        if (myParentLegIdx > 0) {
+          for (let i = 0; i < myParentLegIdx; i++) {
+            const sibling = grandparentChildren[i];
+            const siblingChildren = getSubTree(sibling.id);
+            if (siblingChildren.length < 3) {
+              isLocked = true; // An older sibling hasn't finished their team yet
+              break;
+            }
           }
         }
+      }
+    }
+
+    // Rule C: Root's Leg Sequential Locking (Depth 0)
+    // For the Root's direct children, we only require the previous slot to be OCCUPIED (not full)
+    // to allow the user to initially complete L1, L2, and L3.
+    if (!isLocked && depth === 0 && legIdx > 0) {
+      const parentChildren = getSubTree(parentId);
+      if (!parentChildren[legIdx - 1]) {
+        isLocked = true;
       }
     }
     

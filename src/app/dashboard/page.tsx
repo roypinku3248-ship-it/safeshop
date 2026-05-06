@@ -99,8 +99,34 @@ export default function UserDashboard() {
   const [isFullScreen, setIsFullScreen] = React.useState(false);
   const [registering, setRegistering] = React.useState(false);
   const [newMemberData, setNewMemberData] = React.useState({
-    name: '', email: '', phone: '', city: '', ps: '', po: '', aadhar: '', pan: '', bankAcc: '', ifsc: '', packageId: 'starter'
+    name: '', email: '', phone: '', city: '', ps: '', po: '', aadhar: '', pan: '', bankAcc: '', ifsc: '', packageId: ''
   });
+
+  // Extract UNIQUE packages from user's orders
+  const ownedPackages = React.useMemo(() => {
+    const allItems = orders.flatMap(order => order.items || []);
+    // Filter out duplicates and ensure we have necessary fields
+    const unique = allItems.reduce((acc: any[], item: any) => {
+      if (!acc.find(i => i.name === item.name)) {
+        acc.push({
+          id: item.id || item.name.toLowerCase().replace(/\s+/g, '-'),
+          name: item.name,
+          price: item.price,
+          bv: item.bv || 0,
+          image: item.image
+        });
+      }
+      return acc;
+    }, []);
+    return unique.length > 0 ? unique : packages; // Fallback to defaults if none owned yet
+  }, [orders]);
+
+  // Set default package ID once ownedPackages are loaded
+  React.useEffect(() => {
+    if (ownedPackages.length > 0 && !newMemberData.packageId) {
+      setNewMemberData(prev => ({ ...prev, packageId: ownedPackages[0].id }));
+    }
+  }, [ownedPackages]);
 
   const handleAddMemberClick = (parentId?: string, legIdx?: number) => {
     setSelectedParentId(parentId || user?.id || null);
@@ -131,10 +157,11 @@ export default function UserDashboard() {
         // Format DB orders to match UI expectations
         const formattedDbOrders = (dbOrders || []).map(o => ({
           id: o.id.toString().slice(0, 8).toUpperCase(),
+          dbId: o.id, // Keep original ID for actions
           date: new Date(o.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }),
-          status: o.status,
+          status: o.status || 'Pending',
           seller: o.seller_name || 'SafeShop Official',
-          total: o.total_amount,
+          total: o.total_amount || 0,
           items: o.items || []
         }));
 
@@ -374,7 +401,26 @@ export default function UserDashboard() {
                               <span className={styles.price}>₹{item.price.toLocaleString('en-IN')} x {item.quantity}</span>
                               <span className={styles.bvBadge}>{item.bv * item.quantity} BV</span>
                             </div>
-                            {idx === 0 && <button className={styles.trackBtn}>Track Package</button>}
+                            {idx === 0 && (
+                              <div className={styles.orderActions}>
+                                {order.status?.toLowerCase().includes('awaiting') ? (
+                                  <button 
+                                    className="gradient-primary" 
+                                    style={{ padding: '8px 20px', borderRadius: '8px', border: 'none', color: 'white', fontWeight: 'bold', cursor: 'pointer' }}
+                                    onClick={() => {
+                                      // Save this order's items to cart for checkout
+                                      localStorage.setItem('safeshop-cart', JSON.stringify(order.items));
+                                      localStorage.setItem('safeshop-pending-order-id', order.dbId);
+                                      router.push('/checkout');
+                                    }}
+                                  >
+                                    Pay Now to Activate
+                                  </button>
+                                ) : (
+                                  <button className={styles.trackBtn}>Track Package</button>
+                                )}
+                              </div>
+                            )}
                           </div>
                         ))}
                       </div>
@@ -441,32 +487,45 @@ export default function UserDashboard() {
                           setRegistering(true);
                           const toastId = toast.loading('Registering member & recording sale...');
                           try {
-                            const selectedPkg = packages.find(p => p.id === newMemberData.packageId) || packages[0];
-                            const newUserId = `SS-USR-${Math.floor(100000 + Math.random() * 900000)}`;
+                            const selectedPkg = ownedPackages.find(p => p.id === newMemberData.packageId) || ownedPackages[0];
                             
-                            const { error } = await supabase.from('users').insert([{
-                              id: newUserId,
-                              name: newMemberData.name,
-                              email: newMemberData.email,
-                              phone: newMemberData.phone,
-                              city: newMemberData.city,
-                              ps: newMemberData.ps,
-                              po: newMemberData.po,
-                              aadhar: newMemberData.aadhar,
-                              pan: newMemberData.pan,
-                              role: 'associate',
-                              status: 'pending',
-                              referred_by: user.id,
-                              joined_at: new Date().toISOString()
-                            }]);
+                            // 1. Check if user already exists
+                            const { data: existingUser } = await supabase
+                              .from('users')
+                              .select('id, status')
+                              .eq('email', newMemberData.email)
+                              .single();
+
+                            let targetUserId = existingUser?.id;
+
+                            if (!existingUser) {
+                              // 2. Create NEW user if they don't exist
+                              const newUserId = `SS-USR-${Math.floor(100000 + Math.random() * 900000)}`;
+                              const { error: userError } = await supabase.from('users').insert([{
+                                id: newUserId,
+                                name: newMemberData.name,
+                                email: newMemberData.email,
+                                password: 'password123',
+                                phone: newMemberData.phone,
+                                city: newMemberData.city,
+                                ps: newMemberData.ps,
+                                po: newMemberData.po,
+                                aadhar: newMemberData.aadhar,
+                                pan: newMemberData.pan,
+                                role: 'associate',
+                                status: 'pending',
+                                referred_by: user.id,
+                                joined_at: new Date().toISOString()
+                              }]);
+                              if (userError) throw userError;
+                              targetUserId = newUserId;
+                            }
                             
-                            if (error) throw error;
-                            
-                            // RECORD THE SALE (The selected package purchase)
+                            // 3. RECORD THE SALE as "Awaiting Payment"
                             await supabase.from('orders').insert([{
-                              user_id: newUserId,
+                              user_id: targetUserId,
                               seller_name: user.name,
-                              status: 'Pending Verification',
+                              status: 'Awaiting Payment',
                               total_amount: selectedPkg.price,
                               items: [{ 
                                 name: selectedPkg.name, 
@@ -477,7 +536,7 @@ export default function UserDashboard() {
                               }]
                             }]);
 
-                            toast.success(`Member registered with ${selectedPkg.name}!`, { id: toastId });
+                            toast.success(`Request sent to ${newMemberData.name}! They can now pay from their dashboard.`, { id: toastId });
                             setIsAddingMember(false);
                             window.location.reload();
                           } catch (err: any) {
@@ -532,8 +591,8 @@ export default function UserDashboard() {
                           
                           <div className={styles.packageSection} style={{ marginBottom: '30px' }}>
                             <h4 style={{ color: 'var(--primary)', marginBottom: '15px', fontWeight: '800' }}>Choose Business Package</h4>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px' }}>
-                              {packages.map(pkg => (
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '15px' }}>
+                              {ownedPackages.map(pkg => (
                                 <div 
                                   key={pkg.id}
                                   onClick={() => setNewMemberData({...newMemberData, packageId: pkg.id})}
@@ -547,9 +606,9 @@ export default function UserDashboard() {
                                     textAlign: 'center'
                                   }}
                                 >
-                                  <div style={{ fontWeight: '800', color: '#1e293b', marginBottom: '4px' }}>{pkg.name}</div>
-                                  <div style={{ fontSize: '1.2rem', fontWeight: '800', color: 'var(--primary)' }}>₹{pkg.price.toLocaleString()}</div>
-                                  <div style={{ fontSize: '0.75rem', fontWeight: '700', color: '#64748b', marginTop: '4px' }}>{pkg.bv} BV</div>
+                                  <div style={{ fontWeight: '800', color: '#1e293b', marginBottom: '4px', fontSize: '0.85rem' }}>{pkg.name}</div>
+                                  <div style={{ fontSize: '1.1rem', fontWeight: '800', color: 'var(--primary)' }}>₹{pkg.price.toLocaleString()}</div>
+                                  <div style={{ fontSize: '0.7rem', fontWeight: '700', color: '#64748b', marginTop: '4px' }}>{pkg.bv} BV Stock</div>
                                 </div>
                               ))}
                             </div>

@@ -123,7 +123,7 @@ export default function UserDashboard() {
 
   // Set default package ID once ownedPackages are loaded
   React.useEffect(() => {
-    if (ownedPackages.length > 0 && !newMemberData.packageId) {
+    if (ownedPackages.length > 0) {
       setNewMemberData(prev => ({ ...prev, packageId: ownedPackages[0].id }));
     }
   }, [ownedPackages]);
@@ -529,11 +529,15 @@ export default function UserDashboard() {
                           try {
                             const selectedPkg = ownedPackages.find(p => p.id === newMemberData.packageId) || ownedPackages[0];
                             
+                            if (!selectedPkg) {
+                              throw new Error('You do not have any packages in your inventory to sell. Please purchase a package first.');
+                            }
+
                             // 1. Check if user already exists
                             const { data: existingUser } = await supabase
                               .from('users')
                               .select('id, status')
-                              .eq('email', newMemberData.email)
+                              .eq('email', newMemberData.email.trim().toLowerCase())
                               .single();
 
                             let targetUserId = existingUser?.id;
@@ -544,7 +548,7 @@ export default function UserDashboard() {
                               const { error: userError } = await supabase.from('users').insert([{
                                 id: newUserId,
                                 name: newMemberData.name,
-                                email: newMemberData.email,
+                                email: newMemberData.email.trim().toLowerCase(),
                                 password: 'password123',
                                 phone: newMemberData.phone,
                                 city: newMemberData.city,
@@ -562,7 +566,7 @@ export default function UserDashboard() {
                             }
                             
                             // 3. RECORD THE SALE as "Awaiting Payment"
-                            await supabase.from('orders').insert([{
+                            const { error: orderError } = await supabase.from('orders').insert([{
                               user_id: targetUserId,
                               seller_name: user.name,
                               status: 'Awaiting Payment',
@@ -576,9 +580,12 @@ export default function UserDashboard() {
                               }]
                             }]);
 
+                            if (orderError) throw orderError;
+
                             toast.success(`Request sent to ${newMemberData.name}! They can now pay from their dashboard.`, { id: toastId });
                             setIsAddingMember(false);
-                            window.location.reload();
+                            // Give a small delay before reload to ensure DB consistency
+                            setTimeout(() => window.location.reload(), 1500);
                           } catch (err: any) {
                             toast.error(err.message, { id: toastId });
                           } finally { setRegistering(false); }

@@ -711,6 +711,37 @@
     font-size: 0.95rem;
 }
 
+.filePlaceholder {
+    padding: 12px;
+    border: 1px dashed var(--primary);
+    border-radius: 10px;
+    background: rgba(0, 82, 204, 0.03);
+    color: var(--primary);
+    font-size: 0.85rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s;
+}
+
+.filePlaceholder:hover {
+    background: rgba(0, 82, 204, 0.08);
+}
+
+.hiddenFile {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
 .supportLink {
   font-size: 0.9rem;
   color: var(--primary);

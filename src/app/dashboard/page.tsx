@@ -428,11 +428,11 @@ export default function UserDashboard() {
 
                   {isAddingMember && (
                     <div className={styles.modalOverlay}>
-                      <div className={styles.modal}>
+                      <div className={styles.modal} style={{ maxWidth: '600px' }}>
                         <form onSubmit={async (e) => {
                           e.preventDefault();
                           setRegistering(true);
-                          const toastId = toast.loading('Registering member...');
+                          const toastId = toast.loading('Registering member & recording sale...');
                           try {
                             const newUserId = `SS-USR-${Math.floor(100000 + Math.random() * 900000)}`;
                             const { error } = await supabase.from('users').insert([{
@@ -440,13 +440,29 @@ export default function UserDashboard() {
                               name: newMemberData.name,
                               email: newMemberData.email,
                               phone: newMemberData.phone,
-                              role: 'user',
+                              city: newMemberData.city,
+                              ps: newMemberData.ps,
+                              po: newMemberData.po,
+                              aadhar: newMemberData.aadhar,
+                              pan: newMemberData.pan,
+                              role: 'associate',
                               status: 'pending',
                               referred_by: user.id,
                               joined_at: new Date().toISOString()
                             }]);
+                            
                             if (error) throw error;
-                            toast.success('Member added!', { id: toastId });
+                            
+                            // RECORD THE SALE (The 2000 package purchase)
+                            await supabase.from('orders').insert([{
+                              user_id: newUserId,
+                              seller_name: user.name,
+                              status: 'Pending Verification',
+                              total_amount: 2000,
+                              items: [{ name: 'SafeShop Business Package', price: 2000, quantity: 1, image: '/package.jpg', bv: 100 }]
+                            }]);
+
+                            toast.success('Member registered & Package sold!', { id: toastId });
                             setIsAddingMember(false);
                             window.location.reload();
                           } catch (err: any) {
@@ -454,10 +470,10 @@ export default function UserDashboard() {
                           } finally { setRegistering(false); }
                         }}>
                           <div className={styles.modalHeader}>
-                            <h3>Quick Register Member</h3>
-                            <p>Join your organization and start earning.</p>
+                            <h3>Register New Business Member</h3>
+                            <p>Complete onboarding including KYC and Package Sale.</p>
                           </div>
-                          <div className={styles.miniFormGrid}>
+                          <div className={styles.miniFormGrid} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
                             <div className={styles.formItem}>
                               <label>Full Name</label>
                               <input type="text" required value={newMemberData.name} onChange={e => setNewMemberData({...newMemberData, name: e.target.value})} />
@@ -470,11 +486,57 @@ export default function UserDashboard() {
                               <label>Phone Number</label>
                               <input type="tel" required value={newMemberData.phone} onChange={e => setNewMemberData({...newMemberData, phone: e.target.value})} />
                             </div>
+                            <div className={styles.formItem}>
+                              <label>City / Village</label>
+                              <input type="text" required value={newMemberData.city} onChange={e => setNewMemberData({...newMemberData, city: e.target.value})} />
+                            </div>
+                            <div className={styles.formItem}>
+                              <label>Police Station (PS)</label>
+                              <input type="text" required value={newMemberData.ps} onChange={e => setNewMemberData({...newMemberData, ps: e.target.value})} />
+                            </div>
+                            <div className={styles.formItem}>
+                              <label>Post Office (PO)</label>
+                              <input type="text" required value={newMemberData.po} onChange={e => setNewMemberData({...newMemberData, po: e.target.value})} />
+                            </div>
+                            <div className={styles.formItem}>
+                              <label>Aadhar Number</label>
+                              <input type="text" placeholder="12-digit Aadhar" required value={newMemberData.aadhar} onChange={e => setNewMemberData({...newMemberData, aadhar: e.target.value})} />
+                            </div>
+                            <div className={styles.formItem}>
+                              <label>Aadhar Photo</label>
+                              <div className={styles.filePlaceholder}>
+                                <PlusCircle size={16} /> Upload Photo
+                                <input type="file" accept="image/*" className={styles.hiddenFile} />
+                              </div>
+                            </div>
+                            <div className={styles.formItem}>
+                              <label>PAN Number</label>
+                              <input type="text" placeholder="ABCDE1234F" required value={newMemberData.pan} onChange={e => setNewMemberData({...newMemberData, pan: e.target.value})} />
+                            </div>
+                            <div className={styles.formItem}>
+                              <label>PAN Photo</label>
+                              <div className={styles.filePlaceholder}>
+                                <PlusCircle size={16} /> Upload Photo
+                                <input type="file" accept="image/*" className={styles.hiddenFile} />
+                              </div>
+                            </div>
                           </div>
-                          <div className={styles.modalActions}>
+                          
+                          <div className={styles.packageSelection} style={{ marginTop: '20px', padding: '15px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                            <h4 style={{ marginBottom: '10px' }}>Selected Package</h4>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <div>
+                                <strong>SafeShop Starter Business Package</strong>
+                                <p style={{ fontSize: '0.8rem', color: '#64748b' }}>Includes 100 BV and Business License</p>
+                              </div>
+                              <span style={{ fontWeight: 'bold', color: 'var(--primary)', fontSize: '1.2rem' }}>₹2,000</span>
+                            </div>
+                          </div>
+
+                          <div className={styles.modalActions} style={{ marginTop: '25px' }}>
                             <button type="button" className={styles.cancelBtn} onClick={() => setIsAddingMember(false)}>Cancel</button>
                             <button type="submit" className={`${styles.submitBtn} gradient-primary`} disabled={registering}>
-                              {registering ? 'Adding...' : 'Register Member'}
+                              {registering ? 'Processing...' : 'Complete Registration & Sale'}
                             </button>
                           </div>
                         </form>
@@ -613,7 +675,7 @@ export default function UserDashboard() {
                       <MapPin size={20} />
                       <strong>Home Address</strong>
                     </div>
-                    <p>{user.name}<br />{user.city || 'Kolkata'}, West Bengal<br />Phone: {user.phone || '+91 9876543210'}</p>
+                    <p>{user.name}<br />{(user as any).city || 'Kolkata'}, West Bengal<br />Phone: {(user as any).phone || '+91 9876543210'}</p>
                     <div className={styles.addressActions}>
                       <button className={styles.editBtn}>Edit</button>
                       <button className={styles.deleteBtn}>Remove</button>
@@ -641,7 +703,7 @@ export default function UserDashboard() {
                   </div>
                   <div className={styles.formGroup}>
                     <label>Phone Number</label>
-                    <input type="tel" defaultValue={user.phone} />
+                    <input type="tel" defaultValue={(user as any).phone} />
                   </div>
                   <button className="gradient-primary" onClick={() => toast.success('Profile updated!')}>Save Changes</button>
                   <div className={styles.divider} />

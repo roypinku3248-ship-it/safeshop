@@ -347,6 +347,46 @@ export default function UserDashboard() {
               </div>
             )}
 
+            {/* HIGH-VISIBILITY PAYMENT ALERT */}
+            {orders.some(o => o.status?.toLowerCase().includes('awaiting')) && (
+              <div style={{ 
+                background: 'linear-gradient(135deg, #fffbeb, #fef3c7)', 
+                border: '1px solid #fcd34d', 
+                padding: '20px', 
+                borderRadius: '16px', 
+                marginBottom: '25px', 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center',
+                boxShadow: '0 4px 15px rgba(251, 191, 36, 0.1)',
+                animation: 'fadeIn 0.5s'
+              }}>
+                <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                  <div style={{ background: '#fbbf24', color: 'white', padding: '10px', borderRadius: '12px' }}>
+                    <IndianRupee size={24} />
+                  </div>
+                  <div>
+                    <h4 style={{ margin: 0, color: '#92400e', fontWeight: '800' }}>Pending Business Activation</h4>
+                    <p style={{ margin: '2px 0 0', color: '#b45309', fontSize: '0.9rem' }}>You have a pending package order. Pay now to activate your account and start earning.</p>
+                  </div>
+                </div>
+                <button 
+                  className="gradient-primary" 
+                  style={{ padding: '10px 25px', borderRadius: '10px', color: 'white', fontWeight: '800', border: 'none', cursor: 'pointer', boxShadow: '0 4px 12px rgba(37, 99, 235, 0.2)' }}
+                  onClick={() => {
+                    const pendingOrder = orders.find(o => o.status?.toLowerCase().includes('awaiting'));
+                    if (pendingOrder) {
+                      localStorage.setItem('safeshop-cart', JSON.stringify(pendingOrder.items));
+                      localStorage.setItem('safeshop-pending-order-id', pendingOrder.dbId);
+                      router.push('/checkout');
+                    }
+                  }}
+                >
+                  Pay Now
+                </button>
+              </div>
+            )}
+
             {activeTab === 'orders' && (
               <>
                 <div className={styles.header}>

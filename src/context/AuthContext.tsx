@@ -8,6 +8,7 @@ interface User {
   name: string;
   email: string;
   role: 'user' | 'associate' | 'seller' | 'admin';
+  status?: 'pending' | 'verified';
   avatar?: string;
   joined_at?: string;
 }
@@ -92,6 +93,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         name: dbUser.name,
         email: dbUser.email,
         role: dbUser.role as any || 'user',
+        status: dbUser.status as any || 'pending',
         joined_at: dbUser.joined_at,
         avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(dbUser.name)}&background=0052cc&color=fff`,
       };
@@ -126,6 +128,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const refreshedUser: User = {
           ...user,
           role: data.role as any || user.role,
+          status: data.status as any || user.status,
           name: data.name || user.name
         };
         setUser(refreshedUser);

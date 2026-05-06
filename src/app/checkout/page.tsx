@@ -85,6 +85,12 @@ export default function CheckoutPage() {
         await new Promise(resolve => setTimeout(resolve, 1000));
       }
       
+      // 4. Update user's status to 'verified' upon payment
+      await supabase
+        .from('users')
+        .update({ status: 'verified' })
+        .eq('id', user.id);
+
       setStep('success');
       clearCart();
       localStorage.removeItem('safeshop-pending-order-id');

@@ -282,16 +282,35 @@ export default function UserDashboard() {
   const filteredOrders = orders.filter(order => {
     const status = (order.status || '').toLowerCase();
     if (orderStatusTab === 'active') {
-      return !status.includes('delivered') && !status.includes('completed') && !status.includes('returned') && !status.includes('refunded');
+      // Only show truly pending/awaiting payment orders as 'active'
+      return status === 'awaiting payment' || status.includes('processing');
     }
     if (orderStatusTab === 'completed') {
-      return status.includes('delivered') || status.includes('completed');
+      // Show all paid/delivered/in-transit/COD orders as 'completed'
+      return status.includes('delivered') || status.includes('completed') ||
+        status.includes('transit') || status.includes('verification') ||
+        status.includes('success') || status === 'paid';
     }
     if (orderStatusTab === 'returns') {
       return status.includes('returned') || status.includes('refunded');
     }
     return true;
   });
+
+  // Referral orders formatted for display in seller's Completed tab
+  const completedReferralOrders = referralOrders.filter(o => {
+    const status = (o.status || '').toLowerCase();
+    return !status.includes('awaiting payment');
+  }).map(o => ({
+    id: o.id?.toString().slice(0, 8).toUpperCase(),
+    dbId: o.id,
+    date: new Date(o.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }),
+    status: o.status,
+    memberName: o.memberName,
+    memberEmail: o.memberEmail,
+    total: o.total_amount || 0,
+    items: o.items || []
+  }));
 
   if (loading || !user) return null;
 
@@ -414,7 +433,7 @@ export default function UserDashboard() {
                       className={orderStatusTab === 'active' ? styles.tabActive : ''} 
                       onClick={() => setOrderStatusTab('active')}
                     >
-                      Active ({orders.filter(o => !o.status?.toLowerCase().includes('delivered') && !o.status?.toLowerCase().includes('returned')).length})
+                      Active ({orders.filter(o => (o.status || '').toLowerCase() === 'awaiting payment').length})
                     </button>
                     <button 
                       className={orderStatusTab === 'completed' ? styles.tabActive : ''} 
@@ -431,58 +450,93 @@ export default function UserDashboard() {
                   </div>
                 </div>
                 <div className={styles.orderList}>
-                  {filteredOrders.length === 0 ? (
+                  {filteredOrders.length === 0 && completedReferralOrders.length === 0 ? (
                     <div className={styles.emptyOrders}>
                       <Package size={48} />
                       <p>No {orderStatusTab} orders found.</p>
                       {orderStatusTab === 'active' && <button onClick={() => router.push('/products')} className="gradient-primary">Start Shopping</button>}
                     </div>
                   ) : (
-                    filteredOrders.map((order) => (
-                      <div key={order.id} className={styles.orderCard}>
-                        <div className={styles.orderHeader}>
-                          <div className={styles.orderMeta}>
-                            <span>Order {order.id}</span>
-                            <span>Placed on {order.date}</span>
-                          </div>
-                          <div className={order.status.includes('Success') || order.status.includes('Delivered') ? styles.orderStatusSuccess : styles.orderStatus}>
-                            {order.status.includes('Success') || order.status.includes('Delivered') ? <Truck size={16} /> : <Clock size={16} />}
-                            <span>{order.status}</span>
-                          </div>
-                        </div>
-                        {order.items.map((item: any, idx: number) => (
-                          <div key={idx} className={styles.orderItem}>
-                            <img src={item.image} alt={item.name} />
-                            <div className={styles.itemDetail}>
-                              <h4>{item.name}</h4>
-                              <p>Seller: {order.seller} <ShieldCheck size={12} color="var(--primary)" /></p>
-                              <span className={styles.price}>₹{item.price.toLocaleString('en-IN')} x {item.quantity}</span>
-                              <span className={styles.bvBadge}>{item.bv * item.quantity} BV</span>
+                    <>
+                      {filteredOrders.map((order) => (
+                        <div key={order.id} className={styles.orderCard}>
+                          <div className={styles.orderHeader}>
+                            <div className={styles.orderMeta}>
+                              <span>Order {order.id}</span>
+                              <span>Placed on {order.date}</span>
                             </div>
-                            {idx === 0 && (
-                              <div className={styles.orderActions}>
-                                {order.status?.toLowerCase() === 'awaiting payment' ? (
-                                  <button 
-                                    className="gradient-primary" 
-                                    style={{ padding: '8px 20px', borderRadius: '8px', border: 'none', color: 'white', fontWeight: 'bold', cursor: 'pointer' }}
-                                    onClick={() => {
-                                      // Save this order's items to cart for checkout
-                                      localStorage.setItem('safeshop-cart', JSON.stringify(order.items));
-                                      localStorage.setItem('safeshop-pending-order-id', order.dbId);
-                                      window.location.href = '/checkout';
-                                    }}
-                                  >
-                                    Pay Now to Activate
-                                  </button>
-                                ) : (
-                                  <button className={styles.trackBtn}>Track Package</button>
-                                )}
-                              </div>
-                            )}
+                            <div className={order.status.includes('Success') || order.status.includes('Delivered') || order.status.includes('Transit') || order.status.includes('Verification') ? styles.orderStatusSuccess : styles.orderStatus}>
+                              {order.status.includes('Success') || order.status.includes('Delivered') || order.status.includes('Transit') || order.status.includes('Verification') ? <Truck size={16} /> : <Clock size={16} />}
+                              <span>{order.status}</span>
+                            </div>
                           </div>
-                        ))}
-                      </div>
-                    ))
+                          {order.items.map((item: any, idx: number) => (
+                            <div key={idx} className={styles.orderItem}>
+                              <img src={item.image} alt={item.name} />
+                              <div className={styles.itemDetail}>
+                                <h4>{item.name}</h4>
+                                <p>Seller: {order.seller} <ShieldCheck size={12} color="var(--primary)" /></p>
+                                <span className={styles.price}>₹{item.price.toLocaleString('en-IN')} x {item.quantity}</span>
+                                <span className={styles.bvBadge}>{item.bv * item.quantity} BV</span>
+                              </div>
+                              {idx === 0 && (
+                                <div className={styles.orderActions}>
+                                  {order.status?.toLowerCase() === 'awaiting payment' ? (
+                                    <button 
+                                      className="gradient-primary" 
+                                      style={{ padding: '8px 20px', borderRadius: '8px', border: 'none', color: 'white', fontWeight: 'bold', cursor: 'pointer' }}
+                                      onClick={() => {
+                                        localStorage.setItem('safeshop-cart', JSON.stringify(order.items));
+                                        localStorage.setItem('safeshop-pending-order-id', order.dbId);
+                                        window.location.href = '/checkout';
+                                      }}
+                                    >
+                                      Pay Now to Activate
+                                    </button>
+                                  ) : (
+                                    <button className={styles.trackBtn}>Track Package</button>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      ))}
+
+                      {/* SELLER VIEW: Show paid referral orders in Completed tab */}
+                      {orderStatusTab === 'completed' && completedReferralOrders.length > 0 && (
+                        <>
+                          <div style={{ padding: '10px 0 5px', fontSize: '0.85rem', fontWeight: '700', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                            💼 My Sales Records
+                          </div>
+                          {completedReferralOrders.map((sale) => (
+                            <div key={sale.id} className={styles.orderCard} style={{ borderLeft: '4px solid #10b981' }}>
+                              <div className={styles.orderHeader}>
+                                <div className={styles.orderMeta}>
+                                  <span>Sale #{sale.id}</span>
+                                  <span>Sold on {sale.date} → <strong>{sale.memberName}</strong> ({sale.memberEmail})</span>
+                                </div>
+                                <div className={styles.orderStatusSuccess}>
+                                  <ShieldCheck size={16} />
+                                  <span>{sale.status}</span>
+                                </div>
+                              </div>
+                              {sale.items.map((item: any, idx: number) => (
+                                <div key={idx} className={styles.orderItem}>
+                                  <img src={item.image || '/package.jpg'} alt={item.name} />
+                                  <div className={styles.itemDetail}>
+                                    <h4>{item.name}</h4>
+                                    <p>Sold to: {sale.memberName} <ShieldCheck size={12} color="#10b981" /></p>
+                                    <span className={styles.price}>₹{item.price?.toLocaleString('en-IN')} x {item.quantity}</span>
+                                    <span className={styles.bvBadge} style={{ background: '#dcfce7', color: '#166534' }}>+100 Coins Earned</span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          ))}
+                        </>
+                      )}
+                    </>
                   )}
                 </div>
               </>

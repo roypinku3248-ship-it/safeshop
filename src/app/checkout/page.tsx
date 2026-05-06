@@ -48,7 +48,6 @@ export default function CheckoutPage() {
 
     const orderData = {
       user_id: user?.id || 'anonymous',
-      customer_name: user?.name || 'Guest',
       items: cart.map(item => ({
         id: item.id,
         name: item.name,
@@ -58,8 +57,7 @@ export default function CheckoutPage() {
         bv: (item as any).bv || 100
       })),
       total_amount: totalPrice,
-      status: finalStatus,
-      seller_name: cart[0]?.seller?.name || 'SafeShop Official'
+      status: finalStatus
     };
 
     try {
